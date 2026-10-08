@@ -1,0 +1,14 @@
+{
+  "name": "Simulatore di Volo",
+  "short_name": "Volo",
+  "description": "Simulatore di volo nel browser con un Cessna 172",
+  "start_url": "./",
+  "display": "fullscreen",
+  "background_color": "#0b1322",
+  "theme_color": "#0b1322",
+  "icons": [
+    { "src": "icone/icona-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icone/icona-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icone/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
