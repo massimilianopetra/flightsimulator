@@ -134,6 +134,13 @@ function orientaMappa(){
   messaggio(o==='prua'?'Mappa: <b>prua in alto</b>':'Mappa: <b>nord in alto</b>',1.5);
 }
 $('minimap').addEventListener('click',orientaMappa);
+// scala della mappa: menu, rotellina sopra la mappa, tasto M
+const selScala=$('selScala');
+selScala.innerHTML=strum.scale().map((n,i)=>`<option value="${i}">${n}</option>`).join('');
+selScala.value=String(strum.zoom);
+strum.onZoom(z=>{selScala.value=String(z);});
+selScala.addEventListener('change',()=>{strum.impostaZoom(+selScala.value);selScala.blur();});
+$('minimap').addEventListener('wheel',e=>{e.preventDefault();if(e.deltaY<0)strum.zoomPiu();else strum.zoomMeno();},{passive:false});
 function alternaPausa(){
   if(!avviato||st.crashed) return;
   inPausa=!inPausa;$('pausa').hidden=!inPausa;

@@ -127,4 +127,5 @@ button.primario:hover{background:#7fe6ff;color:#05202a}
 select{font:700 13px var(--f-num);color:var(--ink);background:#0b1322;border:1px solid var(--dim);border-radius:4px;padding:6px 6px;max-width:100%}
 select:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
 .seldest{pointer-events:auto;color:var(--magenta);font-size:14px;padding:3px 4px;flex:1;min-width:0}
-.navinfo .row:first-child{grid-column:1/-1}
+.navinfo .row:first-child,.navinfo .riga-scala{grid-column:1/-1}
+.selscala{pointer-events:auto;color:var(--cyan);font-size:13px;padding:3px 4px;flex:1;min-width:0}
