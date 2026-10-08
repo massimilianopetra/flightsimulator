@@ -21,6 +21,7 @@
     <div id="aiutoCorpo" class="corpo">
     <dl>
       <dt>W / S</dt><dd>picchia / cabra (anche frecce)</dd>
+      <dt>K</dt><dd>cloche al centro (resta dove la lasci)</dd>
       <dt>A / D</dt><dd>rollio sinistra / destra</dd>
       <dt>Q / E</dt><dd>timone e ruotino a terra</dd>
       <dt>+ / −</dt><dd>manetta (1…9 = 10…90%, 0 = 100%)</dd>
@@ -63,6 +64,11 @@
         <div class="row"><span class="lbl">TRIM</span><span id="trim" class="val">0</span></div>
         <div class="row"><span class="lbl">G</span><span id="gload" class="val">1.0</span></div>
       </div>
+      <div class="riga-cloche">
+        <div class="cloche-ind" title="Posizione della cloche: in basso = tirata (cabra)"><i id="puntoCloche"></i></div>
+        <span class="lbl">CLOCHE</span>
+        <button type="button" data-azione="centra" title="Riporta la cloche al centro (K)">CENTRA (K)</button>
+      </div>
       <div class="spie">
         <span id="spiaFreni" class="spia">FRENI</span>
         <span id="spiaTerra" class="spia">A TERRA</span>
@@ -96,7 +102,7 @@
       <ol class="check">
         <li>Flap a <b>10°</b> con <kbd>F</kbd>.</li>
         <li>Manetta al <b>100%</b> con <kbd>0</kbd> (oppure tieni premuto <kbd>+</kbd>); resta sulla linea centrale con <kbd>Q</kbd>/<kbd>E</kbd>.</li>
-        <li>A <b id="briefVr">55</b> nodi tira dolcemente (<kbd>S</kbd>): il muso si alza e l'aereo decolla.</li>
+        <li>A <b id="briefVr">55</b> nodi tira dolcemente (<kbd>S</kbd>): il muso si alza e l'aereo decolla. La cloche <b>resta dove la lasci</b>: correggi con <kbd>W</kbd>/<kbd>S</kbd> o centrala con <kbd>K</kbd>.</li>
         <li>Sali a circa <b id="briefVy">74</b> nodi; sopra 500 ft retrai i flap (<kbd>G</kbd>).</li>
         <li>Per atterrare: circa <b>65 nodi</b>, flap 30°, e segui le luci PAPI a sinistra della pista: <span class="papi"><i class="w"></i><i class="w"></i><i class="r"></i><i class="r"></i></span> = giusta pendenza.</li>
       </ol>

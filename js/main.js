@@ -71,6 +71,7 @@ let avviato=false, inPausa=false, vista=0, tempo=0;
 const NOMI_VISTA=['ESTERNA','CABINA','TORRE'];
 
 function ricomincia(){
+  centraCloche();
   const p=modalita==='finale'&&partenza.te?puntoFinale():partenza;
   fis.reset(p);
   if(p.flapSel){st.flapSel=p.flapSel;st.flap=A.flap.posizioni[p.flapSel];}
@@ -94,9 +95,10 @@ function mostraIncidente(motivo){
 /* ---------- comandi ---------- */
 const tasti=new Set(), logico={};
 const tieni={rudS:false,rudD:false,freni:false};
-const kb={elev:0,ail:0,rud:0};
+// cloche: resta dove la lasci (x = alettoni, y = elevatore; y positivo = tirata). Il timone invece torna al centro.
+const cloche={x:0,y:0};
+const kb={rud:0};
 const pad={elev:0,ail:0,rud:0,freno:0,thr:0,prima:[]};
-const stick={x:0,y:0};
 const inp={elev:0,ail:0,rud:0};
 const k=(...c)=>c.some(x=>tasti.has(x))?1:0;
 const BLOCCA=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','PageUp','PageDown'];
@@ -166,6 +168,7 @@ addEventListener('keydown',e=>{
     case 'KeyN':prossimaDest();break;
     case 'KeyM':strum.cambiaZoom();break;
     case 'KeyO':orientaMappa();break;
+    case 'KeyK':centraCloche();break;
     case 'KeyP':alternaPausa();break;
     case 'KeyH':alternaAiuto();break;
     case 'KeyR':if(avviato)ricomincia();break;
@@ -178,18 +181,23 @@ addEventListener('blur',()=>{tasti.clear();for(const q in tieni)tieni[q]=false;}
 // mouse/touch come cloche
 let trascina=null;
 const stickEl=$('stick'),knob=$('knob'),RAGGIO=75;
+// il trascinamento riparte dalla posizione attuale della cloche, e al rilascio la cloche resta lì
 canvas.addEventListener('pointerdown',e=>{
   audio.avvia();
-  trascina={id:e.pointerId,x:e.clientX,y:e.clientY};
+  trascina={id:e.pointerId,x:e.clientX,y:e.clientY,x0:cloche.x,y0:cloche.y};
   try{canvas.setPointerCapture(e.pointerId);}catch(_){}
-  stickEl.style.left=e.clientX+'px';stickEl.style.top=e.clientY+'px';stickEl.hidden=false;knob.style.transform='';
+  stickEl.style.left=(e.clientX-cloche.x*RAGGIO)+'px';stickEl.style.top=(e.clientY-cloche.y*RAGGIO)+'px';stickEl.hidden=false;
+  knob.style.transform=`translate(${cloche.x*RAGGIO}px,${cloche.y*RAGGIO}px)`;
 });
 canvas.addEventListener('pointermove',e=>{
   if(!trascina||e.pointerId!==trascina.id) return;
-  stick.x=clamp((e.clientX-trascina.x)/RAGGIO,-1,1);stick.y=clamp((e.clientY-trascina.y)/RAGGIO,-1,1);
-  knob.style.transform=`translate(${stick.x*RAGGIO}px,${stick.y*RAGGIO}px)`;
+  cloche.x=clamp(trascina.x0+(e.clientX-trascina.x)/RAGGIO,-1,1);
+  cloche.y=clamp(trascina.y0+(e.clientY-trascina.y)/RAGGIO,-1,1);
+  knob.style.transform=`translate(${cloche.x*RAGGIO}px,${cloche.y*RAGGIO}px)`;
 });
-const fineTrascina=e=>{if(trascina&&e.pointerId===trascina.id){trascina=null;stick.x=stick.y=0;stickEl.hidden=true;}};
+const puntoCloche=$('puntoCloche');
+const fineTrascina=e=>{if(trascina&&e.pointerId===trascina.id){trascina=null;stickEl.hidden=true;}};
+function centraCloche(){cloche.x=cloche.y=0;}
 canvas.addEventListener('pointerup',fineTrascina);canvas.addEventListener('pointercancel',fineTrascina);
 
 // pulsanti a schermo
@@ -197,7 +205,7 @@ $('thr').addEventListener('input',()=>{st.thr=$('thr').value/100;});
 for(const b of document.querySelectorAll('[data-azione]')){
   b.addEventListener('click',()=>{
     audio.avvia();
-    ({flapsu:()=>flap(-1),flapgiu:()=>flap(1),vista:cambiaVista,audio:alternaAudio,reset:()=>{if(avviato)ricomincia();}})[b.dataset.azione]();
+    ({centra:centraCloche,flapsu:()=>flap(-1),flapgiu:()=>flap(1),vista:cambiaVista,audio:alternaAudio,reset:()=>{if(avviato)ricomincia();}})[b.dataset.azione]();
     b.blur();
   });
 }
@@ -233,11 +241,14 @@ function leggiGamepad(dt){
 
 function comandi(dt){
   const rampa=(cur,t,dt)=>cur+clamp(t-cur,-(t===0?4:1.8)*dt,(t===0?4:1.8)*dt);
-  kb.elev=rampa(kb.elev,k('KeyS','ArrowDown')-k('KeyW','ArrowUp'),dt);
-  kb.ail=rampa(kb.ail,k('KeyD','ArrowRight')-k('KeyA','ArrowLeft'),dt);
+  // tasti: spostano la cloche finché li tieni premuti, poi resta ferma
+  const VEL=0.8;
+  cloche.y=clamp(cloche.y+(k('KeyS','ArrowDown')-k('KeyW','ArrowUp'))*VEL*dt,-1,1);
+  cloche.x=clamp(cloche.x+(k('KeyD','ArrowRight')-k('KeyA','ArrowLeft'))*VEL*dt,-1,1);
   kb.rud=rampa(kb.rud,(k('KeyE')||tieni.rudD?1:0)-(k('KeyQ')||tieni.rudS?1:0),dt);
-  inp.elev=clamp(kb.elev+stick.y+pad.elev,-1,1);
-  inp.ail=clamp(kb.ail+stick.x+pad.ail,-1,1);
+  inp.elev=clamp(cloche.y+pad.elev,-1,1);
+  inp.ail=clamp(cloche.x+pad.ail,-1,1);
+  puntoCloche.style.transform=`translate(${inp.ail*17}px,${inp.elev*17}px)`;
   inp.rud=clamp(kb.rud+pad.rud,-1,1);
   const dThr=(k('PIU')-k('MENO'))*0.5*dt;
   if(dThr){st.thr=clamp(st.thr+dThr,0,1);$('thr').value=Math.round(st.thr*100);}
