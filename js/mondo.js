@@ -307,19 +307,12 @@ SIM.creaMondo=function(scene,renderer){
     const luce=(c,x,y,z)=>add(new THREE.SphereGeometry(0.07,8,6),new THREE.MeshBasicMaterial({color:c}),x,y,z);
     luce(0xff2020,-5.52,0.88,-0.6);luce(0x20ff40,5.52,0.88,-0.6);luce(0xffffff,0,1.85,4.3);
     const strobo=luce(0xffffff,0,1.86,3.4);
-    // interno della cabina (visibile solo dalla vista in cabina)
-    const cabina=new THREE.Group();gr.add(cabina);
-    const mTetto=new THREE.MeshStandardMaterial({color:0x9aa0a6,roughness:.9});
-    const pz=(geo,mat,x,y,z,rx)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);if(rx)m.rotation.x=rx;cabina.add(m);return m;};
-    pz(new THREE.BoxGeometry(1.2,0.3,0.35),mInt,0,0.16,-1.3);                 // cruscotto
-    pz(new THREE.BoxGeometry(1.2,0.04,0.25),mInt,0,0.32,-1.18);               // palpebra
-    for(const sx of [-1,1])pz(new THREE.BoxGeometry(0.025,0.6,0.025),mTetto,sx*0.62,0.52,-1.22,-0.55); // montanti
-    pz(new THREE.BoxGeometry(1.25,0.03,1.4),mTetto,0,0.79,-0.4);             // soffitto
-    pz(new THREE.BoxGeometry(0.06,0.05,0.3),mInt,0,0.77,-0.95);              // bussola
-    cabina.visible=false;
+    // interno della cabina (js/cabina.js), visibile solo dalla vista in cabina
+    const cab=SIM.creaCabina();gr.add(cab.gruppo);
+    const cabina=cab.gruppo;
 
     let tempo=0;
-    return {gruppo:gr,
+    return {gruppo:gr, cabina:cab,
       aggiorna(s,dt,inCabina){
         tempo+=dt;
         gr.position.copy(s.pos);gr.quaternion.copy(s.q);
@@ -330,9 +323,10 @@ SIM.creaMondo=function(scene,renderer){
         flS.rotation.x=flD.rotation.x=s.flap*D2R;
         const veloce=s.rpm>900&&!s.crashed;
         if(!s.crashed)pale.rotation.z+=dt*s.rpm/60*Math.PI*2*(veloce?0.02:1);
-        pale.visible=!veloce; disco.visible=veloce; disco.material.opacity=inCabina?0.05:0.18;
+        pale.visible=!veloce; disco.visible=veloce&&!inCabina;
         strobo.visible=(tempo%1.2)<0.06;
         cabina.visible=inCabina;fus.visible=!inCabina;
+        if(inCabina)cab.aggiorna(s);
       }};
   }
 };

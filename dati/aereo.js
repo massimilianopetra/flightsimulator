@@ -82,5 +82,5 @@ window.AEREO = {
     gMax: 5.7, gMin: -2.3,
   },
 
-  occhioPilota: { x: -0.3, y: 0.5, z: -0.55 },  // posizione della vista dalla cabina
+  occhioPilota: { x: -0.1, y: 0.6, z: -0.15 },  // punto di vista in cabina (un po' verso il centro, per vedere tutto il pannello)
 };

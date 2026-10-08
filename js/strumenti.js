@@ -10,9 +10,11 @@ const MONO='"B612 Mono", ui-monospace, monospace';
 
 SIM.creaStrumenti=function(A){
   const T=SIM.terreno, M=window.MAPPA||{};
-  const pfd=document.getElementById('pfd'), g=pfd.getContext('2d');
-  const mappa=document.getElementById('minimap'), mg=mappa.getContext('2d');
-  let W=0,H=0,dpr=1,MW=0,MH=0;
+  const pfd=document.getElementById('pfd');
+  let g=pfd.getContext('2d');
+  const mappa=document.getElementById('minimap');
+  let mg=mappa.getContext('2d');
+  let W=0,H=0,dpr=1,MW=0,MH=0,MOX=0,MOY=0;
   function adatta(){
     dpr=Math.min(2,window.devicePixelRatio||1);
     const r=pfd.getBoundingClientRect();W=r.width;H=r.height;
@@ -26,7 +28,9 @@ SIM.creaStrumenti=function(A){
   function box(x,y,w,h){g.fillStyle='#000';g.strokeStyle='#e8eef4';g.lineWidth=1.5;g.fillRect(x,y,w,h);g.strokeRect(x,y,w,h);}
 
   /* d = {pitch°, bank rad, ias kt, alt ft, agl ft, vs ft/min, hdg°, palla -1..1, bug° o null, gs kt} */
-  function disegnaPFD(d){
+  /* sup (facoltativo) = {g,W,H}: disegna su un'altra superficie (es. lo schermo 3D in cabina) */
+  function disegnaPFD(d,sup){
+    if(sup){const v=[g,W,H,dpr];g=sup.g;W=sup.W;H=sup.H;dpr=1;try{disegnaPFD(d);}finally{[g,W,H,dpr]=v;}return;}
     if(!W) adatta();
     if(!W) return;
     g.setTransform(dpr,0,0,dpr,0,0);
@@ -195,11 +199,14 @@ SIM.creaStrumenti=function(A){
   try{if(localStorage.getItem('volo-mappa-orient')==='prua')orient='prua';}catch(e){}
 
   let ultimaMappa=null;
-  function disegnaMappa(s,hdg,dest){
-    ultimaMappa=[s,hdg,dest];
+  function disegnaMappa(s,hdg,dest,sup){
+    if(sup){const v=[mg,MW,MH,dpr,MOX,MOY];mg=sup.g;MW=sup.W;MH=sup.H;dpr=1;MOX=sup.x||0;MOY=sup.y||0;
+      try{disegnaMappa(s,hdg,dest);}finally{[mg,MW,MH,dpr,MOX,MOY]=v;}return;}
+    if(!sup&&mg===mappa.getContext('2d'))ultimaMappa=[s,hdg,dest];
     if(!MW) adatta();
     if(!MW) return;
-    mg.setTransform(dpr,0,0,dpr,0,0);
+    mg.setTransform(dpr,0,0,dpr,MOX*dpr,MOY*dpr);
+    mg.save();mg.beginPath();mg.rect(0,0,MW,MH);mg.clip();
     const range=scale[zoom], k=MW/range, cx=MW/2, cy=MH/2;
     const rot=orient==='prua'?hdg*D2R:0, c=Math.cos(rot), sn=Math.sin(rot);
     // da coordinate del mondo a pixel della mappa (ruotata di -rot attorno all'aereo)
@@ -245,10 +252,105 @@ SIM.creaStrumenti=function(A){
     mg.fillStyle='#e8f1f8';
     mg.fillText(etich,32,MH-12);
     mg.fillText((range/1852).toFixed(range<10000?1:0)+' NM',MW-31,MH-12);
+    mg.restore();
+  }
+
+  /* ---------- MFD (schermo destro del G1000 in cabina) ----------
+     sup = {g,W,H}; d = {s, hdg, dest, gs kt, trk°, thr} */
+  function disegnaMFD(sup,d){
+    const c=sup.g,Wm=sup.W,Hm=sup.H;
+    c.setTransform(1,0,0,1,0,0);
+    c.fillStyle='#05080d';c.fillRect(0,0,Wm,Hm);
+    const barra=Math.round(Hm*0.075), eis=Math.round(Wm*0.21);
+    // barra superiore
+    c.fillStyle='#0d1522';c.fillRect(0,0,Wm,barra);
+    c.font=`700 ${Math.round(barra*0.5)}px ${MONO}`;c.textBaseline='middle';c.textAlign='left';
+    const dist=d.dest?Math.hypot(d.dest.x-d.s.pos.x,d.dest.z-d.s.pos.z)/1852:0;
+    const dtk=d.dest?((Math.atan2(d.dest.x-d.s.pos.x,-(d.dest.z-d.s.pos.z))/D2R)+360)%360:0;
+    const ete=d.gs>20&&d.dest?dist/d.gs*60:null;
+    const campi=[['GS',Math.round(d.gs)+'KT'],['DTK',String(Math.round(dtk)%360).padStart(3,'0')+'°'],
+      ['TRK',d.gs>5?String(Math.round(d.trk)%360).padStart(3,'0')+'°':'---°'],['DIS',dist.toFixed(1)+'NM'],
+      ['ETE',ete!=null?String(Math.floor(ete)).padStart(2,'0')+':'+String(Math.round((ete%1)*60)).padStart(2,'0'):'--:--']];
+    const passo=(Wm-eis)/campi.length;
+    campi.forEach(([k,v],i)=>{const x=eis+8+i*passo;c.fillStyle='#e8eef4';c.fillText(k,x,barra/2);c.fillStyle='#ff5ad9';c.fillText(v,x+c.measureText(k+' ').width,barra/2);});
+    // colonna motore (EIS)
+    c.fillStyle='#0b111b';c.fillRect(0,barra,eis,Hm-barra);
+    c.strokeStyle='#3a4658';c.lineWidth=2;c.beginPath();c.moveTo(eis,barra);c.lineTo(eis,Hm);c.stroke();
+    const fs=Math.round(eis*0.085);
+    c.textAlign='center';c.fillStyle='#e8eef4';c.font=`700 ${fs}px ${MONO}`;
+    c.fillText('ENGINE',eis/2,barra+fs);
+    // contagiri ad arco
+    const rx=eis/2, ry=barra+fs*2+eis*0.33, rr=eis*0.32, a0=Math.PI*0.8, a1=Math.PI*2.2;
+    const ang=v=>a0+(a1-a0)*clamp(v/3000,0,1);
+    const arco=(v0,v1,col,w)=>{c.strokeStyle=col;c.lineWidth=w;c.beginPath();c.arc(rx,ry,rr,ang(v0),ang(v1));c.stroke();};
+    arco(0,3000,'#2b3445',6);arco(2100,2700,'#22c55e',6);arco(2700,3000,'#ef4444',6);
+    const rpm=d.s.rpm, an=ang(rpm);
+    c.strokeStyle='#fff';c.lineWidth=3;c.beginPath();c.moveTo(rx,ry);c.lineTo(rx+Math.cos(an)*rr*0.95,ry+Math.sin(an)*rr*0.95);c.stroke();
+    c.fillStyle='#e8eef4';c.font=`700 ${Math.round(fs*1.3)}px ${MONO}`;c.fillText(Math.round(rpm/10)*10,rx,ry+rr*0.55);
+    c.font=`700 ${Math.round(fs*0.8)}px ${MONO}`;c.fillStyle='#9fb0c3';c.fillText('RPM',rx,ry+rr*0.95);
+    // barre orizzontali
+    let y=ry+rr+fs*1.6;
+    const barraStr=(nome,val,testo,verdeDa,verdeA)=>{
+      c.textAlign='left';c.fillStyle='#e8eef4';c.font=`700 ${Math.round(fs*0.8)}px ${MONO}`;c.fillText(nome,8,y);
+      c.textAlign='right';c.fillText(testo,eis-8,y);
+      const bx=8,bw=eis-16,by=y+fs*0.55,bh=fs*0.45;
+      c.fillStyle='#2b3445';c.fillRect(bx,by,bw,bh);
+      c.fillStyle='#22c55e';c.fillRect(bx+bw*verdeDa,by,bw*(verdeA-verdeDa),bh);
+      c.fillStyle='#fff';c.beginPath();const px=bx+bw*clamp(val,0,1);c.moveTo(px,by-2);c.lineTo(px-5,by-9);c.lineTo(px+5,by-9);c.closePath();c.fill();
+      y+=fs*2.2;
+    };
+    const ff=d.s.crashed?0:1.5+d.thr*9.5;
+    barraStr('FFLOW GPH',ff/14,ff.toFixed(1),0.1,0.85);
+    barraStr('OIL PRES',d.s.rpm>500?0.45+d.s.rpm/9000:0,d.s.rpm>500?String(Math.round(50+d.s.rpm/90)):'0',0.3,0.8);
+    barraStr('OIL TEMP',0.55,'185',0.25,0.85);
+    barraStr('FUEL L',0.85,'24',0.15,1);
+    barraStr('FUEL R',0.85,'24',0.15,1);
+    c.textAlign='left';c.fillStyle='#e8eef4';c.font=`700 ${Math.round(fs*0.8)}px ${MONO}`;
+    c.fillText('VOLTS',8,y);c.textAlign='right';c.fillText('28.0',eis-8,y);
+    // mappa
+    disegnaMappa(d.s,d.hdg,d.dest,{g:c,W:Wm-eis-4,H:Hm-barra-4,x:eis+2,y:barra+2});
+  }
+
+  /* ---------- strumenti di riserva (velocità, assetto, altimetro) ---------- */
+  function disegnaRiserva(sup,d){
+    const c=sup.g,Wr=sup.W,Hr=sup.H,r=Hr*0.44;
+    c.setTransform(1,0,0,1,0,0);
+    c.fillStyle='#202327';c.fillRect(0,0,Wr,Hr);
+    const centri=[Wr*0.18,Wr*0.5,Wr*0.82];
+    const quadrante=(x)=>{c.fillStyle='#0a0a0a';c.beginPath();c.arc(x,Hr/2,r,0,Math.PI*2);c.fill();
+      c.strokeStyle='#8a8f96';c.lineWidth=r*0.08;c.beginPath();c.arc(x,Hr/2,r*1.02,0,Math.PI*2);c.stroke();};
+    const tacche=(x,n,dal,al,lung,cb)=>{for(let i=0;i<=n;i++){const a=dal+(al-dal)*i/n;c.strokeStyle='#fff';c.lineWidth=2;
+      c.beginPath();c.moveTo(x+Math.cos(a)*r*0.9,Hr/2+Math.sin(a)*r*0.9);c.lineTo(x+Math.cos(a)*r*(0.9-lung),Hr/2+Math.sin(a)*r*(0.9-lung));c.stroke();if(cb)cb(i,a);}};
+    const lancetta=(x,a,l,w)=>{c.strokeStyle='#fff';c.lineWidth=w;c.lineCap='round';c.beginPath();c.moveTo(x,Hr/2);c.lineTo(x+Math.cos(a)*r*l,Hr/2+Math.sin(a)*r*l);c.stroke();c.lineCap='butt';};
+    // anemometro: 0-200 kt su 330°
+    let x=centri[0];quadrante(x);
+    const aS=-Math.PI/2, kA=v=>aS+clamp(v,0,200)/200*Math.PI*1.83;
+    const archetto=(v0,v1,col,rr)=>{c.strokeStyle=col;c.lineWidth=r*0.09;c.beginPath();c.arc(x,Hr/2,r*rr,kA(v0),kA(v1));c.stroke();};
+    archetto(V.vso,V.vfe,'#f4f6f8',0.72);archetto(V.vs1,V.vno,'#22c55e',0.84);archetto(V.vno,V.vne,'#eab308',0.84);
+    c.font=`700 ${Math.round(r*0.22)}px ${MONO}`;c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';
+    tacche(x,20,kA(0),kA(200),0.12,(i,a)=>{if(i%4===0&&i)c.fillText(i*10,x+Math.cos(a)*r*0.55,Hr/2+Math.sin(a)*r*0.55);});
+    lancetta(x,kA(d.ias),0.85,3);
+    // orizzonte di riserva
+    x=centri[1];
+    c.save();c.beginPath();c.arc(x,Hr/2,r,0,Math.PI*2);c.clip();
+    c.translate(x,Hr/2);c.rotate(-d.bank);c.translate(0,d.pitch*r/30);
+    c.fillStyle='#2f78c4';c.fillRect(-r*3,-r*3,r*6,r*3);c.fillStyle='#7a4f26';c.fillRect(-r*3,0,r*6,r*3);
+    c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.moveTo(-r*3,0);c.lineTo(r*3,0);c.stroke();
+    for(const p of [-20,-10,10,20]){const yy=-p*r/30,w=Math.abs(p)===10?r*0.25:r*0.4;c.beginPath();c.moveTo(-w,yy);c.lineTo(w,yy);c.stroke();}
+    c.restore();
+    c.strokeStyle='#8a8f96';c.lineWidth=r*0.08;c.beginPath();c.arc(x,Hr/2,r*1.02,0,Math.PI*2);c.stroke();
+    c.strokeStyle='#ffb020';c.lineWidth=4;c.beginPath();c.moveTo(x-r*0.55,Hr/2);c.lineTo(x-r*0.18,Hr/2);c.lineTo(x,Hr/2+r*0.12);c.lineTo(x+r*0.18,Hr/2);c.lineTo(x+r*0.55,Hr/2);c.stroke();
+    // altimetro: lancetta lunga = centinaia, corta = migliaia
+    x=centri[2];quadrante(x);
+    c.fillStyle='#fff';
+    tacche(x,50,-Math.PI/2,Math.PI*1.5-Math.PI*2/50,0.08,(i,a)=>{if(i%5===0)c.fillText(i/5,x+Math.cos(a)*r*0.62,Hr/2+Math.sin(a)*r*0.62);});
+    const alt=Math.max(0,d.alt);
+    lancetta(x,-Math.PI/2+(alt%1000)/1000*Math.PI*2,0.85,3);
+    lancetta(x,-Math.PI/2+(alt%10000)/10000*Math.PI*2,0.5,5);
   }
 
   return {
-    disegnaPFD, disegnaMappa, adatta,
+    disegnaPFD, disegnaMappa, disegnaMFD, disegnaRiserva, adatta,
     cambiaZoom(){zoom=(zoom+1)%scale.length;},
     ridisegnaMappa(){if(ultimaMappa)disegnaMappa(...ultimaMappa);},
     cambiaOrientamento(){
