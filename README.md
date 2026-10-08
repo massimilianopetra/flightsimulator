@@ -124,6 +124,7 @@ conviene ricontrollare che gli aeroporti non finiscano in mare.
 | C | vista: esterna, cabina, torre |
 | N | prossima destinazione |
 | M | zoom della mappa |
+| O (o clic sulla mappa) | mappa con il nord in alto oppure con la prua in alto |
 | P / R | pausa / ricomincia |
 | H | mostra o nasconde l'aiuto |
 

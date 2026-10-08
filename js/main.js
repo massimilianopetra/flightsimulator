@@ -112,6 +112,11 @@ function prossimaDest(){
   destIdx=(destIdx+1)%T.aeroporti.length;
   const d=dest();messaggio(`Destinazione: <b>${d.codice}</b> ${d.nome}`,2.5);
 }
+function orientaMappa(){
+  const o=strum.cambiaOrientamento();
+  messaggio(o==='prua'?'Mappa: <b>prua in alto</b>':'Mappa: <b>nord in alto</b>',1.5);
+}
+$('minimap').addEventListener('click',orientaMappa);
 function alternaPausa(){
   if(!avviato||st.crashed) return;
   inPausa=!inPausa;$('pausa').hidden=!inPausa;
@@ -149,6 +154,7 @@ addEventListener('keydown',e=>{
     case 'KeyC':cambiaVista();break;
     case 'KeyN':prossimaDest();break;
     case 'KeyM':strum.cambiaZoom();break;
+    case 'KeyO':orientaMappa();break;
     case 'KeyP':alternaPausa();break;
     case 'KeyH':alternaAiuto();break;
     case 'KeyR':if(avviato)ricomincia();break;
