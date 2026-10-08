@@ -126,7 +126,7 @@ conviene ricontrollare che gli aeroporti non finiscano in mare.
 | M | zoom della mappa |
 | O (o clic sulla mappa) | mappa con il nord in alto oppure con la prua in alto |
 | P / R | pausa / ricomincia |
-| H | mostra o nasconde l'aiuto |
+| H | apre o chiude il pannello dei comandi |
 
 Col mouse si può trascinare sullo schermo come se fosse una cloche. Funziona anche un gamepad:
 stick sinistro per cloche, stick destro per timone e manetta, grilletti per la manetta,

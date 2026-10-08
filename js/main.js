@@ -121,12 +121,23 @@ function alternaPausa(){
   if(!avviato||st.crashed) return;
   inPausa=!inPausa;$('pausa').hidden=!inPausa;
 }
-function alternaAiuto(){
-  const el=$('aiuto');
-  const visibile=getComputedStyle(el).display!=='none';
-  el.classList.toggle('forza',!visibile);
-  el.hidden=visibile;
+/* pannelli apribili/chiudibili (comandi e mappa); lo stato viene ricordato */
+function apriPannello(id,aperto){
+  const el=$(id),btn=el.querySelector('.testa');
+  el.classList.toggle('chiuso',!aperto);
+  btn.setAttribute('aria-expanded',String(aperto));
+  try{localStorage.setItem('volo-pannello-'+id,aperto?'1':'0');}catch(e){}
+  if(id==='mappa'&&aperto){strum.adatta();strum.ridisegnaMappa();}
 }
+function alternaPannello(id){apriPannello(id,$(id).classList.contains('chiuso'));}
+for(const b of document.querySelectorAll('[data-pannello]')){
+  const id=b.dataset.pannello;
+  let salvato=null;try{salvato=localStorage.getItem('volo-pannello-'+id);}catch(e){}
+  // sugli schermi piccoli i comandi partono chiusi
+  apriPannello(id,salvato!=null?salvato==='1':!(id==='aiuto'&&innerWidth<1100));
+  b.addEventListener('click',()=>{alternaPannello(id);b.blur();});
+}
+function alternaAiuto(){alternaPannello('aiuto');}
 function alternaAudio(){audio.avvia();const on=audio.alterna();aggiornaBtnAudio(on);}
 function aggiornaBtnAudio(on){$('btnAudio').textContent=on?'AUDIO ON':'AUDIO OFF';}
 aggiornaBtnAudio(audio.attivo);
