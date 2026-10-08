@@ -37,7 +37,7 @@ npm run deploy
 ```
 
 - `git push` salva il codice nel ramo `main` su GitHub.
-- `npm run deploy` copia i file del gioco (`index.html`, `css/`, `js/`, `dati/`)
+- `npm run deploy` copia i file del gioco (`index.html`, `css/`, `js/`, `dati/`, `icone/`)
   nel ramo `gh-pages`, e GitHub Pages li pubblica.
 - Dopo circa un minuto il sito è aggiornato. Se vedi ancora la versione vecchia,
   ricarica con **Ctrl+F5**.
@@ -58,6 +58,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `js/audio.js` | suoni sintetizzati: motore, vento, avvisatore di stallo | |
 | `js/main.js` | collega tutto: comandi, telecamere, messaggi, ciclo principale | |
 | `css/stile.css` | l'aspetto dei pannelli | |
+| `icone/` | l'icona del sito (`favicon.svg`, da cui sono ricavate le versioni PNG) | |
 
 ## Modificare la mappa
 

@@ -5,7 +5,7 @@
   "description": "Simulatore di volo nel browser (Cessna 172) con mappa modificabile",
   "homepage": "https://massimilianopetra.github.io/flightsimulator/",
   "scripts": {
-    "deploy": "gh-pages -d . -s \"{index.html,README.md,css/**,js/**,dati/**}\""
+    "deploy": "gh-pages -d . -s \"{index.html,README.md,manifest.webmanifest,css/**,js/**,dati/**,icone/**}\""
   },
   "devDependencies": {
     "gh-pages": "^6.1.1"
