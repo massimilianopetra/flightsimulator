@@ -190,6 +190,9 @@ SIM.creaStrumenti=function(A){
   })();
   const scale=[5000,12000,EST];
   let zoom=1;
+  // orientamento: 'nord' (nord in alto) oppure 'prua' (la direzione dell'aereo in alto)
+  let orient='nord';
+  try{if(localStorage.getItem('volo-mappa-orient')==='prua')orient='prua';}catch(e){}
 
   let ultimaMappa=null;
   function disegnaMappa(s,hdg,dest){
@@ -197,43 +200,62 @@ SIM.creaStrumenti=function(A){
     if(!MW) adatta();
     if(!MW) return;
     mg.setTransform(dpr,0,0,dpr,0,0);
-    const range=scale[zoom], k=MW/range, ox=MW/2-s.pos.x*k, oz=MH/2-s.pos.z*k;
-    const X=x=>ox+x*k, Z=z=>oz+z*k;
+    const range=scale[zoom], k=MW/range, cx=MW/2, cy=MH/2;
+    const rot=orient==='prua'?hdg*D2R:0, c=Math.cos(rot), sn=Math.sin(rot);
+    // da coordinate del mondo a pixel della mappa (ruotata di -rot attorno all'aereo)
+    const P=(x,z)=>{const dx=(x-s.pos.x)*k,dz=(z-s.pos.z)*k;return [cx+dx*c+dz*sn,cy-dx*sn+dz*c];};
     mg.fillStyle='#22405a';mg.fillRect(0,0,MW,MH);
     mg.imageSmoothingEnabled=true;
-    mg.drawImage(sfondo,X(-EST/2),Z(-EST/2),EST*k,EST*k);
+    mg.save();mg.translate(cx,cy);mg.rotate(-rot);
+    mg.drawImage(sfondo,(-EST/2-s.pos.x)*k,(-EST/2-s.pos.z)*k,EST*k,EST*k);
+    mg.restore();
     mg.fillStyle='rgba(60,60,60,.55)';
-    for(const c of T.citta){mg.beginPath();mg.arc(X(c.x),Z(c.z),Math.max(2,c.r*k*0.8),0,Math.PI*2);mg.fill();}
+    for(const ct of T.citta){const [x,y]=P(ct.x,ct.z);mg.beginPath();mg.arc(x,y,Math.max(2,ct.r*k*0.8),0,Math.PI*2);mg.fill();}
     mg.lineCap='butt';
     for(const p of T.piste){
-      const a=p.testate[0],b=p.testate[1];
+      const [ax,ay]=P(p.testate[0].x,p.testate[0].z),[bx,by]=P(p.testate[1].x,p.testate[1].z);
       mg.strokeStyle='#1f2937';mg.lineWidth=Math.max(3,p.W*k+2);
-      mg.beginPath();mg.moveTo(X(a.x),Z(a.z));mg.lineTo(X(b.x),Z(b.z));mg.stroke();
+      mg.beginPath();mg.moveTo(ax,ay);mg.lineTo(bx,by);mg.stroke();
       mg.strokeStyle='#f8fafc';mg.lineWidth=Math.max(1.5,p.W*k);
-      mg.beginPath();mg.moveTo(X(a.x),Z(a.z));mg.lineTo(X(b.x),Z(b.z));mg.stroke();
+      mg.beginPath();mg.moveTo(ax,ay);mg.lineTo(bx,by);mg.stroke();
     }
     mg.font=`700 10px ${MONO}`;mg.textAlign='left';mg.textBaseline='middle';
     for(const ap of T.aeroporti){
-      const x=X(ap.x)+8,y=Z(ap.z)-10;
+      const [px,py]=P(ap.x,ap.z),x=px+8,y=py-10;
       mg.fillStyle='rgba(8,14,26,.75)';mg.fillRect(x-2,y-7,mg.measureText(ap.codice).width+4,14);
       mg.fillStyle=ap===dest?'#ff5ad9':'#e8f1f8';mg.fillText(ap.codice,x,y);
     }
     if(dest){
+      const [dx,dy]=P(dest.x,dest.z);
       mg.strokeStyle='#ff5ad9';mg.lineWidth=2;mg.setLineDash([6,4]);
-      mg.beginPath();mg.moveTo(MW/2,MH/2);mg.lineTo(X(dest.x),Z(dest.z));mg.stroke();mg.setLineDash([]);
+      mg.beginPath();mg.moveTo(cx,cy);mg.lineTo(dx,dy);mg.stroke();mg.setLineDash([]);
     }
-    mg.save();mg.translate(MW/2,MH/2);mg.rotate(hdg*D2R);
+    // aereo: in "prua" punta sempre in alto
+    mg.save();mg.translate(cx,cy);mg.rotate(hdg*D2R-rot);
     mg.fillStyle='#ffb020';mg.strokeStyle='#000';mg.lineWidth=1.5;
     mg.beginPath();mg.moveTo(0,-9);mg.lineTo(6,7);mg.lineTo(0,4);mg.lineTo(-6,7);mg.closePath();mg.fill();mg.stroke();
     mg.restore();
-    mg.fillStyle='rgba(8,14,26,.75)';mg.fillRect(4,4,18,16);mg.fillRect(MW-58,MH-20,54,16);
-    mg.fillStyle='#e8f1f8';mg.textAlign='center';mg.fillText('N',13,12);
+    // indicatore del nord: sul bordo, nella direzione del nord
+    const rN=Math.min(cx,cy)-12, nx=cx-sn*rN, ny=cy-c*rN;
+    mg.fillStyle='rgba(8,14,26,.8)';mg.beginPath();mg.arc(nx,ny,9,0,Math.PI*2);mg.fill();
+    mg.fillStyle='#fbbf24';mg.textAlign='center';mg.fillText('N',nx,ny+1);
+    // etichette: modalità e scala
+    const etich=orient==='prua'?'PRUA ↑':'NORD ↑';
+    mg.fillStyle='rgba(8,14,26,.75)';mg.fillRect(4,MH-20,56,16);mg.fillRect(MW-58,MH-20,54,16);
+    mg.fillStyle='#e8f1f8';
+    mg.fillText(etich,32,MH-12);
     mg.fillText((range/1852).toFixed(range<10000?1:0)+' NM',MW-31,MH-12);
   }
 
   return {
     disegnaPFD, disegnaMappa, adatta,
     cambiaZoom(){zoom=(zoom+1)%scale.length;},
+    cambiaOrientamento(){
+      orient=orient==='nord'?'prua':'nord';
+      try{localStorage.setItem('volo-mappa-orient',orient);}catch(e){}
+      if(ultimaMappa)disegnaMappa(...ultimaMappa);
+      return orient;
+    },
   };
 };
 })();

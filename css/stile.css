@@ -40,7 +40,7 @@ kbd{font:700 11px var(--f-num);color:var(--cyan);border:1px solid rgba(57,215,25
 
 /* navigazione */
 .nav{top:calc(12px + env(safe-area-inset-top,0px));right:12px;display:flex;flex-direction:column;gap:8px;padding:8px}
-#minimap{display:block;width:220px;height:220px;border-radius:5px}
+#minimap{display:block;width:220px;height:220px;border-radius:5px;pointer-events:auto;cursor:pointer}
 .navinfo{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
 
 /* avvisi */
