@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Simulatore di volo nel browser (Cessna 172) con mappa modificabile",
+  "license": "GPL-3.0-or-later",
   "homepage": "https://massimilianopetra.github.io/flightsimulator/",
   "scripts": {
     "deploy": "gh-pages -d . -s \"{index.html,README.md,manifest.webmanifest,css/**,js/**,dati/**,icone/**}\""

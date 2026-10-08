@@ -214,3 +214,16 @@ Il pulsante **Prova l'atterraggio** del briefing ti mette già in finale.
 - Notte, con le luci di pista.
 - Strumenti di radionavigazione (VOR, ILS).
 - Missioni: atterrare in un aeroporto entro un tempo, lanciare rifornimenti, ecc.
+
+## Licenza
+
+Copyright © 2026 Massimiliano Petra
+
+Questo programma è software libero: puoi ridistribuirlo e/o modificarlo secondo i termini
+della **GNU General Public License versione 3** pubblicata dalla Free Software Foundation,
+oppure (a tua scelta) di una versione successiva. È distribuito nella speranza che sia utile,
+ma **senza alcuna garanzia**. Il testo completo è nel file [LICENSE](LICENSE).
+
+I dati reali del Piemonte contenuti in `dati/piemonte.js` e `dati/piemonte-rilievo.js`
+mantengono le licenze delle loro fonti: OurAirports (pubblico dominio),
+© OpenStreetMap contributors (ODbL), Mapzen Terrain Tiles (vedi le fonti sopra).
