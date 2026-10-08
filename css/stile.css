@@ -120,3 +120,9 @@ button.primario:hover{background:#7fe6ff;color:#05202a}
   background:linear-gradient(var(--dim),var(--dim)) center/1px 100% no-repeat,linear-gradient(var(--dim),var(--dim)) center/100% 1px no-repeat}
 .cloche-ind i{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 2px rgba(8,16,30,.8)}
 .vista-cabina .basso{display:none}
+.crediti{font-size:11px;color:var(--dim)}
+.scelte{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.scelte label{display:grid;gap:4px;font:700 10px var(--f-ui);letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+select{font:700 13px var(--f-num);color:var(--ink);background:#0b1322;border:1px solid var(--dim);border-radius:4px;padding:6px 6px;max-width:100%}
+select:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
+.seldest{pointer-events:auto;color:var(--magenta);font-size:14px;padding:3px 4px;max-width:9.5rem}

@@ -50,7 +50,7 @@
     </button>
     <canvas id="minimap" aria-label="Mappa (clic: nord o prua in alto)" title="Clic: nord in alto / prua in alto"></canvas>
     <div class="navinfo">
-      <div class="row"><span class="lbl">DEST</span><span id="dest" class="val mag">----</span></div>
+      <div class="row"><span class="lbl">DEST</span><select id="selDest" class="seldest" aria-label="Aeroporto di destinazione"></select></div>
       <div class="row"><span class="lbl">DIST</span><span id="dist" class="val mag">0.0</span><span class="unit">NM</span></div>
       <div class="row"><span class="lbl">ROTTA</span><span id="brg" class="val mag">000</span><span class="unit">°</span></div>
       <div class="row"><span class="lbl">VENTO</span><span id="vento" class="val sm">270/6</span></div>
@@ -104,7 +104,19 @@
   <div id="brief" class="overlay">
     <div class="card">
       <h1>Briefing di volo</h1>
+      <div class="scelte">
+        <label>Mondo
+          <select id="selMondo">
+            <option value="piemonte">Piemonte (reale)</option>
+            <option value="valle">Valle Azzurra (inventata)</option>
+          </select>
+        </label>
+        <label>Aeroporto di partenza <select id="selAeroporto"></select></label>
+        <label>Pista <select id="selPista"></select></label>
+        <label>Destinazione <select id="selDestBrief"></select></label>
+      </div>
       <p id="briefTesto"></p>
+      <p id="crediti" class="crediti" hidden>Dati reali: aeroporti © OurAirports (pubblico dominio) · laghi e città © OpenStreetMap contributors (ODbL) · rilievo Mapzen Terrain Tiles (SRTM).</p>
       <ol class="check">
         <li>Flap a <b>10°</b> con <kbd>F</kbd>.</li>
         <li>Manetta al <b>100%</b> con <kbd>0</kbd> (oppure tieni premuto <kbd>+</kbd>); resta sulla linea centrale con <kbd>Q</kbd>/<kbd>E</kbd>.</li>
@@ -131,8 +143,15 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<!-- dati modificabili -->
-<script src="dati/mappa.js"></script>
+<!-- dati modificabili: il mondo si sceglie con ?mappa=piemonte (predefinito) o ?mappa=valle -->
+<script>
+(function(){
+  var MONDI={piemonte:["dati/piemonte-rilievo.js","dati/piemonte.js"], valle:["dati/mappa.js"]};
+  var m=/[?&]mappa=(\w+)/.exec(location.search), scelta=(m&&MONDI[m[1]])?m[1]:"piemonte";
+  window.MONDO_SCELTO=scelta;
+  MONDI[scelta].forEach(function(f){document.write('<script src="'+f+'"><\/script>');});
+})();
+</script>
 <script src="dati/aereo.js"></script>
 <!-- motore del simulatore -->
 <script src="js/terreno.js"></script>

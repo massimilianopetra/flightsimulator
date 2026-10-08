@@ -8,6 +8,23 @@ seguendo le luci PAPI.
 
 Codice: https://github.com/massimilianopetra/flightsimulator
 
+## I mondi
+
+Nel briefing iniziale si sceglie il **mondo**:
+
+- **Piemonte (reale)**, il mondo predefinito: le montagne, le valli e la pianura sono quelle vere,
+  e così 32 aeroporti con le loro sigle ICAO e le piste reali (direzione, lunghezza,
+  larghezza, erba o asfalto). Ci sono anche i laghi con il loro contorno (Maggiore, Orta,
+  Viverone, Avigliana, Lugano, Como…) e le città principali. Dall'alto si vedono le Alpi
+  fino a 70 km di distanza.
+- **Valle Azzurra (inventata)**: il mondo procedurale di `dati/mappa.js`, comodo da modificare a mano.
+
+Si può aprire direttamente un mondo dall'indirizzo: `index.html?mappa=piemonte` oppure `index.html?mappa=valle`.
+
+Nel briefing si scelgono anche l'**aeroporto di partenza** (con la sigla vera, es. LIMF Torino-Caselle,
+LIMZ Cuneo-Levaldigi, LIMC Milano-Malpensa), la **pista** (viene proposta quella più controvento)
+e la **destinazione**. La destinazione si può cambiare in volo dal menu nel pannello della mappa.
+
 ## Come si avvia
 
 Apri `index.html` con un doppio clic (Chrome, Edge o Firefox).
@@ -48,7 +65,10 @@ Il sito non ha bisogno di compilazione: sono file statici.
 
 | File | Cosa contiene | Da modificare? |
 |---|---|---|
-| `dati/mappa.js` | **il mondo**: colline, montagne, laghi, aeroporti e piste, paesi, boschi, meteo, punto di partenza | **sì, è fatto apposta** |
+| `dati/mappa.js` | il mondo **inventato** (Valle Azzurra): colline, montagne, laghi, aeroporti e piste, paesi, boschi, meteo, punto di partenza | **sì, è fatto apposta** |
+| `dati/piemonte.js` | il mondo **reale**: aeroporti e piste, laghi, città, meteo, partenza (generato) | sì (meteo, partenza, colori) |
+| `dati/piemonte-rilievo.js` | le quote vere del terreno, griglia di 250 m (generato, non si modifica a mano) | no |
+| `strumenti/genera-piemonte.js` | lo script che scarica i dati reali e crea i due file del Piemonte | |
 | `dati/aereo.js` | i dati dell'aereo: peso, motore, ala, coefficienti aerodinamici, carrello | sì, per sperimentare |
 | `js/terreno.js` | calcola l'altezza del terreno e costruisce la mesh che segue l'aereo | |
 | `js/fisica.js` | la fisica del volo (forze, momenti, carrello, stallo, effetto suolo) | |
@@ -60,7 +80,32 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `css/stile.css` | l'aspetto dei pannelli | |
 | `icone/` | l'icona del sito (`favicon.svg`, da cui sono ricavate le versioni PNG) | |
 
-## Modificare la mappa
+## La mappa reale del Piemonte
+
+I file `dati/piemonte.js` e `dati/piemonte-rilievo.js` sono creati dallo script
+
+```
+node strumenti/genera-piemonte.js
+```
+
+che scarica i dati da Internet (servono un paio di minuti la prima volta; poi restano in
+`strumenti/cache/`, che non va su GitHub). In cima allo script si possono cambiare la **zona**
+(latitudini e longitudini), il **passo** della griglia delle quote e l'elenco di laghi e città.
+Attenzione: rilanciandolo, `dati/piemonte.js` viene riscritto, quindi le modifiche fatte a mano
+(per esempio il meteo) vanno rifatte, oppure messe direttamente nello script.
+
+In `dati/piemonte.js` si possono cambiare senza rigenerare: meteo e visibilità, aeroporto
+e pista di partenza, destinazione, colori del terreno per quota, e aggiungere o correggere aeroporti.
+
+**Fonti dei dati** (da citare se il progetto viene mostrato o pubblicato):
+- aeroporti e piste: [OurAirports](https://ourairports.com/data/), pubblico dominio;
+- laghi e città: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, licenza ODbL;
+- quote del terreno: [Mapzen Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (SRTM, GMTED e altri).
+
+Le vette risultano circa 150–250 m più basse del vero (il Monviso fa ~3650 m invece di 3841),
+perché la griglia di 250 m smussa le punte. Per il volo non cambia nulla.
+
+## Modificare la mappa inventata
 
 Tutto si fa in `dati/mappa.js`. Le regole:
 
