@@ -194,6 +194,90 @@ SIM.creaStrumenti=function(A){
     }
     c.putImageData(img,0,0);
   })();
+
+  /* ---------- vie di comunicazione (window.VIE, solo mappe reali) ----------
+     ordine di disegno, colore, spessore in pixel, scala massima (m) in cui compaiono */
+  const STILE_VIE={
+    fiumi:{col:'#3d8fd6',w:1.4,max:Infinity},
+    canali:{col:'#5aa0e0',w:1,max:100000},
+    provinciali:{col:'#efe6c8',w:1,max:40000},
+    statali:{col:'#f4c542',w:1.6,max:200000},
+    ferrovie:{col:'#1b1b1b',w:2,max:100000,tratteggio:true},
+    superstrade:{col:'#f08a24',w:2.2,max:Infinity,bordo:true},
+    autostrade:{col:'#e2382b',w:2.6,max:Infinity,bordo:true},
+  };
+  const vie={};
+  let haVie=false;
+  const sfondoVie=document.createElement('canvas');
+  if(window.VIE){
+    for(const cat of Object.keys(STILE_VIE)){
+      vie[cat]=(window.VIE[cat]||[]).map(l=>{
+        const n=l.p.length/2,xs=new Float32Array(n),zs=new Float32Array(n);
+        let x=0,y=0,x0=Infinity,x1=-Infinity,z0=Infinity,z1=-Infinity;
+        for(let i=0;i<n;i++){
+          x+=l.p[2*i];y+=l.p[2*i+1];xs[i]=x*10;zs[i]=-y*10;
+          if(xs[i]<x0)x0=xs[i];if(xs[i]>x1)x1=xs[i];if(zs[i]<z0)z0=zs[i];if(zs[i]>z1)z1=zs[i];
+        }
+        const po=cat==='fiumi'&&/^(Fiume )?Po$/.test(l.r||'');
+        return {r:l.r||'',xs,zs,box:[x0,x1,z0,z1],w:po?3:STILE_VIE[cat].w};
+      });
+      if(vie[cat].length)haVie=true;
+    }
+    // versione "di tutta la regione", disegnata una volta sola
+    const SV=1024;sfondoVie.width=sfondoVie.height=SV;
+    const c=sfondoVie.getContext('2d'),sc=SV/EST;
+    c.lineJoin='round';c.lineCap='round';
+    for(const cat of ['fiumi','statali','superstrade','autostrade']){
+      for(const v of vie[cat]){
+        c.strokeStyle=STILE_VIE[cat].col;c.lineWidth=cat==='fiumi'?(v.w>2?1.8:0.8):cat==='statali'?0.6:1.3;
+        c.beginPath();
+        for(let i=0;i<v.xs.length;i++){const px=(v.xs[i]+EST/2)*sc,pz=(v.zs[i]+EST/2)*sc;if(i)c.lineTo(px,pz);else c.moveTo(px,pz);}
+        c.stroke();
+      }
+    }
+  }
+  function disegnaVie(s,range,P){
+    if(!haVie) return;
+    const m=range*0.75,X0=s.pos.x-m,X1=s.pos.x+m,Z0=s.pos.z-m,Z1=s.pos.z+m;
+    mg.lineJoin='round';mg.lineCap='round';
+    const tracciato=v=>{ // salta i punti più vicini di 1,5 pixel: alle scale grandi si disegna molto meno
+      mg.beginPath();let lx=-1e9,ly=-1e9;const n=v.xs.length;
+      for(let i=0;i<n;i++){
+        const [x,y]=P(v.xs[i],v.zs[i]);
+        if(i&&i<n-1&&Math.abs(x-lx)+Math.abs(y-ly)<1.5) continue;
+        if(i)mg.lineTo(x,y);else mg.moveTo(x,y);
+        lx=x;ly=y;
+      }
+    };
+    const visibile=v=>!(v.box[1]<X0||v.box[0]>X1||v.box[3]<Z0||v.box[2]>Z1);
+    for(const cat of Object.keys(STILE_VIE)){
+      const st=STILE_VIE[cat];
+      if(range>st.max) continue;
+      for(const v of vie[cat]){
+        if(!visibile(v)) continue;
+        tracciato(v);
+        if(st.bordo){mg.strokeStyle='rgba(20,20,20,.75)';mg.lineWidth=v.w+1.6;mg.stroke();}
+        mg.strokeStyle=st.col;mg.lineWidth=v.w;mg.stroke();
+        if(st.tratteggio){mg.setLineDash([4,4]);mg.strokeStyle='#f2f2f2';mg.lineWidth=v.w*0.55;mg.stroke();mg.setLineDash([]);}
+      }
+    }
+    // sigle delle autostrade su cartello verde, come in Italia
+    if(range>=9000){
+      const posti=[];
+      mg.font=`700 9px ${MONO}`;mg.textAlign='center';mg.textBaseline='middle';
+      for(const v of vie.autostrade){
+        if(!v.r||!visibile(v)) continue;
+        const i=v.xs.length>>1,[x,y]=P(v.xs[i],v.zs[i]);
+        if(x<14||x>MW-14||y<10||y>MH-26) continue;
+        if(posti.some(p=>p.r===v.r&&Math.hypot(p.x-x,p.y-y)<90)) continue;
+        posti.push({r:v.r,x,y});
+        const w=mg.measureText(v.r).width+6;
+        mg.fillStyle='#1f7a45';mg.fillRect(x-w/2,y-6,w,12);
+        mg.strokeStyle='#fff';mg.lineWidth=1;mg.strokeRect(x-w/2+1,y-5,w-2,10);
+        mg.fillStyle='#fff';mg.fillText(v.r,x,y+0.5);
+      }
+    }
+  }
   // scale della mappa: larghezza visibile in miglia nautiche, più "tutta la mappa"
   const SCALE_NM=[2,5,10,20,50,100].filter(nm=>nm*1852<EST*0.9);
   const scale=[...SCALE_NM.map(nm=>nm*1852),EST];
@@ -229,8 +313,12 @@ SIM.creaStrumenti=function(A){
     mg.save();mg.translate(cx,cy);mg.rotate(-rot);
     mg.drawImage(sfondo,(-EST/2-s.pos.x)*k,(-EST/2-s.pos.z)*k,EST*k,EST*k);
     mg.restore();
-    mg.fillStyle='rgba(60,60,60,.55)';
+    mg.fillStyle=haVie?'rgba(60,60,60,.22)':'rgba(60,60,60,.55)';
     for(const ct of T.citta){const [x,y]=P(ct.x,ct.z);mg.beginPath();mg.arc(x,y,Math.max(2,ct.r*k*0.8),0,Math.PI*2);mg.fill();}
+    if(zoom===scale.length-1){ // tutta la regione: vie già disegnate
+      if(haVie){mg.save();mg.translate(cx,cy);mg.rotate(-rot);
+        mg.drawImage(sfondoVie,(-EST/2-s.pos.x)*k,(-EST/2-s.pos.z)*k,EST*k,EST*k);mg.restore();}
+    }else disegnaVie(s,range,P);
     if(range>=12000){
       mg.font=`700 9px ${MONO}`;mg.textAlign='center';mg.textBaseline='middle';
       for(const ct of T.citta){
