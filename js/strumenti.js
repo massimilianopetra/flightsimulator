@@ -168,7 +168,7 @@ SIM.creaStrumenti=function(A){
   }
 
   /* ---------- minimappa ---------- */
-  const EST=M.dimensione||30000, RES=320;
+  const EST=M.dimensione||30000, RES=T.reale?480:320, QMAX=T.reale?3600:1400;
   const sfondo=document.createElement('canvas');sfondo.width=sfondo.height=RES;
   (function prerender(){
     const c=sfondo.getContext('2d'),img=c.createImageData(RES,RES),Hm=new Float32Array(RES*RES),cell=EST/RES;
@@ -176,10 +176,10 @@ SIM.creaStrumenti=function(A){
     for(let j=0;j<RES;j++)for(let i=0;i<RES;i++){
       const h=Hm[j*RES+i],x=-EST/2+(i+.5)*cell,z=-EST/2+(j+.5)*cell;
       let r,gg,b,acqua=h<0;
-      for(const l of T.laghi)if(Math.hypot(x-l.x,z-l.z)<l.r&&h<l.q)acqua=true;
+      if(!acqua){const l=T.inLago(x,z);if(l&&h<l.q+0.5)acqua=true;}
       if(acqua){r=44;gg=106;b=150;}
       else{
-        const t=clamp(h/1400,0,1);
+        const t=clamp(h/QMAX,0,1);
         if(t<0.25){const k=t/0.25;r=110+k*40;gg=160+k*10;b=90+k*10;}
         else if(t<0.6){const k=(t-0.25)/0.35;r=150+k*30;gg=170-k*40;b=100-k*10;}
         else{const k=(t-0.6)/0.4;r=180+k*60;gg=130+k*110;b=90+k*150;}
@@ -192,7 +192,7 @@ SIM.creaStrumenti=function(A){
     }
     c.putImageData(img,0,0);
   })();
-  const scale=[5000,12000,EST];
+  const scale=EST>60000?[5000,12000,40000,EST]:[5000,12000,EST];
   let zoom=1;
   // orientamento: 'nord' (nord in alto) oppure 'prua' (la direzione dell'aereo in alto)
   let orient='nord';
@@ -218,6 +218,15 @@ SIM.creaStrumenti=function(A){
     mg.restore();
     mg.fillStyle='rgba(60,60,60,.55)';
     for(const ct of T.citta){const [x,y]=P(ct.x,ct.z);mg.beginPath();mg.arc(x,y,Math.max(2,ct.r*k*0.8),0,Math.PI*2);mg.fill();}
+    if(range>=12000){
+      mg.font=`700 9px ${MONO}`;mg.textAlign='center';mg.textBaseline='middle';
+      for(const ct of T.citta){
+        if(range>40000&&ct.n<300) continue;
+        const [x,y]=P(ct.x,ct.z);
+        if(x<-40||x>MW+40||y<-10||y>MH+10) continue;
+        mg.fillStyle='rgba(255,255,255,.85)';mg.fillText(ct.nome,x,y+Math.max(6,ct.r*k*0.8)+5);
+      }
+    }
     mg.lineCap='butt';
     for(const p of T.piste){
       const [ax,ay]=P(p.testate[0].x,p.testate[0].z),[bx,by]=P(p.testate[1].x,p.testate[1].z);

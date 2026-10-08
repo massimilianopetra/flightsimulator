@@ -17,7 +17,9 @@ SIM.creaMondo=function(scene,renderer){
   /* ---------- cielo ---------- */
   const ORIZZ=0xc9dceb, ZENIT=0x3d7cc4;
   scene.background=new THREE.Color(ORIZZ);
-  scene.fog=new THREE.Fog(ORIZZ,3000,8500);
+  // visibilità (km) dalla mappa: le mappe reali vedono lontano grazie al terreno lontano
+  const visib=(met.visibilita||8.5)*1000;
+  scene.fog=new THREE.Fog(ORIZZ,visib>20000?visib*0.3:Math.min(3000,visib*0.35),visib);
   const cielo=new THREE.Mesh(new THREE.SphereGeometry(9000,32,16),new THREE.ShaderMaterial({
     uniforms:{alto:{value:new THREE.Color(ZENIT)},basso:{value:new THREE.Color(ORIZZ)}},
     vertexShader:'varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
@@ -35,16 +37,34 @@ SIM.creaMondo=function(scene,renderer){
   const mare=new THREE.Mesh(new THREE.PlaneGeometry(30000,30000).rotateX(-Math.PI/2),matAcqua);
   scene.add(mare);
   for(const l of T.laghi){
-    const m=new THREE.Mesh(new THREE.CircleGeometry(l.r,64).rotateX(-Math.PI/2),matAcqua);
-    m.position.set(l.x,l.q,l.z);scene.add(m);
+    let geo;
+    if(l.anelli){ // contorno vero, con le isole come buchi
+      const forma=new THREE.Shape(l.anelli[0].map(([x,z])=>new THREE.Vector2(x,-z)));
+      for(const isola of l.anelli.slice(1))forma.holes.push(new THREE.Path(isola.map(([x,z])=>new THREE.Vector2(x,-z))));
+      geo=new THREE.ShapeGeometry(forma).rotateX(-Math.PI/2);
+      const m=new THREE.Mesh(geo,matAcqua);m.position.y=l.q+0.3;scene.add(m);
+    }else{
+      const m=new THREE.Mesh(new THREE.CircleGeometry(l.r,64).rotateX(-Math.PI/2),matAcqua);
+      m.position.set(l.x,l.q,l.z);scene.add(m);
+    }
   }
 
   /* ---------- piste ---------- */
   function texturaPista(p){
-    const cw=128,ch=4096,cv=document.createElement('canvas');cv.width=cw;cv.height=ch;
+    // altezza della texture proporzionata alla lunghezza (risparmia memoria video)
+    let ch=512;while(ch<p.L*1.1&&ch<4096)ch*=2;
+    const cw=p.W>=30?128:64,cv=document.createElement('canvas');cv.width=cw;cv.height=ch;
     const g=cv.getContext('2d');
+    if(p.erba){ // pista in erba: strisce di taglio e paletti bianchi ai bordi
+      g.fillStyle='#557a38';g.fillRect(0,0,cw,ch);
+      for(let y=0;y<ch;y+=ch/40){g.fillStyle=(y/(ch/40))%2?'rgba(255,255,255,.05)':'rgba(0,0,0,.06)';g.fillRect(0,y,cw,ch/40);}
+      const sy=ch/p.L;g.fillStyle='#f2f2f2';
+      for(let u=0;u<=p.L;u+=60){g.fillRect(1,u*sy,3,Math.max(3,2*sy));g.fillRect(cw-4,u*sy,3,Math.max(3,2*sy));}
+      const tex=new THREE.CanvasTexture(cv);tex.anisotropy=maxAniso;
+      return {tex,ap:Math.min(150,p.L*0.2)};
+    }
     g.fillStyle='#3a3c3f';g.fillRect(0,0,cw,ch);
-    for(let i=0;i<7000;i++){const v=48+rnd()*34|0;g.fillStyle=`rgba(${v},${v},${v+3},.4)`;g.fillRect(rnd()*cw,rnd()*ch,1+rnd()*2,1+rnd()*3);}
+    for(let i=0,n=ch*cw/75;i<n;i++){const v=48+rnd()*34|0;g.fillStyle=`rgba(${v},${v},${v+3},.4)`;g.fillRect(rnd()*cw,rnd()*ch,1+rnd()*2,1+rnd()*3);}
     const sx=cw/p.W,sy=ch/p.L,BI='#e9ecee';
     g.setTransform(sx,0,0,sy,cw/2,0);
     g.fillStyle=BI;
@@ -156,6 +176,14 @@ SIM.creaMondo=function(scene,renderer){
   for(let i=0,n=M.alberiSparsi||0;i<n;i++){
     const x=(rnd()*2-1)*half,z=(rnd()*2-1)*half;
     const h=puntoValido(x,z,3,800);if(h!=null)alberi.push([x,h,z,rnd()<0.4]);
+  }
+  // mappe grandi: gruppi di alberi attorno agli aeroporti (dove si vola più bassi)
+  const limiteBosco=((M.terreno||{}).colori||{}).bosco||1100;
+  for(const ap of T.aeroporti){
+    for(let i=0,n=M.alberiVicinoAeroporti||0;i<n;i++){
+      const a=rnd()*Math.PI*2,r=900+rnd()*5500,x=ap.x+Math.cos(a)*r,z=ap.z+Math.sin(a)*r;
+      const h=puntoValido(x,z,3,limiteBosco);if(h!=null)alberi.push([x,h,z,h>900||rnd()<0.35]);
+    }
   }
   const conifere=alberi.filter(a=>a[3]),latifoglie=alberi.filter(a=>!a[3]);
   const dummy=new THREE.Object3D(),col=new THREE.Color();

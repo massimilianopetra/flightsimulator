@@ -35,11 +35,61 @@ function rng(seed){ // mulberry32
 
 /* ---------- dati della mappa convertiti in coordinate interne ---------- */
 const montagne=(M.montagne||[]).map(m=>({nome:m.nome||'',x:m.x,z:-m.y,r:m.raggio,h:m.altezza}));
-const laghi=(M.laghi||[]).map(l=>({nome:l.nome||'',x:l.x,z:-l.y,r:l.raggio,q:l.quota,auto:l.quota==null||l.quota==='auto'}));
+// laghi: rotondi (x, y, raggio) oppure con il contorno vero (contorno: [[x,y],...], isole facoltative)
+const laghi=(M.laghi||[]).map(l=>{
+  const lg={nome:l.nome||'',q:l.quota,auto:l.quota==null||l.quota==='auto'};
+  if(l.contorno){
+    lg.anelli=[l.contorno,...(l.isole||[])].map(a=>a.map(([x,y])=>[x,-y]));
+    let x0=Infinity,x1=-Infinity,z0=Infinity,z1=-Infinity;
+    for(const [x,z] of lg.anelli[0]){x0=Math.min(x0,x);x1=Math.max(x1,x);z0=Math.min(z0,z);z1=Math.max(z1,z);}
+    Object.assign(lg,{x:(x0+x1)/2,z:(z0+z1)/2,box:[x0,x1,z0,z1],r:Math.max(x1-x0,z1-z0)/2});
+  }else Object.assign(lg,{x:l.x,z:-l.y,r:l.raggio});
+  return lg;
+});
+function inAnello(a,x,z){
+  let dentro=false;
+  for(let i=0,j=a.length-1;i<a.length;j=i++){
+    const [xi,zi]=a[i],[xj,zj]=a[j];
+    if((zi>z)!==(zj>z)&&x<(xj-xi)*(z-zi)/(zj-zi)+xi)dentro=!dentro;
+  }
+  return dentro;
+}
+// lago che contiene il punto (o null)
+function inLago(x,z,margine=0){
+  for(const l of laghi){
+    if(l.anelli){
+      const b=l.box;
+      if(x<b[0]-margine||x>b[1]+margine||z<b[2]-margine||z>b[3]+margine) continue;
+      if(inAnello(l.anelli[0],x,z)&&!l.anelli.slice(1).some(a=>inAnello(a,x,z))) return l;
+    }else{const dx=x-l.x,dz=z-l.z;if(dx*dx+dz*dz<l.r*l.r)return l;}
+  }
+  return null;
+}
+
+/* ---------- quote reali (window.RILIEVO, generato da strumenti/genera-piemonte.js) ---------- */
+const RL=TR.rilievo&&window.RILIEVO?window.RILIEVO:null;
+let QR=null;
+if(RL){
+  const bin=atob(RL.dati),u8=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+  QR=new Int16Array(u8.buffer);
+}
+function quotaReale(x,z){
+  const gx=clamp((x-RL.xMin)/RL.passo,0,RL.larghezza-1.001), gy=clamp((RL.yNord+z)/RL.passo,0,RL.altezza-1.001);
+  const i=Math.floor(gx),j=Math.floor(gy),fx=gx-i,fy=gy-j,W=RL.larghezza,o=j*W+i;
+  return (QR[o]*(1-fx)+QR[o+1]*fx)*(1-fy)+(QR[o+W]*(1-fx)+QR[o+W+1]*fx)*fy;
+}
 const citta=(M.citta||[]).map(c=>({nome:c.nome||'',x:c.x,z:-c.y,r:c.raggio||400,n:c.edifici||50}));
 const boschi=(M.boschi||[]).map(b=>({x:b.x,z:-b.y,r:b.raggio||500,n:b.alberi||200}));
 
 function base(x,z){
+  if(RL){
+    // quote vere + un po' di rugosità (più marcata in montagna)
+    const h=quotaReale(x,z);
+    if(h<=0) return h;
+    const amp=(TR.dettaglio==null?1:TR.dettaglio)*(3+32*clamp((h-500)/2000,0,1));
+    return h+(vnoise(x/190+7.1,z/190-3.3)-0.5)*amp+(vnoise(x/70-1.7,z/70+5.2)-0.5)*amp*0.45;
+  }
   // colline (dettaglio)
   let f=1/TR.scala,amp=1,s=0,n=0;
   for(let i=0;i<5;i++){s+=vnoise(x*f+31.7,z*f-12.3)*amp;n+=amp;amp*=0.5;f*=2.03;}
@@ -63,6 +113,7 @@ function naturale(x,z){
     }
   }
   if(usaLaghi) for(const l of laghi){
+    if(l.anelli){if(inLago(x,z)===l)h=Math.min(h,l.q-2.5);continue;}
     const d=Math.hypot(x-l.x,z-l.z);
     if(d<l.r) h=l.q-1.5-12*(1-d/l.r);
     else if(d<l.r*1.6) h=lerp(Math.max(h,l.q+1.2),h,smooth(l.r,l.r*1.6,d));
@@ -72,7 +123,7 @@ function naturale(x,z){
 // livello dei laghi "auto": un po' sotto il terreno medio attorno al centro
 usaLaghi=false;
 for(const l of laghi){
-  if(!l.auto) continue;
+  if(!l.auto||l.anelli) continue;
   let s=0;for(let i=0;i<8;i++){const a=i*Math.PI/4;s+=naturale(l.x+Math.cos(a)*l.r,l.z+Math.sin(a)*l.r);}
   l.q=Math.max(1,Math.round(s/8-4));
 }
@@ -92,7 +143,8 @@ for(const a of (M.aeroporti||[])){
     const pi={ap,hdg,dir,L,W,quota:ap.quota,
       cx:ap.x+(p.spostamentoEst||0), cz:ap.z-(p.spostamentoNord||0),
       nomi:[numeroPista(hdg),numeroPista(hdg+180)],
-      fhl:L/2+150, fhw:W/2+210};
+      fhl:L/2+150, fhw:W/2+210, erba:!!p.erba};
+    pi.raggio=Math.hypot(pi.fhl,pi.fhw)+500;
     // le due testate: da dove si parte/atterra e in che direzione
     pi.testate=[
       {nome:pi.nomi[0],hdg:hdg,           x:pi.cx-dir.x*L/2,z:pi.cz-dir.z*L/2,dir:{x:dir.x,z:dir.z},pista:pi},
@@ -114,6 +166,7 @@ function terrainH(x,z){
   let h=naturale(x,z);
   for(const p of piste){
     const dx=x-p.cx,dz=z-p.cz;
+    if(dx>p.raggio||dx<-p.raggio||dz>p.raggio||dz<-p.raggio) continue;
     const u=dx*p.dir.x+dz*p.dir.z, v=-dx*p.dir.z+dz*p.dir.x;
     const ou=Math.max(Math.abs(u)-p.fhl,0),ov=Math.max(Math.abs(v)-p.fhw,0);
     if(ou<BLEND&&ov<BLEND){
@@ -135,7 +188,7 @@ function meshH(x,z){
 }
 
 const api={
-  seme:SEED, vnoise, hash, rng, terrainH, naturale, meshH, locale,
+  seme:SEED, vnoise, hash, rng, terrainH, naturale, meshH, locale, inLago, reale:!!RL, rilievo:RL,
   aeroporti, piste, montagne, laghi, citta, boschi,
   tipo:'erba',
   /* quota della superficie su cui si appoggia l'aereo; imposta api.tipo
@@ -143,13 +196,13 @@ const api={
   suolo(x,z){
     const h=meshH(x,z);
     if(h<0){api.tipo='acqua';return 0;}
-    for(const l of laghi){
-      const dx=x-l.x,dz=z-l.z;
-      if(dx*dx+dz*dz<l.r*l.r&&h<l.q){api.tipo='acqua';return l.q;}
-    }
+    const l=inLago(x,z);
+    if(l&&h<l.q+0.5){api.tipo='acqua';return l.q;}
     for(const p of piste){
+      const dx=x-p.cx,dz=z-p.cz;
+      if(dx>p.raggio||dx<-p.raggio||dz>p.raggio||dz<-p.raggio) continue;
       const {u,v}=locale(p,x,z);
-      if(Math.abs(u)<=p.L/2&&Math.abs(v)<=p.W/2){api.tipo='pista';return h;}
+      if(Math.abs(u)<=p.L/2&&Math.abs(v)<=p.W/2){api.tipo=p.erba?'erba':'pista';return h;}
       if(p===p.ap.piste[0]&&Math.abs(u)<=90&&v>0&&v<145){api.tipo='piazzale';return h;}
     }
     api.tipo='erba';return h;
@@ -165,11 +218,71 @@ const api={
   // vero se il punto è dentro la zona spianata di un aeroporto (+ margine)
   inAeroporto(x,z,margine=0){
     for(const p of piste){
+      const dx=x-p.cx,dz=z-p.cz;
+      if(dx>p.raggio+margine||dx<-p.raggio-margine||dz>p.raggio+margine||dz<-p.raggio-margine) continue;
       const {u,v}=locale(p,x,z);
       if(Math.abs(u)<p.fhl+margine&&Math.abs(v)<p.fhw+margine) return true;
     }
     return false;
   },
+};
+
+/* ---------- colori del terreno per fasce di quota ----------
+   terreno.colori nella mappa: { prato, bosco, roccia, neve } in metri */
+const QC=Object.assign({prato:320,bosco:700,roccia:1000,neve:1150},TR.colori||{});
+let C=null; const tc={r:0,g:0,b:0};
+function colore(h,slope,x,z,dettaglio){
+  if(!C){C={sand:new THREE.Color(0xd8c690),grass:new THREE.Color(0x5b8a3e),mown:new THREE.Color(0x6a9a48),
+    forest:new THREE.Color(0x3d6b35),rock:new THREE.Color(0x857a66),snow:new THREE.Color(0xf2f5f8),c:new THREE.Color()};}
+  const c=C.c, r=hash(x|0,z|0)-.5;
+  let acquaVicina=h<4;
+  if(!acquaVicina&&laghi.length){const l=inLago(x,z,25);if(l&&h<l.q+2)acquaVicina=true;}
+  if(acquaVicina)c.copy(C.sand);
+  else if(dettaglio&&api.inAeroporto(x,z,-60))c.copy(C.mown);
+  else if(h<QC.prato)c.copy(C.grass).lerp(C.forest,clamp(h/QC.prato+r*.35,0,1));
+  else if(h<QC.bosco)c.copy(C.forest).lerp(C.rock,clamp((h-QC.prato)/(QC.bosco-QC.prato)+r*.2,0,1));
+  else c.copy(C.rock).lerp(C.snow,clamp((h-QC.roccia)/(QC.neve-QC.roccia),0,1));
+  if(slope>.55&&!acquaVicina)c.lerp(C.rock,clamp((slope-.55)*2.5,0,.85));
+  tc.r=c.r;tc.g=c.g;tc.b=c.b;
+}
+
+/* ---------- terreno lontano (solo mappe reali) ----------
+   Una griglia grossa (1 km) di tutta la regione, così le montagne si vedono
+   da lontano. Dove c'è il terreno vicino, dettagliato, viene "bucata". */
+api.creaLontano=function(scene){
+  if(!RL) return null;
+  const P=1000;
+  const x0=RL.xMin, z0=-RL.yNord, Wm=(RL.larghezza-1)*RL.passo, Hm=(RL.altezza-1)*RL.passo;
+  const NX=Math.floor(Wm/P)+1, NZ=Math.floor(Hm/P)+1;
+  const pos=new Float32Array(NX*NZ*3), col=new Float32Array(NX*NZ*3), Hh=new Float32Array(NX*NZ);
+  for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){const o=j*NX+i;Hh[o]=naturale(x0+i*P,z0+j*P);}
+  for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){
+    const o=j*NX+i,x=x0+i*P,z=z0+j*P,h=Hh[o];
+    const hx=Hh[j*NX+Math.min(i+1,NX-1)]-Hh[j*NX+Math.max(i-1,0)], hz=Hh[Math.min(j+1,NZ-1)*NX+i]-Hh[Math.max(j-1,0)*NX+i];
+    pos[o*3]=x;pos[o*3+1]=h-15;pos[o*3+2]=z;
+    colore(h,Math.hypot(hx,hz)/(2*P),x,z,false);
+    col[o*3]=tc.r;col[o*3+1]=tc.g;col[o*3+2]=tc.b;
+  }
+  const idx=new Uint32Array((NX-1)*(NZ-1)*6);let k=0;
+  for(let j=0;j<NZ-1;j++)for(let i=0;i<NX-1;i++){
+    const a=j*NX+i,b=(j+1)*NX+i,c=(j+1)*NX+i+1,d=j*NX+i+1;
+    idx[k++]=a;idx[k++]=b;idx[k++]=c;idx[k++]=a;idx[k++]=c;idx[k++]=d;
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setIndex(new THREE.BufferAttribute(idx,1));
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+  const unif={uCentro:{value:new THREE.Vector2(1e9,1e9)},uMezzo:{value:TS/2-STEP*1.5}};
+  const mat=new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:1,metalness:0});
+  mat.onBeforeCompile=sh=>{
+    Object.assign(sh.uniforms,unif);
+    sh.vertexShader='varying vec3 vPosMondo;\n'+sh.vertexShader.replace('#include <begin_vertex>',
+      '#include <begin_vertex>\nvPosMondo=(modelMatrix*vec4(transformed,1.0)).xyz;');
+    sh.fragmentShader='varying vec3 vPosMondo;\nuniform vec2 uCentro;\nuniform float uMezzo;\n'+sh.fragmentShader.replace('void main() {',
+      'void main() {\nif(abs(vPosMondo.x-uCentro.x)<uMezzo&&abs(vPosMondo.z-uCentro.y)<uMezzo)discard;');
+  };
+  const mesh=new THREE.Mesh(geo,mat);mesh.frustumCulled=false;scene.add(mesh);
+  return {mesh,buco(cx,cz){unif.uCentro.value.set(cx,cz);}};
 };
 
 /* ---------- mesh del terreno che segue l'aereo ----------
@@ -194,11 +307,9 @@ api.creaMesh=function(scene){
     return {geo,mesh,H:new Float32Array(N*N),cx:NaN,cz:NaN};
   }
   const buf=[buffer(),buffer()];
+  const lontano=api.creaLontano(scene);
   let attivo=0, lavoro=null;
 
-  const C={sand:new THREE.Color(0xd8c690),grass:new THREE.Color(0x5b8a3e),mown:new THREE.Color(0x6a9a48),
-    forest:new THREE.Color(0x3d6b35),rock:new THREE.Color(0x857a66),snow:new THREE.Color(0xf2f5f8)};
-  const tc=new THREE.Color();
 
   function* costruisci(b,cx,cz){
     b.cx=cx;b.cz=cz;
@@ -217,15 +328,7 @@ api.creaMesh=function(scene){
         const hx=H[j*N+Math.min(i+1,SEG)]-H[j*N+Math.max(i-1,0)];
         const hz=H[Math.min(j+1,SEG)*N+i]-H[Math.max(j-1,0)*N+i];
         const slope=Math.hypot(hx,hz)/(2*STEP);
-        const r=hash(x|0,z|0)-.5;
-        let acquaVicina=h<4;
-        for(const l of laghi){const d=Math.hypot(x-l.x,z-l.z);if(d<l.r*1.15&&h<l.q+4)acquaVicina=true;}
-        if(acquaVicina)tc.copy(C.sand);
-        else if(api.inAeroporto(x,z,-60))tc.copy(C.mown);
-        else if(h<320)tc.copy(C.grass).lerp(C.forest,clamp(h/320+r*.35,0,1));
-        else if(h<700)tc.copy(C.forest).lerp(C.rock,clamp((h-320)/380+r*.2,0,1));
-        else tc.copy(C.rock).lerp(C.snow,clamp((h-1000)/150,0,1));
-        if(slope>.55&&!acquaVicina)tc.lerp(C.rock,clamp((slope-.55)*2.5,0,.85));
+        colore(h,slope,x,z,true);
         col[o*3]=tc.r;col[o*3+1]=tc.g;col[o*3+2]=tc.b;
       }
       if(j%48===47) yield;
@@ -241,6 +344,7 @@ api.creaMesh=function(scene){
         lavoro=null;
         for(const _ of costruisci(a,cx,cz));
         a.mesh.visible=true;buf[1-attivo].mesh.visible=false;
+        if(lontano)lontano.buco(a.cx,a.cz);
         return;
       }
       if(!lavoro&&!(Math.abs(px-a.cx)<1500&&Math.abs(pz-a.cz)<1500))
@@ -249,6 +353,7 @@ api.creaMesh=function(scene){
         lavoro=null;attivo=1-attivo;
         buf[attivo].mesh.visible=true;buf[1-attivo].mesh.visible=false;
       }
+      if(lontano)lontano.buco(buf[attivo].cx,buf[attivo].cz);
     },
   };
 };

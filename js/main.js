@@ -24,6 +24,7 @@ addEventListener('resize',ridimensiona);ridimensiona();
 const T=SIM.terreno;
 const terreno=T.creaMesh(scene);
 const mondo=SIM.creaMondo(scene,renderer);
+camera.far=Math.max(15000,scene.fog.far*1.15);camera.updateProjectionMatrix();
 const fis=SIM.creaFisica(A,T), st=fis.st;
 const strum=SIM.creaStrumenti(A);
 const audio=SIM.creaAudio();
@@ -42,20 +43,33 @@ function aggiornaVento(t){
 
 /* ---------- partenza e destinazione ---------- */
 const nomeTestata=n=>String(n).padStart(2,'0');
+// testata più controvento di un aeroporto (si decolla e si atterra col vento in faccia)
+function testataControvento(ap){
+  let best=null,bv=-2;
+  for(const pi of ap.piste)for(const t of pi.testate){
+    const v=Math.cos((t.hdg-met.ventoDa)*D2R)+(pi===ap.piste[0]?0.15:0);   // preferisce la pista principale
+    if(v>bv){bv=v;best=t;}
+  }
+  return best;
+}
+// punto di partenza sulla soglia di una testata
+function partenzaDa(ap,te){
+  te=te||testataControvento(ap);
+  return {x:te.x+te.dir.x*25,z:te.z+te.dir.z*25,y:ap.quota+fis.altRuote()-0.04,hdg:te.hdg,v:0,thr:0,ap,te};
+}
 function puntoPartenza(){
   const p=M.partenza||{};
   if(p.aeroporto&&T.aeroporti.length){
     const ap=T.aeroporti.find(a=>a.codice===p.aeroporto)||T.aeroporti[0];
     let te=null;
     for(const pi of ap.piste)for(const t of pi.testate)if(t.nome===nomeTestata(p.pista))te=t;
-    te=te||ap.piste[0].testate[0];
-    return {x:te.x+te.dir.x*25,z:te.z+te.dir.z*25,y:ap.quota+fis.altRuote()-0.04,hdg:te.hdg,v:0,thr:0,ap,te};
+    return partenzaDa(ap,te);
   }
   const x=p.x||0,z=-(p.y||0);
   const y=Math.max(p.quota||600,T.terrainH(x,z)+150);
   return {x,z,y,hdg:p.direzione||0,v:(p.velocitaNodi||100)/KT,thr:0.7};
 }
-const partenza=puntoPartenza();
+let partenza=puntoPartenza();
 // esercizio di atterraggio: in finale a 2,7 NM dalla pista di partenza, sul sentiero di 3°
 function puntoFinale(){
   const te=partenza.te, d=5000;
@@ -63,7 +77,8 @@ function puntoFinale(){
     hdg:te.hdg,v:72/KT,thr:0.35,flapSel:1};
 }
 let modalita='decollo';
-let destIdx=Math.max(0,T.aeroporti.findIndex(a=>a!==partenza.ap));
+let destIdx=T.aeroporti.findIndex(a=>a.codice===M.destinazione);
+if(destIdx<0)destIdx=Math.max(0,T.aeroporti.findIndex(a=>a!==partenza.ap));
 const dest=()=>T.aeroporti[destIdx]||null;
 
 /* ---------- stato del gioco ---------- */
@@ -111,7 +126,7 @@ function flap(d){
 function cambiaVista(){vista=(vista+1)%3;primaCamera=true;}
 function prossimaDest(){
   if(!T.aeroporti.length) return;
-  destIdx=(destIdx+1)%T.aeroporti.length;
+  impostaDest((destIdx+1)%T.aeroporti.length);
   const d=dest();messaggio(`Destinazione: <b>${d.codice}</b> ${d.nome}`,2.5);
 }
 function orientaMappa(){
@@ -352,7 +367,7 @@ function aggiornaStrumenti(dt){
   return {hdg,bug};
 }
 const el={};
-for(const id of ['rpm','flap','trim','gload','thrv','dest','dist','brg','vento','spiaFreni','spiaTerra','spiaVista','avviso'])el[id]=$(id);
+for(const id of ['rpm','flap','trim','gload','thrv','dist','brg','vento','spiaFreni','spiaTerra','spiaVista','avviso'])el[id]=$(id);
 const scrivi=(n,t)=>{if(n.textContent!==t)n.textContent=t;};
 function aggiornaTesti(hdg,bug){
   scrivi(el.rpm,String(Math.round(st.rpm/10)*10));
@@ -363,7 +378,6 @@ function aggiornaTesti(hdg,bug){
   scrivi(el.thrv,String(Math.round(st.thr*100)));
   const d=dest();
   if(d){
-    scrivi(el.dest,d.codice);
     scrivi(el.dist,(Math.hypot(d.x-st.pos.x,d.z-st.pos.z)/1852).toFixed(1));
     scrivi(el.brg,String(Math.round(bug)%360).padStart(3,'0'));
   }
@@ -387,20 +401,45 @@ function aggiornaTesti(hdg,bug){
   if(w){scrivi(el.avviso,w);el.avviso.classList.toggle('rosso',rosso);}
 }
 
-/* ---------- briefing ---------- */
-(function briefing(){
+/* ---------- briefing e selettori (mondo, aeroporto, pista, destinazione) ---------- */
+$('crediti').hidden=!M.reale;
+function aggiornaBriefing(){
   const d=dest(), te=partenza.te, ap=partenza.ap;
   let t='';
-  if(te) t+=`Sei all'aeroporto <b>${ap.codice} – ${ap.nome}</b> (quota ${Math.round(ap.quota*FT)} ft), allineato sulla pista <b>${te.nome}</b> lunga ${te.pista.L} m. `;
+  if(te) t+=`Sei all'aeroporto <b>${ap.codice} – ${ap.nome}</b> (quota ${Math.round(ap.quota*FT)} ft), allineato sulla pista <b>${te.nome}</b> lunga ${te.pista.L} m${te.pista.erba?' (in erba)':''}. `;
   else t+=`Parti già in volo a ${Math.round(partenza.y*FT)} ft. `;
   t+=met.ventoNodi>0?`Vento da ${String(met.ventoDa).padStart(3,'0')}° a ${met.ventoNodi} nodi${met.raffiche?` con raffiche di ${met.raffiche}`:''}. `:'Vento calmo. ';
   if(d&&d!==ap){
     const dist=Math.hypot(d.x-partenza.x,d.z-partenza.z)/1852;
-    t+=`Destinazione suggerita: <b>${d.codice} – ${d.nome}</b>, a ${dist.toFixed(1)} NM (quota ${Math.round(d.quota*FT)} ft). Il rombo magenta sulla bussola e la linea sulla mappa indicano la rotta.`;
+    t+=`Destinazione: <b>${d.codice} – ${d.nome}</b>, a ${dist.toFixed(1)} NM (quota ${Math.round(d.quota*FT)} ft). Il rombo magenta sulla bussola e la linea sulla mappa indicano la rotta.`;
   }
   $('briefTesto').innerHTML=t;
   $('briefVr').textContent=A.velocita.vr;$('briefVy').textContent=A.velocita.vy;
-})();
+}
+const selMondo=$('selMondo'),selAp=$('selAeroporto'),selPista=$('selPista'),selDB=$('selDestBrief'),selD=$('selDest');
+selMondo.value=window.MONDO_SCELTO||'piemonte';
+selMondo.addEventListener('change',()=>{location.search='?mappa='+selMondo.value;});
+const opzioniAeroporti=sel=>{sel.innerHTML=T.aeroporti.map((a,i)=>`<option value="${i}">${a.codice} – ${a.nome}</option>`).join('');};
+for(const sel of [selAp,selDB,selD])opzioniAeroporti(sel);
+function impostaDest(i){destIdx=i;selDB.value=selD.value=String(i);aggiornaBriefing();}
+function riempiPiste(ap,scelta){
+  const opz=[];
+  ap.piste.forEach((pi,i)=>pi.testate.forEach((t,j)=>opz.push(`<option value="${i}|${j}">${t.nome} (${pi.L} m${pi.erba?', erba':''})</option>`)));
+  selPista.innerHTML=opz.join('');
+  if(scelta){const i=ap.piste.indexOf(scelta.pista);selPista.value=i+'|'+scelta.pista.testate.indexOf(scelta);}
+}
+function scegliPartenza(){
+  const ap=T.aeroporti[+selAp.value];
+  const [i,j]=selPista.value.split('|').map(Number);
+  partenza=partenzaDa(ap,ap.piste[i]&&ap.piste[i].testate[j]);
+  ricomincia();aggiornaBriefing();
+}
+if(partenza.ap){selAp.value=String(T.aeroporti.indexOf(partenza.ap));riempiPiste(partenza.ap,partenza.te);}
+selAp.addEventListener('change',()=>{const ap=T.aeroporti[+selAp.value];riempiPiste(ap,testataControvento(ap));scegliPartenza();selAp.blur();});
+selPista.addEventListener('change',()=>{scegliPartenza();selPista.blur();});
+selDB.addEventListener('change',()=>{impostaDest(+selDB.value);selDB.blur();});
+selD.addEventListener('change',()=>{impostaDest(+selD.value);messaggio(`Destinazione: <b>${dest().codice}</b> ${dest().nome}`,2.5);selD.blur();});
+impostaDest(destIdx);
 
 /* ---------- ciclo principale ---------- */
 ricomincia();
