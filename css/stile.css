@@ -45,8 +45,8 @@ kbd{font:700 11px var(--f-num);color:var(--cyan);border:1px solid rgba(57,215,25
 .aiuto dd{margin:0}
 
 /* navigazione */
-.nav{top:calc(12px + env(safe-area-inset-top,0px));right:12px;display:flex;flex-direction:column;gap:8px;padding:8px}
-#minimap{display:block;width:220px;height:220px;border-radius:5px;pointer-events:auto;cursor:pointer}
+.nav{top:calc(12px + env(safe-area-inset-top,0px));right:12px;display:flex;flex-direction:column;gap:8px;padding:8px;width:320px}
+#minimap{display:block;width:100%;height:auto;aspect-ratio:1/1;border-radius:5px;pointer-events:auto;cursor:pointer}
 .navinfo{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
 
 /* avvisi */
@@ -104,7 +104,7 @@ button.primario:hover{background:#7fe6ff;color:#05202a}
   .sys{width:auto}
   #pfd{width:100%;max-height:42vh}
   .pfdbox{align-self:center}
-  #minimap{width:140px;height:140px}
+  .nav{width:170px}
   .navinfo{grid-template-columns:1fr}
   .val{font-size:15px}
 }
@@ -125,4 +125,5 @@ button.primario:hover{background:#7fe6ff;color:#05202a}
 .scelte label{display:grid;gap:4px;font:700 10px var(--f-ui);letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
 select{font:700 13px var(--f-num);color:var(--ink);background:#0b1322;border:1px solid var(--dim);border-radius:4px;padding:6px 6px;max-width:100%}
 select:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
-.seldest{pointer-events:auto;color:var(--magenta);font-size:14px;padding:3px 4px;max-width:9.5rem}
+.seldest{pointer-events:auto;color:var(--magenta);font-size:14px;padding:3px 4px;flex:1;min-width:0}
+.navinfo .row:first-child{grid-column:1/-1}
