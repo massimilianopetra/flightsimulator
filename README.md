@@ -4,6 +4,10 @@ Un piccolo simulatore di volo nel browser, con fisica realistica ispirata a un *
 si decolla da una pista vera, si vola con strumenti da glass cockpit e si atterra
 seguendo le luci PAPI.
 
+**Gioca online: https://massimilianopetra.github.io/flightsimulator/**
+
+Codice: https://github.com/massimilianopetra/flightsimulator
+
 ## Come si avvia
 
 Apri `index.html` con un doppio clic (Chrome, Edge o Firefox).
@@ -12,17 +16,32 @@ vengono scaricati da Internet.
 
 Per lavorarci con VS Code va bene anche l'estensione *Live Server*.
 
-Versione online: https://massimilianopetra.github.io/flightsimulator/
-
 ## Pubblicare su GitHub Pages
 
-La prima volta: `npm install`. Poi, ogni volta che vuoi aggiornare il sito:
+Il sito è pubblicato all'indirizzo **https://massimilianopetra.github.io/flightsimulator/**
+e viene servito dal ramo `gh-pages` del repository.
+
+**Solo la prima volta** (o su un computer nuovo, dopo il `git clone`):
 
 ```
+npm install
+```
+
+**Ogni volta che vuoi aggiornare il sito**, dalla cartella del progetto:
+
+```
+git add -A
+git commit -m "descrivi cosa hai cambiato"
+git push
 npm run deploy
 ```
 
-Il comando copia i file del gioco nel ramo `gh-pages`, e GitHub Pages lo pubblica.
+- `git push` salva il codice nel ramo `main` su GitHub.
+- `npm run deploy` copia i file del gioco (`index.html`, `css/`, `js/`, `dati/`)
+  nel ramo `gh-pages`, e GitHub Pages li pubblica.
+- Dopo circa un minuto il sito è aggiornato. Se vedi ancora la versione vecchia,
+  ricarica con **Ctrl+F5**.
+
 Il sito non ha bisogno di compilazione: sono file statici.
 
 ## I file
