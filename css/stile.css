@@ -1,0 +1,112 @@
+/* Layout: scena 3D a tutto schermo, strumenti in stile glass cockpit sovrapposti.
+   Tema unico scuro (strumenti su cielo), scelto di proposito. */
+:root{
+  --panel:rgba(8,16,30,.78);
+  --ink:#e8f1f8;
+  --dim:#8ea6bb;
+  --cyan:#39d7ff;
+  --magenta:#ff5ad9;
+  --amber:#ffb020;
+  --red:#ff4d3d;
+  --f-ui:"B612",system-ui,sans-serif;
+  --f-num:"B612 Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:#c9dceb;color:var(--ink);font-family:var(--f-ui);overflow:hidden}
+#app{position:fixed;inset:0}
+#gl{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#gl:active{cursor:grabbing}
+
+.hud{position:absolute;background:var(--panel);border:1px solid rgba(57,215,255,.2);border-radius:8px;padding:10px 12px;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);pointer-events:none}
+.row{display:flex;align-items:baseline;gap:8px}
+.lbl{font:700 10px/1 var(--f-ui);letter-spacing:.14em;color:var(--dim);min-width:4.2em}
+.val{font:700 18px/1 var(--f-num);color:var(--cyan);font-variant-numeric:tabular-nums;min-width:3.6ch;text-align:right}
+.val.sm{font-size:14px}
+.unit{font:400 11px/1 var(--f-ui);color:var(--dim)}
+.mag{color:var(--magenta)}
+.dim{color:var(--dim);font-weight:400}
+kbd{font:700 11px var(--f-num);color:var(--cyan);border:1px solid rgba(57,215,255,.35);border-radius:3px;padding:0 4px}
+
+/* comandi */
+.aiuto{top:calc(12px + env(safe-area-inset-top,0px));left:12px;font-size:12px;line-height:1.45;max-width:20rem}
+.aiuto .titolo{font:700 11px var(--f-ui);letter-spacing:.14em;margin-bottom:6px}
+.aiuto dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0 0 6px}
+.aiuto dt{font:700 11px var(--f-num);color:var(--cyan);white-space:nowrap}
+.aiuto dd{margin:0}
+
+/* navigazione */
+.nav{top:calc(12px + env(safe-area-inset-top,0px));right:12px;display:flex;flex-direction:column;gap:8px;padding:8px}
+#minimap{display:block;width:220px;height:220px;border-radius:5px}
+.navinfo{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
+
+/* avvisi */
+.avviso{position:absolute;top:24%;left:50%;transform:translateX(-50%);font:700 22px/1 var(--f-num);letter-spacing:.22em;
+  color:#1b1000;background:var(--amber);padding:8px 16px;border-radius:4px;animation:lampeggio .7s steps(2) infinite;pointer-events:none;white-space:nowrap}
+.avviso.rosso{background:var(--red);color:#fff}
+@keyframes lampeggio{50%{opacity:.35}}
+.msg{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);max-width:min(32rem,calc(100vw - 32px));
+  background:var(--panel);border:1px solid rgba(57,215,255,.35);border-radius:8px;padding:10px 16px;text-align:center;font-size:15px;line-height:1.4;pointer-events:none}
+.msg b{color:var(--cyan)}
+
+/* fascia bassa */
+.basso{position:absolute;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:flex-end;gap:12px;pointer-events:none}
+.basso .hud{position:relative}
+.pfdbox{padding:0;overflow:hidden}
+#pfd{display:block;width:min(500px,calc(100vw - 24px));aspect-ratio:5/3;height:auto}
+.sys{display:grid;gap:10px;width:300px;pointer-events:auto}
+.sys .griglia{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.spie{display:flex;gap:6px;flex-wrap:wrap}
+.spia{font:700 10px/1 var(--f-ui);letter-spacing:.1em;padding:5px 7px;border-radius:3px;border:1px solid rgba(142,166,187,.35);color:var(--dim)}
+.spia.on{color:#06210f;background:#4ade80;border-color:#4ade80}
+.spia.warn{color:#1b1000;background:var(--amber);border-color:var(--amber)}
+.manetta{display:flex;align-items:center;gap:8px}
+#thr{flex:1;min-width:0;accent-color:var(--cyan)}
+.bottoni{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+button{font:700 11px/1 var(--f-ui);letter-spacing:.06em;text-transform:uppercase;background:transparent;color:var(--ink);
+  border:1px solid var(--dim);border-radius:4px;padding:9px 4px;cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none}
+button:hover{border-color:var(--cyan);color:var(--cyan)}
+button.premuto{background:rgba(57,215,255,.2);border-color:var(--cyan)}
+button:focus-visible,#thr:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+button.primario{background:var(--cyan);color:#05202a;border-color:var(--cyan);padding:12px 18px;font-size:13px}
+button.primario:hover{background:#7fe6ff;color:#05202a}
+
+#stick{position:absolute;width:150px;height:150px;margin:-75px 0 0 -75px;border:1px solid rgba(232,241,248,.45);border-radius:50%;pointer-events:none}
+#knob{position:absolute;left:50%;top:50%;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;background:rgba(57,215,255,.55)}
+
+/* finestre sovrapposte */
+.overlay{position:absolute;inset:0;display:grid;place-items:center;padding:16px;background:rgba(8,16,30,.5);pointer-events:auto;overflow:auto}
+.card{background:rgba(8,16,30,.92);border:1px solid rgba(57,215,255,.35);border-radius:10px;padding:22px 26px;display:grid;gap:12px;max-width:34rem}
+.card h1,.card h2{margin:0;font:700 20px/1.2 var(--f-num);letter-spacing:.12em;color:var(--cyan);text-wrap:balance}
+.card p{margin:0;line-height:1.5}
+.card .check{margin:0;padding-left:1.3em;display:grid;gap:6px;line-height:1.45}
+.card .primario{justify-self:start}
+.allarme{border-color:rgba(255,176,32,.6);text-align:center}
+.allarme h2{color:var(--amber)}
+.allarme .primario{justify-self:center}
+.papi{display:inline-flex;gap:3px;vertical-align:middle}
+.papi i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.papi .w{background:#fff}.papi .r{background:#ff2a1a}
+
+@media (max-width:1100px){
+  .aiuto{display:none}
+  .aiuto.forza{display:block}
+}
+@media (max-width:860px){
+  .basso{flex-direction:column;align-items:stretch}
+  .sys{width:auto}
+  #pfd{width:100%;max-height:42vh}
+  .pfdbox{align-self:center}
+  #minimap{width:140px;height:140px}
+  .navinfo{grid-template-columns:1fr}
+  .val{font-size:15px}
+}
+@media (max-width:860px) and (max-height:700px){
+  .nav .navinfo{display:none}
+}
+@media (prefers-reduced-motion:reduce){.avviso{animation:none}}
+.card .azioni{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.card .azioni button:not(.primario){padding:12px 14px;font-size:12px}

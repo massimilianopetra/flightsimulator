@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulatore di Volo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="css/stile.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="gl" aria-label="Vista 3D del volo"></canvas>
+
+  <!-- in alto a sinistra: comandi -->
+  <section id="aiuto" class="hud aiuto" aria-label="Comandi">
+    <div class="titolo">COMANDI <span class="dim">(H nasconde)</span></div>
+    <dl>
+      <dt>W / S</dt><dd>picchia / cabra (anche frecce)</dd>
+      <dt>A / D</dt><dd>rollio sinistra / destra</dd>
+      <dt>Q / E</dt><dd>timone e ruotino a terra</dd>
+      <dt>+ / −</dt><dd>manetta (1…9 = 10…90%, 0 = 100%)</dd>
+      <dt>F / G</dt><dd>flap giù / su</dd>
+      <dt>Z / X</dt><dd>trim cabra / picchia</dd>
+      <dt>B o Spazio</dt><dd>freni (tieni premuto)</dd>
+      <dt>C</dt><dd>vista: esterna, cabina, torre</dd>
+      <dt>N</dt><dd>prossima destinazione</dd>
+      <dt>M</dt><dd>zoom mappa</dd>
+      <dt>P / R</dt><dd>pausa / ricomincia</dd>
+    </dl>
+    <div class="dim">Mouse: trascina sullo schermo come una cloche. Gamepad supportato.</div>
+  </section>
+
+  <!-- in alto a destra: navigazione -->
+  <section class="hud nav" aria-label="Navigazione">
+    <canvas id="minimap" aria-label="Mappa"></canvas>
+    <div class="navinfo">
+      <div class="row"><span class="lbl">DEST</span><span id="dest" class="val mag">----</span></div>
+      <div class="row"><span class="lbl">DIST</span><span id="dist" class="val mag">0.0</span><span class="unit">NM</span></div>
+      <div class="row"><span class="lbl">ROTTA</span><span id="brg" class="val mag">000</span><span class="unit">°</span></div>
+      <div class="row"><span class="lbl">VENTO</span><span id="vento" class="val sm">270/6</span></div>
+    </div>
+  </section>
+
+  <div id="avviso" class="avviso" hidden></div>
+  <div id="msg" class="msg" hidden></div>
+
+  <!-- in basso: PFD e pannello motore/sistemi -->
+  <div class="basso">
+    <section class="hud pfdbox" aria-label="Strumenti di volo"><canvas id="pfd"></canvas></section>
+    <section class="hud sys" aria-label="Motore e sistemi">
+      <div class="griglia">
+        <div class="row"><span class="lbl">RPM</span><span id="rpm" class="val">0000</span></div>
+        <div class="row"><span class="lbl">FLAP</span><span id="flap" class="val">0</span><span class="unit">°</span></div>
+        <div class="row"><span class="lbl">TRIM</span><span id="trim" class="val">0</span></div>
+        <div class="row"><span class="lbl">G</span><span id="gload" class="val">1.0</span></div>
+      </div>
+      <div class="spie">
+        <span id="spiaFreni" class="spia">FRENI</span>
+        <span id="spiaTerra" class="spia">A TERRA</span>
+        <span id="spiaVista" class="spia on">ESTERNA</span>
+      </div>
+      <label class="manetta" for="thr">
+        <span class="lbl">MANETTA</span>
+        <input id="thr" type="range" min="0" max="100" value="0" aria-label="Manetta">
+        <span id="thrv" class="val">0</span><span class="unit">%</span>
+      </label>
+      <div class="bottoni">
+        <button type="button" data-azione="flapsu" title="Flap su (G)">FLAP −</button>
+        <button type="button" data-azione="flapgiu" title="Flap giù (F)">FLAP +</button>
+        <button type="button" data-tieni="rudS" title="Timone sinistra (Q)">◀ TIM</button>
+        <button type="button" data-tieni="rudD" title="Timone destra (E)">TIM ▶</button>
+        <button type="button" data-tieni="freni" title="Freni (B)">FRENI</button>
+        <button type="button" data-azione="vista" title="Cambia vista (C)">VISTA</button>
+        <button type="button" data-azione="audio" id="btnAudio" title="Audio">AUDIO</button>
+        <button type="button" data-azione="reset" title="Ricomincia (R)">RICOMINCIA</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="stick" hidden><div id="knob"></div></div>
+
+  <!-- briefing iniziale -->
+  <div id="brief" class="overlay">
+    <div class="card">
+      <h1>Briefing di volo</h1>
+      <p id="briefTesto"></p>
+      <ol class="check">
+        <li>Flap a <b>10°</b> con <kbd>F</kbd>.</li>
+        <li>Manetta al <b>100%</b> con <kbd>0</kbd> (oppure tieni premuto <kbd>+</kbd>); resta sulla linea centrale con <kbd>Q</kbd>/<kbd>E</kbd>.</li>
+        <li>A <b id="briefVr">55</b> nodi tira dolcemente (<kbd>S</kbd>): il muso si alza e l'aereo decolla.</li>
+        <li>Sali a circa <b id="briefVy">74</b> nodi; sopra 500 ft retrai i flap (<kbd>G</kbd>).</li>
+        <li>Per atterrare: circa <b>65 nodi</b>, flap 30°, e segui le luci PAPI a sinistra della pista: <span class="papi"><i class="w"></i><i class="w"></i><i class="r"></i><i class="r"></i></span> = giusta pendenza.</li>
+      </ol>
+      <div class="azioni">
+        <button id="inizia" type="button" class="primario">Decolla (Invio)</button>
+        <button id="finale" type="button">Prova l'atterraggio</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pausa" class="overlay" hidden><div class="card"><h2>PAUSA</h2><p>Premi <kbd>P</kbd> per continuare.</p></div></div>
+
+  <div id="crash" class="overlay" hidden>
+    <div class="card allarme">
+      <h2>INCIDENTE</h2>
+      <p id="crashMsg"></p>
+      <button id="ancora" type="button" class="primario">Ricomincia (R)</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- dati modificabili -->
+<script src="dati/mappa.js"></script>
+<script src="dati/aereo.js"></script>
+<!-- motore del simulatore -->
+<script src="js/terreno.js"></script>
+<script src="js/fisica.js"></script>
+<script src="js/mondo.js"></script>
+<script src="js/strumenti.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
