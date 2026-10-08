@@ -114,7 +114,8 @@ conviene ricontrollare che gli aeroporti non finiscano in mare.
 
 | Tasto | Azione |
 |---|---|
-| W / S (o frecce) | picchia / cabra |
+| W / S (o frecce) | picchia / cabra: la cloche si sposta finché tieni premuto e poi resta lì |
+| K | riporta la cloche al centro |
 | A / D | rollio |
 | Q / E | timone (a terra sterza il ruotino anteriore) |
 | + / − | manetta; i tasti 1…9 la mettono al 10…90%, 0 al 100% |
@@ -128,7 +129,7 @@ conviene ricontrollare che gli aeroporti non finiscano in mare.
 | P / R | pausa / ricomincia |
 | H | apre o chiude il pannello dei comandi |
 
-Col mouse si può trascinare sullo schermo come se fosse una cloche. Funziona anche un gamepad:
+Col mouse si può trascinare sullo schermo come se fosse una cloche. Sia con i tasti sia col mouse la cloche **resta nell'ultima posizione** (il pallino nel pannello mostra dov'è); K la riporta al centro. Il timone invece torna al centro da solo, come i pedali veri. Funziona anche un gamepad:
 stick sinistro per cloche, stick destro per timone e manetta, grilletti per la manetta,
 dorsali per i flap, A per i freni e Y per la vista.
 

@@ -114,3 +114,8 @@ button.primario:hover{background:#7fe6ff;color:#05202a}
 @media (prefers-reduced-motion:reduce){.avviso{animation:none}}
 .card .azioni{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .card .azioni button:not(.primario){padding:12px 14px;font-size:12px}
+.riga-cloche{display:flex;align-items:center;gap:10px}
+.riga-cloche button{margin-left:auto;padding:8px 10px}
+.cloche-ind{position:relative;width:44px;height:44px;border:1px solid rgba(142,166,187,.5);border-radius:6px;flex:none;
+  background:linear-gradient(var(--dim),var(--dim)) center/1px 100% no-repeat,linear-gradient(var(--dim),var(--dim)) center/100% 1px no-repeat}
+.cloche-ind i{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 2px rgba(8,16,30,.8)}
