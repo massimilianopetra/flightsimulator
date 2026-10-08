@@ -52,6 +52,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `dati/aereo.js` | i dati dell'aereo: peso, motore, ala, coefficienti aerodinamici, carrello | sì, per sperimentare |
 | `js/terreno.js` | calcola l'altezza del terreno e costruisce la mesh che segue l'aereo | |
 | `js/fisica.js` | la fisica del volo (forze, momenti, carrello, stallo, effetto suolo) | |
+| `js/cabina.js` | la cabina 3D in stile G1000: schermi PFD e MFD, strumenti di riserva, cloche, manetta | |
 | `js/mondo.js` | grafica 3D: cielo, piste con segnaletica, PAPI, hangar, alberi, case, aereo | |
 | `js/strumenti.js` | il PFD (orizzonte, velocità, quota, variometro, bussola) e la minimappa | |
 | `js/audio.js` | suoni sintetizzati: motore, vento, avvisatore di stallo | |
@@ -123,6 +124,7 @@ conviene ricontrollare che gli aeroporti non finiscano in mare.
 | Z / X | trim cabra / picchia |
 | B o Spazio | freni (tieni premuto) |
 | C | vista: esterna, cabina, torre |
+| rotellina del mouse | zoom in cabina (per leggere gli schermi) |
 | N | prossima destinazione |
 | M | zoom della mappa |
 | O (o clic sulla mappa) | mappa con il nord in alto oppure con la prua in alto |

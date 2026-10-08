@@ -285,9 +285,12 @@ function gestisciEventi(){
 
 /* ---------- telecamere ---------- */
 const fwd=new THREE.Vector3(),dx=new THREE.Vector3(),su=new THREE.Vector3(),Y=new THREE.Vector3(0,1,0);
-const occhio=new THREE.Vector3(A.occhioPilota.x,A.occhioPilota.y,A.occhioPilota.z);
 const bersaglio=new THREE.Vector3(),guarda=new THREE.Vector3();
 let primaCamera=true;
+const sguardoGiu=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-12*D2R);
+// zoom in cabina con la rotellina del mouse
+let fovCabina=70;
+canvas.addEventListener('wheel',e=>{if(vista!==1)return;e.preventDefault();fovCabina=clamp(fovCabina+e.deltaY*0.03,25,80);},{passive:false});
 function assi(){fwd.set(0,0,-1).applyQuaternion(st.q);dx.set(1,0,0).applyQuaternion(st.q);su.set(0,1,0).applyQuaternion(st.q);}
 function torreVicina(){
   let best=null,bd=Infinity;
@@ -298,9 +301,10 @@ function impostaFov(f){if(Math.abs(camera.fov-f)>0.01){camera.fov=f;camera.updat
 function aggiornaCamera(dt){
   assi();
   if(vista===1){
-    camera.position.copy(occhio).applyQuaternion(st.q).add(st.pos);
-    camera.quaternion.copy(st.q);
-    impostaFov(70);
+    const cab=mondo.aereo.cabina;
+    camera.position.copy(cab.occhio).applyQuaternion(st.q).add(st.pos);
+    camera.quaternion.copy(st.q).multiply(sguardoGiu);   // sguardo un po' verso il basso, sul pannello
+    impostaFov(fovCabina);
   }else if(vista===2&&mondo.torri.length){
     const t=torreVicina();
     camera.position.copy(t.pos);camera.up.set(0,1,0);camera.lookAt(st.pos);
@@ -329,12 +333,22 @@ function aggiornaStrumenti(dt){
   const hdg=((Math.atan2(fwd.x,-fwd.z)*R2D)+360)%360;
   let bug=null;
   if(d) bug=((Math.atan2(d.x-st.pos.x,-(d.z-st.pos.z))*R2D)+360)%360;
-  strum.disegnaPFD({
+  const dati={
     pitch:Math.asin(clamp(fwd.y,-1,1))*R2D,
     bank:Math.atan2(-dx.y,su.y),
     ias:st.ias*KT, alt:st.pos.y*FT, agl:Math.max(0,st.agl)*FT,
     vs:vsFiltrata, hdg, palla:st.palla, bug, gs:st.gs*KT,
-  });
+  };
+  if(vista===1){
+    // in cabina: gli strumenti vengono disegnati sugli schermi del pannello
+    const cab=mondo.aereo.cabina;
+    strum.disegnaPFD(dati,cab.pfd.sup);cab.pfd.tex.needsUpdate=true;
+    strum.disegnaRiserva(cab.riserva.sup,dati);cab.riserva.tex.needsUpdate=true;
+    if(n%4===0){
+      const trk=((Math.atan2(st.vel.x,-st.vel.z)*R2D)+360)%360;
+      strum.disegnaMFD(cab.mfd.sup,{s:st,hdg,dest:d,gs:st.gs*KT,trk,thr:st.thr});cab.mfd.tex.needsUpdate=true;
+    }
+  }else strum.disegnaPFD(dati);
   return {hdg,bug};
 }
 const el={};
@@ -358,6 +372,7 @@ function aggiornaTesti(hdg,bug){
   el.spiaFreni.classList.toggle('warn',st.freno>0);
   el.spiaTerra.classList.toggle('on',st.aTerra);
   scrivi(el.spiaVista,NOMI_VISTA[vista]);
+  document.body.classList.toggle('vista-cabina',vista===1);
 
   let w='',rosso=false;
   if(avviato&&!st.crashed){
