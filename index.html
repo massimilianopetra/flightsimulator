@@ -15,7 +15,10 @@
 
   <!-- in alto a sinistra: comandi -->
   <section id="aiuto" class="hud aiuto" aria-label="Comandi">
-    <div class="titolo">COMANDI <span class="dim">(H nasconde)</span></div>
+    <button type="button" class="testa" data-pannello="aiuto" aria-expanded="true" aria-controls="aiutoCorpo">
+      <span>COMANDI <span class="dim">(H)</span></span><span class="freccia" aria-hidden="true">▾</span>
+    </button>
+    <div id="aiutoCorpo" class="corpo">
     <dl>
       <dt>W / S</dt><dd>picchia / cabra (anche frecce)</dd>
       <dt>A / D</dt><dd>rollio sinistra / destra</dd>
@@ -30,10 +33,14 @@
       <dt>P / R</dt><dd>pausa / ricomincia</dd>
     </dl>
     <div class="dim">Mouse: trascina sullo schermo come una cloche. Gamepad supportato.</div>
+    </div>
   </section>
 
   <!-- in alto a destra: navigazione -->
-  <section class="hud nav" aria-label="Navigazione">
+  <section id="mappa" class="hud nav" aria-label="Navigazione">
+    <button type="button" class="testa" data-pannello="mappa" aria-expanded="true" aria-controls="minimap">
+      <span>MAPPA</span><span class="freccia" aria-hidden="true">▾</span>
+    </button>
     <canvas id="minimap" aria-label="Mappa (clic: nord o prua in alto)" title="Clic: nord in alto / prua in alto"></canvas>
     <div class="navinfo">
       <div class="row"><span class="lbl">DEST</span><span id="dest" class="val mag">----</span></div>

@@ -250,6 +250,7 @@ SIM.creaStrumenti=function(A){
   return {
     disegnaPFD, disegnaMappa, adatta,
     cambiaZoom(){zoom=(zoom+1)%scale.length;},
+    ridisegnaMappa(){if(ultimaMappa)disegnaMappa(...ultimaMappa);},
     cambiaOrientamento(){
       orient=orient==='nord'?'prua':'nord';
       try{localStorage.setItem('volo-mappa-orient',orient);}catch(e){}

@@ -33,7 +33,13 @@ kbd{font:700 11px var(--f-num);color:var(--cyan);border:1px solid rgba(57,215,25
 
 /* comandi */
 .aiuto{top:calc(12px + env(safe-area-inset-top,0px));left:12px;font-size:12px;line-height:1.45;max-width:20rem}
-.aiuto .titolo{font:700 11px var(--f-ui);letter-spacing:.14em;margin-bottom:6px}
+.testa{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:2px 0;border:0;background:none;
+  font:700 11px var(--f-ui);letter-spacing:.14em;text-transform:none;color:var(--ink);pointer-events:auto;cursor:pointer}
+.testa:hover{color:var(--cyan)}
+.testa .freccia{font-size:15px;line-height:1;transition:transform .15s}
+.chiuso .testa .freccia{transform:rotate(-90deg)}
+.aiuto .corpo{margin-top:6px}
+.aiuto.chiuso .corpo,.nav.chiuso #minimap{display:none}
 .aiuto dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0 0 6px}
 .aiuto dt{font:700 11px var(--f-num);color:var(--cyan);white-space:nowrap}
 .aiuto dd{margin:0}
@@ -92,8 +98,6 @@ button.primario:hover{background:#7fe6ff;color:#05202a}
 .papi .w{background:#fff}.papi .r{background:#ff2a1a}
 
 @media (max-width:1100px){
-  .aiuto{display:none}
-  .aiuto.forza{display:block}
 }
 @media (max-width:860px){
   .basso{flex-direction:column;align-items:stretch}
