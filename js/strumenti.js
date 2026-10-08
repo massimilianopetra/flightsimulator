@@ -177,7 +177,9 @@ SIM.creaStrumenti=function(A){
       const h=Hm[j*RES+i],x=-EST/2+(i+.5)*cell,z=-EST/2+(j+.5)*cell;
       let r,gg,b,acqua=h<0;
       if(!acqua){const l=T.inLago(x,z);if(l&&h<l.q+0.5)acqua=true;}
-      if(acqua){r=44;gg=106;b=150;}
+      const RL=T.rilievo, fuori=RL&&(x<RL.xMin||x>RL.xMin+(RL.larghezza-1)*RL.passo||-z>RL.yNord||-z<RL.yNord-(RL.altezza-1)*RL.passo);
+      if(fuori){r=34;gg=64;b=90;}
+      else if(acqua){r=44;gg=106;b=150;}
       else{
         const t=clamp(h/QMAX,0,1);
         if(t<0.25){const k=t/0.25;r=110+k*40;gg=160+k*10;b=90+k*10;}
@@ -192,8 +194,19 @@ SIM.creaStrumenti=function(A){
     }
     c.putImageData(img,0,0);
   })();
-  const scale=EST>60000?[5000,12000,40000,EST]:[5000,12000,EST];
-  let zoom=1;
+  // scale della mappa: larghezza visibile in miglia nautiche, più "tutta la mappa"
+  const SCALE_NM=[2,5,10,20,50,100].filter(nm=>nm*1852<EST*0.9);
+  const scale=[...SCALE_NM.map(nm=>nm*1852),EST];
+  const nomeScala=i=>i<SCALE_NM.length?SCALE_NM[i]+' NM':(T.reale?'Tutta la regione':'Tutta la mappa');
+  let zoom=Math.max(0,SCALE_NM.indexOf(10));
+  try{const z=+localStorage.getItem('volo-mappa-zoom');if(localStorage.getItem('volo-mappa-zoom')!==null&&z>=0&&z<scale.length)zoom=z;}catch(e){}
+  function impostaZoom(z){
+    zoom=clamp(z,0,scale.length-1);
+    try{localStorage.setItem('volo-mappa-zoom',String(zoom));}catch(e){}
+    if(ultimaMappa)disegnaMappa(...ultimaMappa);
+    if(alCambioZoom)alCambioZoom(zoom);
+  }
+  let alCambioZoom=null;
   // orientamento: 'nord' (nord in alto) oppure 'prua' (la direzione dell'aereo in alto)
   let orient='nord';
   try{if(localStorage.getItem('volo-mappa-orient')==='prua')orient='prua';}catch(e){}
@@ -260,7 +273,7 @@ SIM.creaStrumenti=function(A){
     mg.fillStyle='rgba(8,14,26,.75)';mg.fillRect(4,MH-20,56,16);mg.fillRect(MW-58,MH-20,54,16);
     mg.fillStyle='#e8f1f8';
     mg.fillText(etich,32,MH-12);
-    mg.fillText((range/1852).toFixed(range<10000?1:0)+' NM',MW-31,MH-12);
+    mg.fillText(zoom<SCALE_NM.length?SCALE_NM[zoom]+' NM':'TUTTA',MW-31,MH-12);
     mg.restore();
   }
 
@@ -360,7 +373,12 @@ SIM.creaStrumenti=function(A){
 
   return {
     disegnaPFD, disegnaMappa, disegnaMFD, disegnaRiserva, adatta,
-    cambiaZoom(){zoom=(zoom+1)%scale.length;},
+    cambiaZoom(){impostaZoom((zoom+1)%scale.length);},
+    zoomPiu(){impostaZoom(zoom-1);},     // più dettaglio
+    zoomMeno(){impostaZoom(zoom+1);},    // più zona visibile
+    impostaZoom, get zoom(){return zoom;},
+    scale:()=>scale.map((_,i)=>nomeScala(i)),
+    onZoom(fn){alCambioZoom=fn;},
     ridisegnaMappa(){if(ultimaMappa)disegnaMappa(...ultimaMappa);},
     cambiaOrientamento(){
       orient=orient==='nord'?'prua':'nord';

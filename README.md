@@ -172,7 +172,7 @@ conviene ricontrollare che gli aeroporti non finiscano in mare.
 | C | vista: esterna, cabina, torre |
 | rotellina del mouse | zoom in cabina (per leggere gli schermi) |
 | N | prossima destinazione |
-| M | zoom della mappa |
+| M (o rotellina sopra la mappa, o il menu SCALA) | scala della mappa: 2, 5, 10, 20, 50, 100 NM o tutta la regione |
 | O (o clic sulla mappa) | mappa con il nord in alto oppure con la prua in alto |
 | P / R | pausa / ricomincia |
 | H | apre o chiude il pannello dei comandi |
