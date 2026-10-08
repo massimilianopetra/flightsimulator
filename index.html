@@ -117,7 +117,7 @@
         <label>Destinazione <select id="selDestBrief"></select></label>
       </div>
       <p id="briefTesto"></p>
-      <p id="crediti" class="crediti" hidden>Dati reali: aeroporti © OurAirports (pubblico dominio) · laghi e città © OpenStreetMap contributors (ODbL) · rilievo Mapzen Terrain Tiles (SRTM).</p>
+      <p id="crediti" class="crediti" hidden>Dati reali: aeroporti © OurAirports (pubblico dominio) · laghi, città, strade, ferrovie e fiumi © OpenStreetMap contributors (ODbL) · rilievo Mapzen Terrain Tiles (SRTM).</p>
       <ol class="check">
         <li>Flap a <b>10°</b> con <kbd>F</kbd>.</li>
         <li>Manetta al <b>100%</b> con <kbd>0</kbd> (oppure tieni premuto <kbd>+</kbd>); resta sulla linea centrale con <kbd>Q</kbd>/<kbd>E</kbd>.</li>
@@ -147,7 +147,7 @@
 <!-- dati modificabili: il mondo si sceglie con ?mappa=piemonte (predefinito) o ?mappa=valle -->
 <script>
 (function(){
-  var MONDI={piemonte:["dati/piemonte-rilievo.js","dati/piemonte.js"], valle:["dati/mappa.js"]};
+  var MONDI={piemonte:["dati/piemonte-rilievo.js","dati/piemonte-vie.js","dati/piemonte.js"], valle:["dati/mappa.js"]};
   var m=/[?&]mappa=(\w+)/.exec(location.search), scelta=(m&&MONDI[m[1]])?m[1]:"piemonte";
   window.MONDO_SCELTO=scelta;
   MONDI[scelta].forEach(function(f){document.write('<script src="'+f+'"><\/script>');});

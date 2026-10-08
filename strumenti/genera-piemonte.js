@@ -3,10 +3,12 @@
    Uso (dalla cartella del progetto):   node strumenti/genera-piemonte.js
    Scarica (e tiene in strumenti/cache/):
      - quote del terreno: "terrain tiles" di Mapzen su AWS (SRTM e altri), formato Terrarium
+     - strade, ferrovie e fiumi: estratto OpenStreetMap del Nord-Ovest da Geofabrik (© OpenStreetMap contributors, ODbL)
      - aeroporti e piste: OurAirports (pubblico dominio)
      - contorni dei laghi e posizione delle città: OpenStreetMap via Nominatim (© OpenStreetMap contributors, ODbL)
    Produce:
      - dati/piemonte-rilievo.js   (window.RILIEVO: griglia di quote)
+     - dati/piemonte-vie.js       (window.VIE: autostrade, strade, ferrovie, fiumi)
      - dati/piemonte.js           (window.MAPPA: aeroporti, laghi, città, meteo, partenza)
    Non servono librerie esterne: basta Node.js 18 o più recente.
    ===================================================================== */
@@ -255,6 +257,108 @@ async function citta(dentro){
 }
 
 /* =====================================================================
+   4. VIE DI COMUNICAZIONE (estratto OpenStreetMap di Geofabrik): strade, ferrovie, fiumi
+   ===================================================================== */
+// Douglas-Peucker: toglie i punti che si discostano dalla linea meno di "tol" metri
+function semplifica(p,tol){
+  if(p.length<3) return p;
+  const tieni=new Uint8Array(p.length);tieni[0]=tieni[p.length-1]=1;
+  const pila=[[0,p.length-1]];
+  while(pila.length){
+    const [a,b]=pila.pop();let max=0,im=-1;
+    const [ax,ay]=p[a],[bx,by]=p[b],dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy||1;
+    for(let i=a+1;i<b;i++){
+      const t=Math.max(0,Math.min(1,((p[i][0]-ax)*dx+(p[i][1]-ay)*dy)/l2));
+      const ex=ax+t*dx-p[i][0],ey=ay+t*dy-p[i][1],d=ex*ex+ey*ey;
+      if(d>max){max=d;im=i;}
+    }
+    if(im>=0&&max>tol*tol){tieni[im]=1;pila.push([a,im],[im,b]);}
+  }
+  return p.filter((_,i)=>tieni[i]);
+}
+// unisce i tratti che si toccano agli estremi (stessa sigla o nome)
+function concatena(linee){
+  const chiave=pt=>pt[0]+','+pt[1];
+  const perEstremo=new Map();
+  const aggiungi=(k,l)=>{if(!perEstremo.has(k))perEstremo.set(k,[]);perEstremo.get(k).push(l);};
+  for(const l of linee){aggiungi(chiave(l.p[0]),l);aggiungi(chiave(l.p[l.p.length-1]),l);}
+  const usate=new Set(),out=[];
+  for(const l of linee){
+    if(usate.has(l)) continue;
+    usate.add(l);let p=l.p.slice();
+    for(let lato=0;lato<2;lato++){
+      for(;;){
+        const k=chiave(p[p.length-1]);
+        const c=(perEstremo.get(k)||[]).find(m=>!usate.has(m)&&m.ref===l.ref);
+        if(!c) break;
+        usate.add(c);
+        const q=chiave(c.p[0])===k?c.p:c.p.slice().reverse();
+        p=p.concat(q.slice(1));
+      }
+      p.reverse();
+    }
+    out.push({ref:l.ref,p});
+  }
+  return out;
+}
+// estratto OpenStreetMap del Nord-Ovest (Piemonte, Valle d'Aosta, Liguria, Lombardia) da Geofabrik
+const PBF_URL='https://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf';
+const CAT_VIE={
+  autostrade:{tol:25}, superstrade:{tol:25}, statali:{tol:30}, provinciali:{tol:35},
+  ferrovie:{tol:30}, fiumi:{tol:30}, canali:{tol:30},
+};
+const GRANDI_CANALI=/^(Canale (Cavour|Villoresi|Regina Elena|Depretis)|Naviglio Grande)$/;
+function categoria(t){
+  if(t.highway==='motorway')return 'autostrade';
+  if(t.highway==='trunk')return 'superstrade';
+  if(t.highway==='primary')return 'statali';
+  if(t.highway==='secondary')return 'provinciali';
+  if(t.railway==='rail'&&!t.service&&!/industrial|military|tourism|test/.test(t.usage||''))return 'ferrovie';
+  if(t.waterway==='river')return 'fiumi';
+  if(t.waterway==='canal'&&GRANDI_CANALI.test(t.name||''))return 'canali';
+  return null;
+}
+async function vie(){
+  const estratte=path.join(CACHE,'vie_estratte.json');
+  let way;
+  if(fs.existsSync(estratte)) way=JSON.parse(fs.readFileSync(estratte,'utf8'));
+  else{
+    const pbf=path.join(CACHE,'nord-ovest.osm.pbf');
+    if(!fs.existsSync(pbf)){
+      console.log('  scarico '+PBF_URL+' (circa 600 MB, una volta sola)...');
+      const r=await fetch(PBF_URL,{headers:UA});if(!r.ok)throw new Error('HTTP '+r.status);
+      fs.writeFileSync(pbf,Buffer.from(await r.arrayBuffer()));
+    }
+    const {estraiWay}=require('./leggi-pbf.js');
+    way=estraiWay(pbf,categoria).map(w=>({cat:w.cat,
+      ref:(w.cat==='fiumi'||w.cat==='canali')?(w.tag.name||''):(w.tag.ref||'').split(';')[0].replace(/s+/g,''),
+      punti:w.punti.map(([la,lo])=>[Math.round(la*1e6)/1e6,Math.round(lo*1e6)/1e6])}));
+    fs.writeFileSync(estratte,JSON.stringify(way));
+  }
+  const dentro=([la,lo])=>la>=ZONA.sud&&la<=ZONA.nord&&lo>=ZONA.ovest&&lo<=ZONA.est;
+  const out={};
+  for(const [nome,c] of Object.entries(CAT_VIE)){
+    const linee=way.filter(w=>w.cat===nome&&w.punti.some(dentro)&&(nome!=='canali'||GRANDI_CANALI.test(w.ref)))
+      .map(w=>({ref:w.ref,p:w.punti.map(([la,lo])=>{const q=proietta(la,lo);return [Math.round(q.x),Math.round(q.y)];})}));
+    const unite=concatena(linee).map(l=>({ref:l.ref,p:semplifica(l.p,c.tol)})).filter(l=>l.p.length>1);
+    // codifica compatta: primo punto assoluto, poi differenze, in decine di metri
+    out[nome]=unite.map(l=>{
+      const v=[];let px=0,py=0;
+      for(const [x,y] of l.p){const qx=Math.round(x/10),qy=Math.round(y/10);v.push(qx-px,qy-py);px=qx;py=qy;}
+      return l.ref?{r:l.ref,p:v}:{p:v};
+    });
+    const punti=unite.reduce((n,l)=>n+l.p.length,0);
+    console.log('  '+nome+': '+linee.length+' tratti -> '+unite.length+' linee, '+punti+' punti');
+  }
+  const testo='/* Vie di comunicazione (strade, ferrovie, fiumi) generate da strumenti/genera-piemonte.js.\n'+
+    '   Fonte: © OpenStreetMap contributors (licenza ODbL). Non modificare a mano.\n'+
+    '   Ogni linea: p = [x0, y0, dx1, dy1, ...] in decine di metri (x est, y nord); r = sigla o nome. */\n'+
+    'window.VIE='+JSON.stringify(out)+';\n';
+  fs.writeFileSync(path.join(RADICE,'dati','piemonte-vie.js'),testo);
+  console.log('Scritto dati/piemonte-vie.js ('+(testo.length/1e6).toFixed(2)+' MB)');
+}
+
+/* =====================================================================
    SCRITTURA DELLA MAPPA
    ===================================================================== */
 (async()=>{
@@ -263,6 +367,7 @@ async function citta(dentro){
   const aer=await aeroporti(dentro);
   console.log('Laghi:');const lag=await laghi(ril);
   const cit=await citta(dentro);
+  console.log("Vie di comunicazione:");await vie();
   const J=v=>JSON.stringify(v);
   const righeAer=aer.map(a=>`    { codice: ${J(a.codice)}, nome: ${J(a.nome)}, x: ${a.x}, y: ${a.y}, quota: ${a.quota},\n      piste: [ ${a.piste.map(p=>J(p).replace(/"(\w+)":/g,'$1: ')).join(',\n               ')} ] },`).join('\n');
   const righeCit=cit.map(c=>`    ${J(c).replace(/"(\w+)":/g,'$1: ')},`).join('\n');

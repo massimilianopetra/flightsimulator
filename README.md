@@ -67,6 +67,8 @@ Il sito non ha bisogno di compilazione: sono file statici.
 |---|---|---|
 | `dati/mappa.js` | il mondo **inventato** (Valle Azzurra): colline, montagne, laghi, aeroporti e piste, paesi, boschi, meteo, punto di partenza | **sì, è fatto apposta** |
 | `dati/piemonte.js` | il mondo **reale**: aeroporti e piste, laghi, città, meteo, partenza (generato) | sì (meteo, partenza, colori) |
+| `dati/piemonte-vie.js` | autostrade, strade statali e provinciali, ferrovie, fiumi e grandi canali (generato) | no |
+| `strumenti/leggi-pbf.js` | piccolo lettore dei file `.osm.pbf` di OpenStreetMap, usato dal generatore | |
 | `dati/piemonte-rilievo.js` | le quote vere del terreno, griglia di 250 m (generato, non si modifica a mano) | no |
 | `strumenti/genera-piemonte.js` | lo script che scarica i dati reali e crea i due file del Piemonte | |
 | `dati/aereo.js` | i dati dell'aereo: peso, motore, ala, coefficienti aerodinamici, carrello | sì, per sperimentare |
@@ -82,14 +84,20 @@ Il sito non ha bisogno di compilazione: sono file statici.
 
 ## La mappa reale del Piemonte
 
+Sulla mappa del Piemonte ci sono anche le **vie di comunicazione**, utili per orientarsi a vista:
+autostrade in rosso con la sigla su cartello verde (A4, A6, A21, A32, A55...), superstrade in arancione,
+strade statali in giallo, provinciali in chiaro (solo da 20 NM in giù), ferrovie nere a trattini
+e fiumi in blu, con il Po più spesso.
+
+
 I file `dati/piemonte.js` e `dati/piemonte-rilievo.js` sono creati dallo script
 
 ```
 node strumenti/genera-piemonte.js
 ```
 
-che scarica i dati da Internet (servono un paio di minuti la prima volta; poi restano in
-`strumenti/cache/`, che non va su GitHub). In cima allo script si possono cambiare la **zona**
+che scarica i dati da Internet (la prima volta anche l'estratto OpenStreetMap del Nord-Ovest, circa 600 MB:
+servono alcuni minuti; poi tutto resta in `strumenti/cache/`, che non va su GitHub). In cima allo script si possono cambiare la **zona**
 (latitudini e longitudini), il **passo** della griglia delle quote e l'elenco di laghi e città.
 Attenzione: rilanciandolo, `dati/piemonte.js` viene riscritto, quindi le modifiche fatte a mano
 (per esempio il meteo) vanno rifatte, oppure messe direttamente nello script.
@@ -100,6 +108,7 @@ e pista di partenza, destinazione, colori del terreno per quota, e aggiungere o 
 **Fonti dei dati** (da citare se il progetto viene mostrato o pubblicato):
 - aeroporti e piste: [OurAirports](https://ourairports.com/data/), pubblico dominio;
 - laghi e città: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, licenza ODbL;
+- strade, ferrovie e fiumi: © OpenStreetMap contributors (ODbL), dall'estratto del Nord-Ovest di [Geofabrik](https://download.geofabrik.de/europe/italy.html);
 - quote del terreno: [Mapzen Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (SRTM, GMTED e altri).
 
 Le vette risultano circa 150–250 m più basse del vero (il Monviso fa ~3650 m invece di 3841),
