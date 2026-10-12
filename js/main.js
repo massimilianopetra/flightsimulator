@@ -22,7 +22,7 @@ function ridimensiona(){
 addEventListener('resize',ridimensiona);ridimensiona();
 
 const T=SIM.terreno;
-const terreno=T.creaMesh(scene);
+const terreno=T.creaMesh(scene,renderer);
 const mondo=SIM.creaMondo(scene,renderer);
 camera.far=Math.max(15000,scene.fog.far*1.15);camera.updateProjectionMatrix();
 const fis=SIM.creaFisica(A,T), st=fis.st;
