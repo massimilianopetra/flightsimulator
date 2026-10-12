@@ -80,6 +80,36 @@ let modalita='decollo';
 let destIdx=T.aeroporti.findIndex(a=>a.codice===M.destinazione);
 if(destIdx<0)destIdx=Math.max(0,T.aeroporti.findIndex(a=>a!==partenza.ap));
 const dest=()=>T.aeroporti[destIdx]||null;
+// piano di volo verso la destinazione (js/piano.js)
+const piano=SIM.creaPiano(T,A,met);
+let faseMostrata=-1;
+function ricalcolaPiano(){
+  const d=dest(),p=piano.calcola(partenza,d,d&&testataControvento(d));
+  $('pianoCorpo').innerHTML=piano.html();faseMostrata=-1;
+  strum.impostaRotta(p?{punti:[{x:p.x0,z:p.z0},{x:p.faf.x,z:p.faf.z,nome:p.nomeFaf},{x:p.te.x,z:p.te.z}],prossimo:1}:null);
+  aggiornaPiano();adattaDestra();
+}
+function aggiornaPiano(){
+  const p=piano.aggiorna(st);if(!p) return;
+  if(p.fase!==faseMostrata){faseMostrata=p.fase;$('pianoCorpo').innerHTML=piano.html();}
+  const f=$('pvFase');if(f)scrivi(f,piano.testoFase());
+  strum.impostaRotta({punti:[{x:p.x0,z:p.z0},{x:p.faf.x,z:p.faf.z,nome:p.nomeFaf},{x:p.te.x,z:p.te.z}],prossimo:p.prossimo+1});
+}
+/* la colonna di destra (mappa + piano) non deve finire sotto il pannello in basso: se serve, la mappa si rimpicciolisce */
+function adattaDestra(){
+  const col=$('destra'),mm=$('minimap');
+  mm.style.width='';
+  let limite=innerHeight-12;
+  const rc=col.getBoundingClientRect();
+  for(const h of document.querySelectorAll('.basso .hud')){
+    const r=h.getBoundingClientRect();
+    if(r.width&&r.right>rc.left&&r.left<rc.right)limite=Math.min(limite,r.top-8);
+  }
+  const troppo=rc.bottom-limite;
+  if(troppo>0&&mm.offsetWidth)mm.style.width=Math.max(150,mm.offsetWidth-troppo)+'px';
+  strum.adatta();strum.ridisegnaMappa();
+}
+addEventListener('resize',()=>adattaDestra());
 
 /* ---------- stato del gioco ---------- */
 let avviato=false, inPausa=false, vista=0, tempo=0;
@@ -94,6 +124,7 @@ function ricomincia(){
   terreno.aggiorna(st.pos.x,st.pos.z,true);
   primaCamera=true;
   $('thr').value=Math.round(st.thr*100);
+  if(piano.piano){piano.piano.prossimo=0;aggiornaPiano();}
   if(avviato&&modalita==='finale') messaggio('In finale per la pista <b>'+partenza.te.nome+'</b>: segui le luci PAPI, 65 nodi, flap 30°',6);
   else if(avviato) messaggio(partenza.te?`Pronto al decollo: pista <b>${partenza.te.nome}</b> di <b>${partenza.ap.codice}</b>`:'In volo!',4);
 }
@@ -151,7 +182,7 @@ function apriPannello(id,aperto){
   el.classList.toggle('chiuso',!aperto);
   btn.setAttribute('aria-expanded',String(aperto));
   try{localStorage.setItem('volo-pannello-'+id,aperto?'1':'0');}catch(e){}
-  if(id==='mappa'&&aperto){strum.adatta();strum.ridisegnaMappa();}
+  if(typeof adattaDestra==='function'&&$('pianoCorpo'))adattaDestra();
 }
 function alternaPannello(id){apriPannello(id,$(id).classList.contains('chiuso'));}
 for(const b of document.querySelectorAll('[data-pannello]')){
@@ -193,6 +224,7 @@ addEventListener('keydown',e=>{
     case 'KeyK':centraCloche();break;
     case 'KeyP':alternaPausa();break;
     case 'KeyH':alternaAiuto();break;
+    case 'KeyI':alternaPannello('piano');break;
     case 'KeyR':if(avviato)ricomincia();break;
     case 'Enter':case 'NumpadEnter':if(!avviato)inizia();else if(st.crashed)ricomincia();break;
   }
@@ -354,7 +386,8 @@ function aggiornaStrumenti(dt){
   const d=dest();
   const hdg=((Math.atan2(fwd.x,-fwd.z)*R2D)+360)%360;
   let bug=null;
-  if(d) bug=((Math.atan2(d.x-st.pos.x,-(d.z-st.pos.z))*R2D)+360)%360;
+  const b=piano.bersaglio()||d; // si punta al prossimo punto del piano (finale, poi pista)
+  if(b) bug=((Math.atan2(b.x-st.pos.x,-(b.z-st.pos.z))*R2D)+360)%360;
   const dati={
     pitch:Math.asin(clamp(fwd.y,-1,1))*R2D,
     bank:Math.atan2(-dx.y,su.y),
@@ -383,7 +416,7 @@ function aggiornaTesti(hdg,bug){
   scrivi(el.trim,(tr>0?'+':'')+tr);
   scrivi(el.gload,st.g.toFixed(1));
   scrivi(el.thrv,String(Math.round(st.thr*100)));
-  const d=dest();
+  const d=piano.bersaglio()||dest();
   if(d){
     scrivi(el.dist,(Math.hypot(d.x-st.pos.x,d.z-st.pos.z)/1852).toFixed(1));
     scrivi(el.brg,String(Math.round(bug)%360).padStart(3,'0'));
@@ -421,6 +454,7 @@ function aggiornaBriefing(){
     t+=`Destinazione: <b>${d.codice} – ${d.nome}</b>, a ${dist.toFixed(1)} NM (quota ${Math.round(d.quota*FT)} ft). Il rombo magenta sulla bussola e la linea sulla mappa indicano la rotta.`;
   }
   $('briefTesto').innerHTML=t;
+  ricalcolaPiano();
   $('briefVr').textContent=A.velocita.vr;$('briefVy').textContent=A.velocita.vy;
 }
 const selMondo=$('selMondo'),selAp=$('selAeroporto'),selPista=$('selPista'),selDB=$('selDestBrief'),selD=$('selDest');
@@ -473,7 +507,7 @@ function ciclo(ora){
   terreno.aggiorna(camera.position.x,camera.position.z,false);
   mondo.aggiorna(st,camera.position,vento,attivo?dt:0,vista===1);
   if(n%2===0)ultimiStrum=aggiornaStrumenti(dt*2);
-  if(n%6===0){aggiornaTesti(ultimiStrum.hdg,ultimiStrum.bug);strum.disegnaMappa(st,ultimiStrum.hdg,dest());}
+  if(n%6===0){aggiornaPiano();aggiornaTesti(ultimiStrum.hdg,ultimiStrum.bug);strum.disegnaMappa(st,ultimiStrum.hdg,dest());}
   audio.aggiorna(st,!attivo);
   renderer.render(scene,camera);
   n++;

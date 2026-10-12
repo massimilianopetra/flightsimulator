@@ -298,6 +298,8 @@ SIM.creaStrumenti=function(A){
   try{if(localStorage.getItem('volo-mappa-orient')==='prua')orient='prua';}catch(e){}
 
   let ultimaMappa=null;
+  // rotta del piano di volo: {punti:[{x,z,nome}], prossimo} (indice del punto verso cui si va)
+  let rottaMappa=null;
   function disegnaMappa(s,hdg,dest,sup){
     if(sup){const v=[mg,MW,MH,dpr,MOX,MOY];mg=sup.g;MW=sup.W;MH=sup.H;dpr=1;MOX=sup.x||0;MOY=sup.y||0;
       try{disegnaMappa(s,hdg,dest);}finally{[mg,MW,MH,dpr,MOX,MOY]=v;}return;}
@@ -344,7 +346,22 @@ SIM.creaStrumenti=function(A){
       mg.fillStyle='rgba(8,14,26,.75)';mg.fillRect(x-2,y-7,mg.measureText(ap.codice).width+4,14);
       mg.fillStyle=ap===dest?'#ff5ad9':'#e8f1f8';mg.fillText(ap.codice,x,y);
     }
-    if(dest){
+    if(rottaMappa&&rottaMappa.punti.length){
+      // rotta pianificata (sottile), poi dall'aereo al prossimo punto (piena)
+      const pt=rottaMappa.punti.map(p=>P(p.x,p.z)),i0=rottaMappa.prossimo;
+      mg.strokeStyle='rgba(255,90,217,.55)';mg.lineWidth=1.5;mg.setLineDash([4,4]);
+      mg.beginPath();pt.forEach(([x,y],i)=>i?mg.lineTo(x,y):mg.moveTo(x,y));mg.stroke();mg.setLineDash([]);
+      mg.strokeStyle='#ff5ad9';mg.lineWidth=2.2;
+      mg.beginPath();mg.moveTo(cx,cy);for(let i=i0;i<pt.length;i++)mg.lineTo(pt[i][0],pt[i][1]);mg.stroke();
+      mg.font=`700 9px ${MONO}`;mg.textAlign='left';mg.textBaseline='middle';
+      rottaMappa.punti.forEach((p,i)=>{
+        if(!p.nome||i===pt.length-1) return;
+        const [x,y]=pt[i];
+        mg.fillStyle='#ff5ad9';mg.beginPath();mg.moveTo(x,y-5);mg.lineTo(x+5,y);mg.lineTo(x,y+5);mg.lineTo(x-5,y);mg.closePath();mg.fill();
+        mg.fillStyle='rgba(8,14,26,.75)';mg.fillRect(x+7,y-6,mg.measureText(p.nome).width+4,12);
+        mg.fillStyle='#ff5ad9';mg.fillText(p.nome,x+9,y);
+      });
+    }else if(dest){
       const [dx,dy]=P(dest.x,dest.z);
       mg.strokeStyle='#ff5ad9';mg.lineWidth=2;mg.setLineDash([6,4]);
       mg.beginPath();mg.moveTo(cx,cy);mg.lineTo(dx,dy);mg.stroke();mg.setLineDash([]);
@@ -470,6 +487,7 @@ SIM.creaStrumenti=function(A){
     scale:()=>scale.map((_,i)=>nomeScala(i)),
     onZoom(fn){alCambioZoom=fn;},
     ridisegnaMappa(){if(ultimaMappa)disegnaMappa(...ultimaMappa);},
+    impostaRotta(r){rottaMappa=r;},
     cambiaOrientamento(){
       orient=orient==='nord'?'prua':'nord';
       try{localStorage.setItem('volo-mappa-orient',orient);}catch(e){}

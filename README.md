@@ -74,6 +74,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `strumenti/genera-piemonte.js` | lo script che scarica i dati reali e crea i due file del Piemonte | |
 | `dati/aereo.js` | i dati dell'aereo: peso, motore, ala, coefficienti aerodinamici, carrello | sì, per sperimentare |
 | `js/terreno.js` | calcola l'altezza del terreno e costruisce la mesh che segue l'aereo | |
+| `js/piano.js` | piano di volo verso la destinazione e informazioni sulla pista di arrivo | |
 | `js/paesaggio.js` | disegna strade, fiumi e paesi sul terreno e genera gli edifici (solo mappa reale) | |
 | `js/fisica.js` | la fisica del volo (forze, momenti, carrello, stallo, effetto suolo) | |
 | `js/cabina.js` | la cabina 3D in stile G1000: schermi PFD e MFD, strumenti di riserva, cloche, manetta | |
@@ -195,6 +196,7 @@ conviene ricontrollare che gli aeroporti non finiscano in mare.
 | C | vista: esterna, cabina, torre |
 | rotellina del mouse | zoom in cabina (per leggere gli schermi) |
 | N | prossima destinazione |
+| I | apre o chiude il piano di volo |
 | M (o rotellina sopra la mappa, o il menu SCALA) | scala della mappa: 2, 5, 10, 20, 50, 100 NM o tutta la regione |
 | O (o clic sulla mappa) | mappa con il nord in alto oppure con la prua in alto |
 | P / R | pausa / ricomincia |
@@ -217,6 +219,27 @@ Poco sopra la pista togli motore e alza leggermente il muso (richiamata).
 Sotto 600–700 ft/min di discesa al contatto il carrello resiste.
 
 Il pulsante **Prova l'atterraggio** del briefing ti mette già in finale.
+
+## Il piano di volo
+
+Sotto la mappa c'è il **piano di volo** verso la destinazione scelta, come lo preparerebbe un pilota VFR:
+
+1. **DEC** – decollo dalla pista di partenza;
+2. **SAL** – salita alla quota di crociera (a 74 nodi, circa 550 ft/min);
+3. **CRO** – crociera: rotta, distanza e quota. La quota è calcolata sul rilievo vero lungo la rotta
+   (almeno 1000 ft sopra il punto più alto) e segue la regola VFR: verso est migliaia dispari + 500 ft
+   (3500, 5500...), verso ovest migliaia pari + 500 ft (4500, 6500...);
+4. **DIS** – dove cominciare la discesa (a 500 ft/min);
+5. **F..** – il **punto di finale**, 5 NM prima della pista in uso e allineato con lei, alla quota giusta per
+   il sentiero di 3°;
+6. **ATT** – atterraggio: 65 nodi, flap 30°.
+
+La **pista in uso** è quella più controvento; il riquadro ne mostra lunghezza, larghezza, fondo (asfalto o erba),
+direzione (QFU), la quota del campo, l'altezza del circuito (1000 ft sopra il campo) e quanto vento arriva di
+fronte e di traverso. Durante il volo la tappa in corso è evidenziata e l'ultima riga dice cosa fare e fra
+quante miglia. Il rombo magenta sulla bussola, DIST/ROTTA e la linea sulla mappa portano **prima al punto di
+finale e poi alla pista**, così si arriva già allineati.
+
 
 ## Cosa c'è di "vero" nella fisica
 
