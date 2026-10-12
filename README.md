@@ -89,6 +89,11 @@ autostrade in rosso con la sigla su cartello verde (A4, A6, A21, A32, A55...), s
 strade statali in giallo, provinciali in chiaro (solo da 20 NM in giù), ferrovie nere a trattini
 e fiumi in blu, con il Po più spesso.
 
+Le stesse vie si vedono anche **nel paesaggio 3D**, con colori realistici: asfalto grigio, autostrade a due
+carreggiate con lo spartitraffico, massicciata delle ferrovie, fiumi con l'acqua e il greto di ghiaia.
+Sono disegnate su un'immagine (circa 5 m per pixel) che il terreno vicino "indossa", quindi seguono
+esattamente salite e discese.
+
 
 I file `dati/piemonte.js` e `dati/piemonte-rilievo.js` sono creati dallo script
 
@@ -219,7 +224,7 @@ Il pulsante **Prova l'atterraggio** del briefing ti mette già in finale.
 ## Idee per i prossimi passi
 
 - Più aerei (un aliante? un jet?): basta un altro file come `dati/aereo.js`.
-- Strade, fiumi e ferrovie nella mappa.
+- Aree urbane vere riempite di edifici, e i monumenti di Torino.
 - Notte, con le luci di pista.
 - Strumenti di radionavigazione (VOR, ILS).
 - Missioni: atterrare in un aeroporto entro un tempo, lanciare rifornimenti, ecc.
