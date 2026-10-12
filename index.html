@@ -36,6 +36,7 @@
       <dt>C</dt><dd>vista: esterna, cabina, torre</dd>
       <dt>Rotellina</dt><dd>zoom in cabina</dd>
       <dt>N</dt><dd>prossima destinazione</dd>
+      <dt>I</dt><dd>piano di volo e pista di arrivo</dd>
       <dt>M / O</dt><dd>scala mappa (anche rotellina sulla mappa) / nord o prua in alto</dd>
       <dt>P / R</dt><dd>pausa / ricomincia</dd>
     </dl>
@@ -43,7 +44,8 @@
     </div>
   </section>
 
-  <!-- in alto a destra: navigazione -->
+  <!-- in alto a destra: navigazione e piano di volo -->
+  <div id="destra" class="destra">
   <section id="mappa" class="hud nav" aria-label="Navigazione">
     <button type="button" class="testa" data-pannello="mappa" aria-expanded="true" aria-controls="minimap">
       <span>MAPPA</span><span class="freccia" aria-hidden="true">▾</span>
@@ -57,6 +59,13 @@
       <div class="row"><span class="lbl">VENTO</span><span id="vento" class="val sm">270/6</span></div>
     </div>
   </section>
+  <section id="piano" class="hud piano" aria-label="Piano di volo">
+    <button type="button" class="testa" data-pannello="piano" aria-expanded="true" aria-controls="pianoCorpo">
+      <span>PIANO DI VOLO <span class="dim">(I)</span></span><span class="freccia" aria-hidden="true">▾</span>
+    </button>
+    <div id="pianoCorpo" class="corpo"></div>
+  </section>
+  </div>
 
   <div id="avviso" class="avviso" hidden></div>
   <div id="msg" class="msg" hidden></div>
@@ -161,6 +170,7 @@
 <script src="js/cabina.js"></script>
 <script src="js/mondo.js"></script>
 <script src="js/strumenti.js"></script>
+<script src="js/piano.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/main.js"></script>
 </body>
