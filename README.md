@@ -67,12 +67,14 @@ Il sito non ha bisogno di compilazione: sono file statici.
 |---|---|---|
 | `dati/mappa.js` | il mondo **inventato** (Valle Azzurra): colline, montagne, laghi, aeroporti e piste, paesi, boschi, meteo, punto di partenza | **sì, è fatto apposta** |
 | `dati/piemonte.js` | il mondo **reale**: aeroporti e piste, laghi, città, meteo, partenza (generato) | sì (meteo, partenza, colori) |
-| `dati/piemonte-vie.js` | autostrade, strade statali e provinciali, ferrovie, fiumi e grandi canali (generato) | no |
+| `dati/piemonte-vie.js` | autostrade, strade statali, provinciali, comunali e vie dei paesi, ferrovie, fiumi e grandi canali (generato) | no |
+| `dati/piemonte-abitati.js` | aree residenziali e industriali e densità degli edifici veri in quadrati di 100 m (generato) | no |
 | `strumenti/leggi-pbf.js` | piccolo lettore dei file `.osm.pbf` di OpenStreetMap, usato dal generatore | |
 | `dati/piemonte-rilievo.js` | le quote vere del terreno, griglia di 250 m (generato, non si modifica a mano) | no |
 | `strumenti/genera-piemonte.js` | lo script che scarica i dati reali e crea i due file del Piemonte | |
 | `dati/aereo.js` | i dati dell'aereo: peso, motore, ala, coefficienti aerodinamici, carrello | sì, per sperimentare |
 | `js/terreno.js` | calcola l'altezza del terreno e costruisce la mesh che segue l'aereo | |
+| `js/paesaggio.js` | disegna strade, fiumi e paesi sul terreno e genera gli edifici (solo mappa reale) | |
 | `js/fisica.js` | la fisica del volo (forze, momenti, carrello, stallo, effetto suolo) | |
 | `js/cabina.js` | la cabina 3D in stile G1000: schermi PFD e MFD, strumenti di riserva, cloche, manetta | |
 | `js/mondo.js` | grafica 3D: cielo, piste con segnaletica, PAPI, hangar, alberi, case, aereo | |
@@ -93,6 +95,13 @@ Le stesse vie si vedono anche **nel paesaggio 3D**, con colori realistici: asfal
 carreggiate con lo spartitraffico, massicciata delle ferrovie, fiumi con l'acqua e il greto di ghiaia.
 Sono disegnate su un'immagine (circa 5 m per pixel) che il terreno vicino "indossa", quindi seguono
 esattamente salite e discese.
+
+Anche **paesi e città** sono quelli veri. Da OpenStreetMap il generatore ricava le aree residenziali e industriali
+e, per ogni quadrato di 100 m, quanta superficie è coperta da edifici (in tutto circa 2,7 milioni di edifici).
+Il gioco riempie quei quadrati di edifici generati: case con il tetto in coppi nei paesi, palazzi più alti e fitti
+verso il centro delle città grandi, capannoni nelle zone industriali. Ogni edificio è girato come la strada più
+vicina e non invade strade, ferrovie e fiumi. Vicino all'aereo sono in 3D (fino a 100 000), più lontano restano
+disegnati sul terreno. Le strade comunali e le vie dei paesi compaiono anche sulla mappa alle scale più piccole.
 
 
 I file `dati/piemonte.js` e `dati/piemonte-rilievo.js` sono creati dallo script
@@ -224,7 +233,7 @@ Il pulsante **Prova l'atterraggio** del briefing ti mette già in finale.
 ## Idee per i prossimi passi
 
 - Più aerei (un aliante? un jet?): basta un altro file come `dati/aereo.js`.
-- Aree urbane vere riempite di edifici, e i monumenti di Torino.
+- I monumenti di Torino (Mole, Superga, Lingotto).
 - Notte, con le luci di pista.
 - Strumenti di radionavigazione (VOR, ILS).
 - Missioni: atterrare in un aeroporto entro un tempo, lanciare rifornimenti, ecc.

@@ -9,6 +9,7 @@
    Produce:
      - dati/piemonte-rilievo.js   (window.RILIEVO: griglia di quote)
      - dati/piemonte-vie.js       (window.VIE: autostrade, strade, ferrovie, fiumi)
+     - dati/piemonte-abitati.js   (window.ABITATI: aree urbane e densità degli edifici)
      - dati/piemonte.js           (window.MAPPA: aeroporti, laghi, città, meteo, partenza)
    Non servono librerie esterne: basta Node.js 18 o più recente.
    ===================================================================== */
@@ -301,25 +302,71 @@ function concatena(linee){
   }
   return out;
 }
+/* densità degli edifici: tutti gli edifici OSM (building=*) sommati in quadrati di 100 m.
+   Non si portano gli edifici nel gioco (sono milioni): solo quanta superficie coprono. */
+const PASSO_DENSITA=100;
+function densitaEdifici(ril){
+  const file=path.join(CACHE,'densita_edifici.json');
+  if(fs.existsSync(file)) return JSON.parse(fs.readFileSync(file,'utf8'));
+  const {estraiWayLeggere}=require('./leggi-pbf.js');
+  const E=estraiWayLeggere(path.join(CACHE,'nord-ovest.osm.pbf'),t=>t.building&&t.building!=='no');
+  const P=PASSO_DENSITA,x0=ril.xMin,yN=ril.yMax;
+  const W=Math.ceil((ril.xMax-ril.xMin)/P),H=Math.ceil((ril.yMax-ril.yMin)/P);
+  const area=new Float32Array(W*H);
+  let dentro=0;
+  for(let i=0;i<E.n;i++){
+    const a=E.inizio[i],b=E.inizio[i+1];
+    if(b-a<4) continue;
+    let A=0,cx=0,cy=0;
+    const q0=proietta(E.lat[a],E.lon[a]);
+    let px=0,py=0; // coordinate relative al primo nodo, per precisione
+    for(let k=a+1;k<b;k++){
+      const q=proietta(E.lat[k],E.lon[k]),x=q.x-q0.x,y=q.y-q0.y;
+      A+=px*y-x*py;cx+=x;cy+=y;px=x;py=y;
+    }
+    A=Math.abs(A/2);
+    if(A<8||A>200000) continue;
+    const gx=Math.floor((q0.x+cx/(b-a-1)-x0)/P),gy=Math.floor((yN-(q0.y+cy/(b-a-1)))/P);
+    if(gx<0||gy<0||gx>=W||gy>=H) continue;
+    area[gy*W+gx]+=A;dentro++;
+  }
+  console.log('  edifici nella zona: '+dentro);
+  const out=[];
+  for(let i=0;i<W*H;){
+    const v=Math.min(255,Math.round(area[i]/(P*P)*255));
+    if(v===0){let n=0;while(i<W*H&&n<255&&Math.round(area[i]/(P*P)*255)===0){n++;i++;}out.push(0,n);}
+    else{out.push(v);i++;}
+  }
+  const r={x0,yNord:yN,passo:P,larghezza:W,altezza:H,dati:Buffer.from(out).toString('base64')};
+  fs.writeFileSync(file,JSON.stringify(r));
+  return r;
+}
 // estratto OpenStreetMap del Nord-Ovest (Piemonte, Valle d'Aosta, Liguria, Lombardia) da Geofabrik
 const PBF_URL='https://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf';
 const CAT_VIE={
   autostrade:{tol:25}, superstrade:{tol:25}, statali:{tol:30}, provinciali:{tol:35},
+  comunali:{tol:25}, urbane:{tol:12},
   ferrovie:{tol:30}, fiumi:{tol:30}, canali:{tol:30},
 };
+// aree urbanizzate (poligoni chiusi landuse=*): vanno in dati/piemonte-abitati.js
+const CAT_AREE={residenziale:{tol:10}, industriale:{tol:10}};
 const GRANDI_CANALI=/^(Canale (Cavour|Villoresi|Regina Elena|Depretis)|Naviglio Grande)$/;
 function categoria(t){
   if(t.highway==='motorway')return 'autostrade';
   if(t.highway==='trunk')return 'superstrade';
   if(t.highway==='primary')return 'statali';
   if(t.highway==='secondary')return 'provinciali';
+  if(t.highway==='tertiary'||t.highway==='unclassified')return 'comunali';
+  if(t.highway==='residential'||t.highway==='living_street')return 'urbane';
+  if(t.landuse==='residential'||t.landuse==='commercial'||t.landuse==='retail')return 'residenziale';
+  if(t.landuse==='industrial')return 'industriale';
   if(t.railway==='rail'&&!t.service&&!/industrial|military|tourism|test/.test(t.usage||''))return 'ferrovie';
   if(t.waterway==='river')return 'fiumi';
   if(t.waterway==='canal'&&GRANDI_CANALI.test(t.name||''))return 'canali';
   return null;
 }
-async function vie(){
-  const estratte=path.join(CACHE,'vie_estratte.json');
+async function vie(ril){
+  const estratte=path.join(CACHE,'vie_estratte_v2.json');
   let way;
   if(fs.existsSync(estratte)) way=JSON.parse(fs.readFileSync(estratte,'utf8'));
   else{
@@ -330,9 +377,10 @@ async function vie(){
       fs.writeFileSync(pbf,Buffer.from(await r.arrayBuffer()));
     }
     const {estraiWay}=require('./leggi-pbf.js');
-    way=estraiWay(pbf,categoria).map(w=>({cat:w.cat,
-      ref:(w.cat==='fiumi'||w.cat==='canali')?(w.tag.name||''):(w.tag.ref||'').split(';')[0].replace(/s+/g,''),
-      punti:w.punti.map(([la,lo])=>[Math.round(la*1e6)/1e6,Math.round(lo*1e6)/1e6])}));
+    const vicino=([la,lo])=>la>=ZONA.sud-0.05&&la<=ZONA.nord+0.05&&lo>=ZONA.ovest-0.05&&lo<=ZONA.est+0.05;
+    way=estraiWay(pbf,categoria).filter(w=>w.punti.some(vicino)).map(w=>({cat:w.cat,
+      ref:(w.cat==='fiumi'||w.cat==='canali')?(w.tag.name||''):CAT_AREE[w.cat]?'':(w.tag.ref||'').split(';')[0].replace(/\s+/g,''),
+      punti:w.punti.map(([la,lo])=>[Math.round(la*1e5)/1e5,Math.round(lo*1e5)/1e5])}));
     fs.writeFileSync(estratte,JSON.stringify(way));
   }
   const dentro=([la,lo])=>la>=ZONA.sud&&la<=ZONA.nord&&lo>=ZONA.ovest&&lo<=ZONA.est;
@@ -356,6 +404,71 @@ async function vie(){
     'window.VIE='+JSON.stringify(out)+';\n';
   fs.writeFileSync(path.join(RADICE,'dati','piemonte-vie.js'),testo);
   console.log('Scritto dati/piemonte-vie.js ('+(testo.length/1e6).toFixed(2)+' MB)');
+  // aree urbanizzate: poligoni chiusi (way) e multipoligoni (relazioni), semplificati, senza i più piccoli
+  const relFile=path.join(CACHE,'aree_relazioni.json');
+  let rel;
+  if(fs.existsSync(relFile)) rel=JSON.parse(fs.readFileSync(relFile,'utf8'));
+  else{
+    const {estraiRelazioni}=require('./leggi-pbf.js');
+    rel=estraiRelazioni(path.join(CACHE,'nord-ovest.osm.pbf'),t=>t.type==='multipolygon'?categoria(t):null)
+      .filter(r=>CAT_AREE[r.cat])
+      .map(r=>({cat:r.cat,way:r.way.map(w=>w.punti.map(([la,lo])=>[Math.round(la*1e5)/1e5,Math.round(lo*1e5)/1e5]))}));
+    fs.writeFileSync(relFile,JSON.stringify(rel));
+  }
+  // unisce i pezzi di contorno che si toccano agli estremi, finché si chiudono
+  function anelli(pezzi){
+    const aperti=pezzi.filter(p=>p.length>1).map(p=>p.slice()),chiusi=[];
+    const ug=(a,b)=>a[0]===b[0]&&a[1]===b[1];
+    while(aperti.length){
+      let p=aperti.pop();
+      for(let giro=true;giro&&!ug(p[0],p[p.length-1]);){
+        giro=false;
+        for(let i=0;i<aperti.length;i++){
+          const q=aperti[i],fine=p[p.length-1];
+          if(ug(q[0],fine)){p=p.concat(q.slice(1));}
+          else if(ug(q[q.length-1],fine)){p=p.concat(q.slice().reverse().slice(1));}
+          else continue;
+          aperti.splice(i,1);giro=true;break;
+        }
+      }
+      if(ug(p[0],p[p.length-1])&&p.length>3)chiusi.push(p);
+    }
+    return chiusi;
+  }
+  const areaAnello=p=>{let a=0;for(let i=0,j=p.length-1;i<p.length;j=i++)a+=(p[j][0]+p[i][0])*(p[j][1]-p[i][1]);return Math.abs(a/2);};
+  const codifica=p=>{const v=[];let px=0,py=0;
+    for(const [x,y] of p){const qx=Math.round(x/10),qy=Math.round(y/10);if(qx===px&&qy===py&&v.length)continue;v.push(qx-px,qy-py);px=qx;py=qy;}
+    return v;};
+  const aree={};
+  for(const [nome,c] of Object.entries(CAT_AREE)){
+    const prepara=r=>semplifica(r.map(([la,lo])=>{const q=proietta(la,lo);return [Math.round(q.x),Math.round(q.y)];}),c.tol).slice(0,-1);
+    // ogni area è un elenco di anelli: il primo è il contorno, gli altri (dei multipoligoni) contorni o buchi, pari/dispari
+    const lista=[];
+    for(const w of way){
+      if(w.cat!==nome||w.punti.length<=3||!w.punti.some(dentro)) continue;
+      const a=w.punti[0],b=w.punti[w.punti.length-1];
+      if(a[0]!==b[0]||a[1]!==b[1]) continue;
+      lista.push([prepara(w.punti)]);
+    }
+    let nRel=0;
+    for(const r of rel){
+      if(r.cat!==nome||!r.way.some(p=>p.some(dentro))) continue;
+      const an=anelli(r.way).map(prepara).filter(p=>p.length>=3);
+      if(an.length){lista.push(an);nRel++;}
+    }
+    const buone=lista.map(an=>an.filter(p=>p.length>=3)).filter(an=>an.length&&areaAnello(an[0])>=3000);
+    aree[nome]=buone.map(an=>an.length===1?codifica(an[0]):an.map(codifica));
+    console.log('  '+nome+': '+buone.length+' aree (di cui '+nRel+' multipoligoni), '+buone.reduce((n,an)=>n+an.reduce((m,p)=>m+p.length,0),0)+' punti');
+  }
+  const testoA='/* Aree urbanizzate (landuse residenziale/commerciale e industriale) generate da strumenti/genera-piemonte.js.\n'+
+    '   Fonte: © OpenStreetMap contributors (licenza ODbL). Non modificare a mano.\n'+
+    '   Ogni area: [x0, y0, dx1, dy1, ...] in decine di metri (x est, y nord), contorno chiuso;\n'+
+    '   oppure un elenco di contorni così (multipoligoni: si riempie con la regola pari/dispari).\n'+
+    '   densita: per ogni quadrato di 100 m la frazione coperta da edifici (0-255), righe da nord, compressa:\n'+
+    '   in base64, un byte 0 seguito da n significa n quadrati vuoti, ogni altro byte è un valore. */\n'+
+    'window.ABITATI='+JSON.stringify(Object.assign(aree,{densita:densitaEdifici(ril)}))+';\n';
+  fs.writeFileSync(path.join(RADICE,'dati','piemonte-abitati.js'),testoA);
+  console.log('Scritto dati/piemonte-abitati.js ('+(testoA.length/1e6).toFixed(2)+' MB)');
 }
 
 /* =====================================================================
@@ -367,7 +480,7 @@ async function vie(){
   const aer=await aeroporti(dentro);
   console.log('Laghi:');const lag=await laghi(ril);
   const cit=await citta(dentro);
-  console.log("Vie di comunicazione:");await vie();
+  console.log("Vie di comunicazione:");await vie(ril);
   const J=v=>JSON.stringify(v);
   const righeAer=aer.map(a=>`    { codice: ${J(a.codice)}, nome: ${J(a.nome)}, x: ${a.x}, y: ${a.y}, quota: ${a.quota},\n      piste: [ ${a.piste.map(p=>J(p).replace(/"(\w+)":/g,'$1: ')).join(',\n               ')} ] },`).join('\n');
   const righeCit=cit.map(c=>`    ${J(c).replace(/"(\w+)":/g,'$1: ')},`).join('\n');

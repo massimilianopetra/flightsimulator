@@ -204,8 +204,9 @@ SIM.creaMondo=function(scene,renderer){
     ()=>{const h=7+rnd()*6;return [h*0.85,h];},c=>c.setHSL(0.22+rnd()*0.08,0.45,0.24+rnd()*0.1));
 
   /* ---------- paesi ---------- */
+  // sulle mappe reali con le aree urbane vere gli edifici li genera js/paesaggio.js
   const muri=[],tetti=[];
-  for(const c of T.citta){
+  if(!(T.reale&&window.ABITATI)) for(const c of T.citta){
     for(let i=0,tent=0;i<c.n&&tent<c.n*4;tent++){
       const a=rnd()*Math.PI*2,rr=Math.pow(rnd(),0.8),r=c.r*rr,x=c.x+Math.cos(a)*r,z=c.z+Math.sin(a)*r;
       const h=T.suolo(x,z);

@@ -200,6 +200,8 @@ SIM.creaStrumenti=function(A){
   const STILE_VIE={
     fiumi:{col:'#3d8fd6',w:1.4,max:Infinity},
     canali:{col:'#5aa0e0',w:1,max:100000},
+    urbane:{col:'#d8d2c2',w:0.6,max:6000},
+    comunali:{col:'#e4dcc4',w:0.8,max:12000},
     provinciali:{col:'#efe6c8',w:1,max:40000},
     statali:{col:'#f4c542',w:1.6,max:200000},
     ferrovie:{col:'#1b1b1b',w:2,max:100000,tratteggio:true},

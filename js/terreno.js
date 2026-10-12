@@ -285,94 +285,6 @@ api.creaLontano=function(scene){
   return {mesh,buco(cx,cz){unif.uCentro.value.set(cx,cz);}};
 };
 
-/* ---------- vie di comunicazione disegnate sul terreno (solo mappe reali) ----------
-   Un'immagine grande (fino a 4096 px, ~5 m per pixel) copre tutta la griglia vicina:
-   strade, ferrovie e fiumi ci vengono disegnati con colori realistici e poi il
-   terreno la "indossa" nello shader, quindi le vie seguono esattamente il rilievo. */
-const GRANDI_FIUMI=/^(Fiume )?(Ticino|Tanaro|Sesia|Dora Baltea|Toce|Stura di Demonte|Bormida|Stura di Lanzo|Orco)\b/;
-function larghezzaFiume(nome){
-  if(/^(Fiume )?Po$/.test(nome)) return 120;
-  if(GRANDI_FIUMI.test(nome)) return 45;
-  if(/^(Torrente|Rio|Riale|Torrent|Ruisseau|Fosso|Ri )/.test(nome)) return 10;
-  return 18;
-}
-// per ogni tipo, le passate dal bordo verso il centro: [larghezza in m (o fattore per i fiumi), colore]
-const STILE_VIE3D={
-  fiumi:[[1.6,'#a39d8f'],[1,'#4c6a70']],                         // greto di ghiaia, acqua
-  canali:[[15,'#7c8668'],[10,'#4f6b6e']],                       // argini erbosi, acqua
-  provinciali:[[6.5,'#625f5a']],
-  statali:[[10,'#7a776f'],[8,'#525153']],                        // banchina, asfalto
-  ferrovie:[[8,'#7b7165'],[2.6,'#3e3833']],                      // massicciata, binari
-  superstrade:[[21,'#837f75'],[18,'#4d4d4f'],[2,'#5e6a48']],      // banchina, asfalto, spartitraffico
-  autostrade:[[28,'#86827a'],[25,'#4a4a4c'],[3.5,'#5b6845']],
-};
-function creaVie3D(renderer){
-  if(!RL||!window.VIE) return null;
-  const linee=[];
-  for(const cat of Object.keys(STILE_VIE3D)){
-    for(const l of (window.VIE[cat]||[])){
-      const n=l.p.length/2,xs=new Float32Array(n),zs=new Float32Array(n);
-      let x=0,y=0,x0=Infinity,x1=-Infinity,z0=Infinity,z1=-Infinity;
-      for(let i=0;i<n;i++){
-        x+=l.p[2*i];y+=l.p[2*i+1];xs[i]=x*10;zs[i]=-y*10;
-        if(xs[i]<x0)x0=xs[i];if(xs[i]>x1)x1=xs[i];if(zs[i]<z0)z0=zs[i];if(zs[i]>z1)z1=zs[i];
-      }
-      linee.push({cat,xs,zs,box:[x0,x1,z0,z1],w:cat==='fiumi'?larghezzaFiume(l.r||''):1});
-    }
-  }
-  const PX=Math.min(4096,(renderer&&renderer.capabilities.maxTextureSize)||4096);
-  const cv=document.createElement('canvas');cv.width=cv.height=PX;
-  const g=cv.getContext('2d');
-  const tex=new THREE.CanvasTexture(cv);
-  tex.premultiplyAlpha=true;  // così le mipmap non scuriscono i bordi delle strade
-  tex.anisotropy=renderer?renderer.capabilities.getMaxAnisotropy():1;
-  const unif={uVie:{value:tex},uVieO:{value:new THREE.Vector3(1e9,1e9,TS)}};
-  let prossimo=null;
-  return {
-    unif,
-    // disegna le vie attorno a (cx, cz); a pezzi, per non bloccare il fotogramma
-    *disegna(cx,cz){
-      const x0=cx-TS/2,z0=cz-TS/2,X1=x0+TS,Z1=z0+TS,k=PX/TS;
-      g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,PX,PX);
-      g.setTransform(k,0,0,k,-x0*k,-z0*k);
-      g.lineJoin='round';g.lineCap='round';
-      for(const cat of Object.keys(STILE_VIE3D)){
-        const vis=linee.filter(v=>v.cat===cat&&!(v.box[1]<x0-50||v.box[0]>X1+50||v.box[3]<z0-50||v.box[2]>Z1+50));
-        for(const [w,col] of STILE_VIE3D[cat]){
-          g.strokeStyle=col;
-          for(const v of vis){
-            g.lineWidth=w*v.w;
-            g.beginPath();g.moveTo(v.xs[0],v.zs[0]);
-            for(let i=1;i<v.xs.length;i++)g.lineTo(v.xs[i],v.zs[i]);
-            g.stroke();
-          }
-        }
-        yield;
-      }
-      prossimo=[x0,z0];
-    },
-    // da chiamare quando la griglia nuova diventa visibile
-    applica(){
-      if(!prossimo) return;
-      unif.uVieO.value.set(prossimo[0],prossimo[1],TS);tex.needsUpdate=true;prossimo=null;
-    },
-  };
-}
-// fa "indossare" al materiale del terreno l'immagine delle vie
-function vestiMateriale(mat,unif){
-  mat.onBeforeCompile=sh=>{
-    Object.assign(sh.uniforms,unif);
-    sh.vertexShader='varying vec2 vXZ;\n'+sh.vertexShader.replace('#include <begin_vertex>',
-      '#include <begin_vertex>\nvXZ=(modelMatrix*vec4(transformed,1.0)).xz;');
-    sh.fragmentShader='varying vec2 vXZ;\nuniform sampler2D uVie;\nuniform vec3 uVieO;\n'+sh.fragmentShader.replace('#include <color_fragment>',
-      '#include <color_fragment>\n'+
-      'vec2 tuv=(vXZ-uVieO.xy)/uVieO.z; tuv.y=1.0-tuv.y;\n'+
-      'vec4 tv=texture2D(uVie,tuv);\n'+
-      'tv*=1.0-smoothstep(0.42,0.5,max(abs(tuv.x-0.5),abs(tuv.y-0.5)));\n'+ // sfuma verso il bordo
-      'diffuseColor.rgb=diffuseColor.rgb*(1.0-tv.a)+tv.rgb;');
-  };
-}
-
 /* ---------- mesh del terreno che segue l'aereo ----------
    Due copie della griglia: mentre una è visibile, l'altra viene ricalcolata
    a pezzi (pochi righe per fotogramma) e poi le due si scambiano. */
@@ -385,8 +297,9 @@ api.creaMesh=function(scene,renderer){
     idx.array[k++]=a;idx.array[k++]=b;idx.array[k++]=c;idx.array[k++]=a;idx.array[k++]=c;idx.array[k++]=d;
   }
   const mat=new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:1,metalness:0});
-  const vie=creaVie3D(renderer);
-  if(vie)vestiMateriale(mat,vie.unif);
+  // strade, fiumi e paesi disegnati sul terreno + edifici (js/paesaggio.js, solo mappe reali)
+  const vie=SIM.creaPaesaggio?SIM.creaPaesaggio(scene,renderer,TS):null;
+  if(vie)vie.veste(mat);
   function buffer(){
     const geo=new THREE.BufferGeometry();
     geo.setIndex(idx);

@@ -47,7 +47,7 @@ function* blocchi(file){
 }
 
 /* PrimitiveBlock: tabella delle stringhe + gruppi */
-function leggiBlocco(dati,{suWay,suNodi}){
+function leggiBlocco(dati,{suWay,suNodi,suRel}){
   const r=new Lettore(dati);const stringhe=[];const gruppi=[];
   let gran=100,latOff=0,lonOff=0;
   while(!r.fine()){
@@ -73,6 +73,19 @@ function leggiBlocco(dati,{suWay,suNodi}){
           else w.salta(c.t);}
         const tag={};for(let i=0;i<chiavi.length;i++)tag[stringhe[chiavi[i]]]=stringhe[valori[i]];
         suWay(id,tag,refs);
+      }else if(n===4&&suRel){ // Relation
+        const [a,b]=g.pezzo();const w=new Lettore(dati,a,b);
+        let id=0,chiavi=[],valori=[],ruoli=[],membri=[],tipi=[];
+        while(!w.fine()){const c=w.campo();
+          if(c.n===1)id=w.varint();
+          else if(c.n===2)chiavi=w.impaccati(x=>x.varint());
+          else if(c.n===3)valori=w.impaccati(x=>x.varint());
+          else if(c.n===8)ruoli=w.impaccati(x=>x.varint());
+          else if(c.n===9){let acc=0;membri=w.impaccati(x=>(acc+=x.zigzag()));}
+          else if(c.n===10)tipi=w.impaccati(x=>x.varint());
+          else w.salta(c.t);}
+        const tag={};for(let i=0;i<chiavi.length;i++)tag[stringhe[chiavi[i]]]=stringhe[valori[i]];
+        suRel(id,tag,membri.map((m,i)=>({id:m,tipo:tipi[i],ruolo:stringhe[ruoli[i]]||''})));
       }else if(n===2&&suNodi){ // DenseNodes
         const [a,b]=g.pezzo();const d=new Lettore(dati,a,b);
         let ids=[],lats=[],lons=[];
@@ -114,4 +127,68 @@ function estraiWay(file,filtro,log=console.log){
   return way.map(w=>({cat:w.cat,tag:w.tag,punti:w.refs.map(r=>{const i=cerca(r);return [lat[i],lon[i]];})}));
 }
 
-module.exports={estraiWay};
+/* relazioni (per esempio i multipoligoni landuse=*): filtro(tag) -> categoria oppure null.
+   Ritorna [{cat, tag, way:[{ruolo, punti:[[lat,lon],...]}]}]; tre letture del file: relazioni, way, nodi. */
+function estraiRelazioni(file,filtro,log=console.log){
+  const rel=[],servono=new Map();
+  let t0=Date.now(),ultimo=0;
+  const avanza=(fase,a)=>{if(a-ultimo>0.1||a===1){ultimo=a;log('  '+fase+' '+Math.round(a*100)+'% ('+Math.round((Date.now()-t0)/1000)+' s)');}};
+  for(const {tipo,dati,avanzamento} of blocchi(file)){
+    if(tipo==='OSMData')leggiBlocco(dati,{suRel:(id,tag,membri)=>{
+      const cat=filtro(tag);if(!cat) return;
+      const mw=membri.filter(m=>m.tipo===1);
+      for(const m of mw)servono.set(m.id,null);
+      rel.push({cat,tag,membri:mw});
+    }});
+    avanza('lettura delle relazioni',avanzamento);
+  }
+  log('  relazioni trovate: '+rel.length+', linee necessarie: '+servono.size);
+  ultimo=0;t0=Date.now();
+  for(const {tipo,dati,avanzamento} of blocchi(file)){
+    if(tipo==='OSMData')leggiBlocco(dati,{suWay:(id,tag,refs)=>{if(servono.has(id))servono.set(id,refs);}});
+    avanza('lettura delle linee',avanzamento);
+  }
+  const nodi=new Map();
+  for(const refs of servono.values())if(refs)for(const r of refs)nodi.set(r,null);
+  ultimo=0;t0=Date.now();
+  for(const {tipo,dati,avanzamento} of blocchi(file)){
+    if(tipo==='OSMData')leggiBlocco(dati,{suNodi:(id,la,lo)=>{if(nodi.has(id))nodi.set(id,[la,lo]);}});
+    avanza('lettura delle coordinate',avanzamento);
+  }
+  return rel.map(r=>({cat:r.cat,tag:r.tag,way:r.membri.filter(m=>servono.get(m.id))
+    .map(m=>({ruolo:m.ruolo,punti:servono.get(m.id).map(n=>nodi.get(n)).filter(Boolean)}))}));
+}
+
+/* tante way piccole (per esempio tutti gli edifici) senza tenere in memoria oggetti per ognuna:
+   ritorna {n, inizio: Uint32Array(n+1), lat: Float32Array, lon: Float32Array}, i nodi della way i
+   sono da inizio[i] a inizio[i+1]-1. */
+function estraiWayLeggere(file,filtro,log=console.log){
+  let R=new Float64Array(1<<24),nr=0,I=new Uint32Array(1<<20),nw=0;
+  let t0=Date.now(),ultimo=0;
+  const avanza=(fase,a)=>{if(a-ultimo>0.1||a===1){ultimo=a;log('  '+fase+' '+Math.round(a*100)+'% ('+Math.round((Date.now()-t0)/1000)+' s)');}};
+  for(const {tipo,dati,avanzamento} of blocchi(file)){
+    if(tipo==='OSMData')leggiBlocco(dati,{suWay:(id,tag,refs)=>{
+      if(!filtro(tag)) return;
+      if(nr+refs.length>R.length){const n=new Float64Array(R.length*2);n.set(R);R=n;}
+      if(nw+2>I.length){const n=new Uint32Array(I.length*2);n.set(I);I=n;}
+      I[nw++]=nr;for(const r of refs)R[nr++]=r;
+    }});
+    avanza('lettura delle linee',avanzamento);
+  }
+  I[nw]=nr;
+  const ids=R.slice(0,nr).sort();
+  let u=0;for(let i=0;i<ids.length;i++)if(i===0||ids[i]!==ids[i-1])ids[u++]=ids[i];
+  const lat=new Float32Array(u),lon=new Float32Array(u);
+  const cerca=id=>{let a=0,b=u-1;while(a<=b){const m=(a+b)>>1,v=ids[m];if(v===id)return m;if(v<id)a=m+1;else b=m-1;}return -1;};
+  log('  linee trovate: '+nw+', nodi necessari: '+u);
+  ultimo=0;t0=Date.now();
+  for(const {tipo,dati,avanzamento} of blocchi(file)){
+    if(tipo==='OSMData')leggiBlocco(dati,{suNodi:(id,la,lo)=>{const i=cerca(id);if(i>=0){lat[i]=la;lon[i]=lo;}}});
+    avanza('lettura delle coordinate',avanzamento);
+  }
+  const LA=new Float32Array(nr),LO=new Float32Array(nr);
+  for(let i=0;i<nr;i++){const k=cerca(R[i]);LA[i]=lat[k];LO[i]=lon[k];}
+  return {n:nw,inizio:I.slice(0,nw+1),lat:LA,lon:LO};
+}
+
+module.exports={estraiWay,estraiRelazioni,estraiWayLeggere};
