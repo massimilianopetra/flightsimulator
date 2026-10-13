@@ -66,11 +66,22 @@ SIM.creaNotte=function(scene,mondo,T){
   // luci blu ai bordi del raccordo e del piazzale (pista principale di ogni aeroporto, come in js/mondo.js)
   const BLU=new THREE.Color(0.25,0.45,1);
   for(const p of T.piste){
-    if(p!==p.ap.piste[0]) continue;
+    if(p!==p.ap.piste[0]||p.ap.rullaggioVero) continue;
     const rx=-p.dir.z,rz=p.dir.x,y=p.quota+0.4,P=(u,v)=>metti(p.cx+p.dir.x*u+rx*v,y,p.cz+p.dir.z*u+rz*v,BLU);
     for(let v=p.W/2+6;v<=70;v+=12){P(-8,v);P(8,v);}
     for(let u=-80;u<=80;u+=20){P(u,140);if(Math.abs(u)>12)P(u,70);}
     for(let v=90;v<140;v+=20){P(-80,v);P(80,v);}
+  }
+  // vie di rullaggio vere: luci blu sui due bordi, ogni 35 m circa
+  if(SIM.reteRullaggio)for(const r of SIM.reteRullaggio.tutte())for(const v of r.vie){
+    let resto=0;
+    for(let i=1;i<v.pts.length;i++){
+      const a=v.pts[i-1],b=v.pts[i],L=Math.hypot(b.x-a.x,b.z-a.z);if(L<0.01) continue;
+      const nx=-(b.z-a.z)/L*(v.w/2+1.5),nz=(b.x-a.x)/L*(v.w/2+1.5);
+      for(let d=resto;d<L;d+=35){const t=d/L,x=a.x+(b.x-a.x)*t,z=a.z+(b.z-a.z)*t,y=T.meshH(x,z)+0.4;
+        metti(x+nx,y,z+nz,BLU);metti(x-nx,y,z-nz,BLU);}
+      resto=(resto-L)%35;if(resto<0)resto+=35;
+    }
   }
   const luciPiste=punti(pp,pc,7,tex);scene.add(luciPiste);
 

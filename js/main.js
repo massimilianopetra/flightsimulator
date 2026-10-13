@@ -26,6 +26,7 @@ const T=SIM.terreno;
 const terreno=T.creaMesh(scene,renderer);
 const mondo=SIM.creaMondo(scene,renderer);
 const monumenti=SIM.creaMonumenti?SIM.creaMonumenti(scene):null;   // solo mondo reale (js/monumenti.js)
+if(SIM.disegnaRullaggio)SIM.disegnaRullaggio(scene);   // vie di rullaggio vere (js/rullaggio.js)
 // ora del volo: giorno, tramonto, notte (js/notte.js), scelta nel briefing e ricordata
 const notte=SIM.creaNotte(scene,mondo,T);
 let oraVolo='giorno';
@@ -70,13 +71,22 @@ function geometriaRullaggio(ap){
   return {p,P,parcheggio:P(-45,115),attesa:P(0,p.W/2+30),hdg:(p.hdg+270)%360};
 }
 function partenzaParcheggio(ap,te){
+  // vie di rullaggio vere (js/rullaggio.js): percorso dal piazzale vero al punto attesa della pista scelta
+  if(ap.rullaggioVero&&SIM.reteRullaggio){
+    const t=te||testataControvento(ap),rr=SIM.reteRullaggio.partenza(ap,t);
+    if(!rr) return partenzaDa(ap,t);   // per questa pista non c'è un percorso: si parte in pista
+    for(const q of rr.punti)if(q.nome==='ATT')q.nome=L('ATT','HP');
+    const c=rr.parcheggio;
+    return {x:c.x,z:c.z,y:Math.max(ap.quota,T.meshH(c.x,c.z))+fis.altRuote()-0.04,hdg:rr.hdg,v:0,thr:0,ap,te:t,parcheggio:true,
+      attesa:rr.attesa,percorso:rr.punti,vie:rr.refs,backtrack:rr.backtrack};
+  }
   const g=geometriaRullaggio(ap);
   // dal piazzale si arriva alla pista principale: la testata scelta se è sua, altrimenti la più controvento
   if(!te||te.pista!==g.p)te=g.p.testate.reduce((a,b)=>Math.cos((a.hdg-met.ventoDa)*D2R)>=Math.cos((b.hdg-met.ventoDa)*D2R)?a:b);
   const c=g.parcheggio;
   const percorso=[c,g.P(-45,100),g.P(0,100),g.P(0,70),Object.assign(g.attesa,{nome:L('ATT','HP')}),g.P(0,0),
     {x:te.x+te.dir.x*15,z:te.z+te.dir.z*15,nome:te.nome}];
-  return {x:c.x,z:c.z,y:ap.quota+fis.altRuote()-0.04,hdg:g.hdg,v:0,thr:0,ap,te,parcheggio:true,attesa:g.attesa,percorso};
+  return {x:c.x,z:c.z,y:ap.quota+fis.altRuote()-0.04,hdg:g.hdg,v:0,thr:0,ap,te,parcheggio:true,attesa:g.attesa,percorso,vie:[],backtrack:true};
 }
 const creaPartenza=(ap,te)=>daParcheggio?partenzaParcheggio(ap,te):partenzaDa(ap,te);
 // punto di partenza sulla soglia di una testata
@@ -122,7 +132,7 @@ const piano=SIM.creaPiano(T,A,met,radio);
 // comunicazioni radio con la torre (js/atc.js)
 const atc=SIM.creaATC({A,T,met,audio,radio,stato:st});
 piano.impostaCom(atc.stazioneDi,atc.terraDi);
-const ctxATC=()=>({parcheggio:!!partenza.parcheggio&&modalita!=='finale',attesa:partenza.attesa||null,part:partenza.ap?{ap:partenza.ap,te:partenza.te}:null,arr:piano.piano?{ap:piano.piano.arr,te:piano.piano.te}:null,finale:modalita==='finale',fin:modalita==='finale'?pistaFinale():null});
+const ctxATC=()=>({parcheggio:!!partenza.parcheggio&&modalita!=='finale',attesa:partenza.attesa||null,vie:partenza.vie||[],backtrack:partenza.backtrack!==false,part:partenza.ap?{ap:partenza.ap,te:partenza.te}:null,arr:piano.piano?{ap:piano.piano.arr,te:piano.piano.te}:null,finale:modalita==='finale',fin:modalita==='finale'?pistaFinale():null});
 let faseMostrata=-1;
 function ricalcolaPiano(){
   const d=dest(),p=piano.calcola(partenza,d,d&&testataControvento(d));
@@ -721,7 +731,7 @@ selCarb.addEventListener('change',()=>{
 ricomincia();
 aggiornaVento(0);
 // scorciatoie per le prove: index.html#salta (salta il briefing), #vista=1 (cabina)
-SIM.debug={st,fis,terreno,monumenti,scene,atc};  // utile dalla console del browser (F12)
+SIM.debug={st,fis,terreno,monumenti,scene,atc,renderer,camera};  // utile dalla console del browser (F12)
 if(/salta/.test(location.hash)) inizia();
 if(/finale/.test(location.hash)) inizia('finale');
 {const mv=/vista=(\d)/.exec(location.hash);if(mv)vista=(+mv[1])%3;}
@@ -743,7 +753,11 @@ function ciclo(ora){
   if(monumenti&&n%10===0)monumenti.aggiorna(camera.position,terreno.vicino());
   if(attivo&&n%15===0){
     atc.aggiorna(st,ctxATC());
-    if(atterratoA&&st.aTerra&&st.gs<1.5&&!st.crashed&&atc.libero&&(!daParcheggio||sulPiazzale())){const ap=atterratoA;atterratoA=null;nuovaPartenza(ap);}
+    if(daParcheggio&&atterratoA&&atterratoA.rullaggioVero&&SIM.reteRullaggio&&st.aTerra&&st.gs<12&&!rull){   // percorso verso il piazzale
+      const pts=SIM.reteRullaggio.versoPiazzale(atterratoA,st.pos);if(pts){rull={punti:pts,i:1};aggiornaPiano();}
+    }
+    const alPiazzale=()=>atterratoA.rullaggioVero&&SIM.reteRullaggio?SIM.reteRullaggio.suPiazzale(st.pos.x,st.pos.z):sulPiazzale();
+    if(atterratoA&&st.aTerra&&st.gs<1.5&&!st.crashed&&atc.libero&&(!daParcheggio||alPiazzale())){const ap=atterratoA;atterratoA=null;nuovaPartenza(ap);}
   }
   mondo.aggiorna(st,camera.position,vento,attivo?dt:0,vista===1);
   notte.aggiorna(camera.position);

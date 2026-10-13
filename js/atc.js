@@ -72,6 +72,7 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
   const ventoIt=()=>met.ventoNodi<1?'vento calmo':`vento da ${tre(met.ventoDa)}° a ${met.ventoNodi} nodi`;
   const qnhF=(q=QNH)=>({d:'QNH '+q,s:'Q N H '+cifre(q)});
   const pistaF=te=>({d:'runway '+te.nome,s:'runway '+cifre(te.nome)});
+  const viaF=v=>v&&v.length?{d:' via '+v.join(', '),s:' via '+v.map(r=>r.split('').map(c=>/\d/.test(c)?NUM[+c]:NATO[c.toUpperCase()]||c).join(' ')).join(', ')}:'';
   const freqF=f=>({d:f,s:cifre(f.replace(/0+$/,'').replace(/\.$/,''))});
 
   /* ---------- voci ---------- */
@@ -241,8 +242,9 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
       pilotaDice(f,it);attendi(1200);
       const altra=te.pista.testate.find(t=>t!==te), sbPista=!!altra&&Math.random()<0.5;
       if(staz.torre){
-        atcDice(frase(CSB,', taxi to holding point ',pistaF(te),', ',qnhF(),poi),`${CSB.d}, rullate al punto attesa pista ${te.nome}, QNH ${QNH}${poiIt}.`,
-          readback(frase('Taxi to holding point ',pistaF(te),', ',qnhF(),poiRb,', ',CSB),`Rulliamo al punto attesa pista ${te.nome}, QNH ${QNH}${poiRbIt}, ${CSB.d}.`,
+        const vie=viaF(ctx.vie),vieIt=ctx.vie&&ctx.vie.length?' via '+ctx.vie.join(', '):'';
+        atcDice(frase(CSB,', taxi to holding point ',pistaF(te),vie,', ',qnhF(),poi),`${CSB.d}, rullate al punto attesa pista ${te.nome}${vieIt}, QNH ${QNH}${poiIt}.`,
+          readback(frase('Taxi to holding point ',pistaF(te),vie,', ',qnhF(),poiRb,', ',CSB),`Rulliamo al punto attesa pista ${te.nome}${vieIt}, QNH ${QNH}${poiRbIt}, ${CSB.d}.`,
             sbPista?frase('Taxi to holding point ',pistaF(altra),', ',qnhF(),poiRb,', ',CSB):frase('Taxi to holding point ',pistaF(te),', ',qnhF(QNH+10),poiRb,', ',CSB),
             sbPista?`Rulliamo al punto attesa pista ${altra.nome}, QNH ${QNH}${poiRbIt}, ${CSB.d}.`:`Rulliamo al punto attesa pista ${te.nome}, QNH ${QNH+10}${poiRbIt}, ${CSB.d}.`,
             frase(CSB,', negative, holding point ',pistaF(te),', ',qnhF()),`${CSB.d}, negativo, punto attesa pista ${te.nome}, QNH ${QNH}.`,dopo));
@@ -256,14 +258,21 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
   // al punto attesa (dopo il rullaggio): si entra in pista, la si risale fino alla testata (backtrack) e si decolla
   function decolloDaAttesa(){
     const te=ctx.part.te;
-    const f=frase(CSB,', holding point ',pistaF(te),', ready for departure');
-    const it=`${CSB.d}, al punto attesa pista ${te.nome}, pronti per la partenza.`;
+    const f=frase(nomeStaz(),', ',CS,', holding point ',pistaF(te),', ready for departure');   // primo contatto con la torre: nominativo completo
+    const it=`${staz.nome}, ${REG}, al punto attesa pista ${te.nome}, pronti per la partenza.`;
     return {f,it,fai:()=>{
       pilotaDice(f,it);attendi(1100);
       const a=ctx.attesa, lontano=a&&Math.hypot(a.x-st.pos.x,a.z-st.pos.z)>80;
       if(staz.torre&&lontano){atcDice(frase(CSB,', negative, report at holding point ',pistaF(te)),`${CSB.d}, negativo, riportate al punto attesa pista ${te.nome}.`);return;}
       const altra=te.pista.testate.find(t=>t!==te);
-      if(staz.torre){
+      if(staz.torre&&!ctx.backtrack){   // una via arriva alla testata: ci si allinea e si parte
+        atcDice(frase(CSB,', line up ',pistaF(te),', ',ventoF(),', cleared for take-off'),
+          `${CSB.d}, allineatevi pista ${te.nome}, ${ventoIt()}, autorizzati al decollo.`,
+          readback(frase('Line up ',pistaF(te),', cleared for take-off, ',CSB),`Ci allineiamo pista ${te.nome}, autorizzati al decollo, ${CSB.d}.`,
+            altra?frase('Line up ',pistaF(altra),', cleared for take-off, ',CSB):null,altra?`Ci allineiamo pista ${altra.nome}, autorizzati al decollo, ${CSB.d}.`:null,
+            frase(CSB,', negative, ',pistaF(te),', I say again, line up ',pistaF(te),', cleared for take-off'),`${CSB.d}, negativo, pista ${te.nome}, ripeto, allineatevi pista ${te.nome}, autorizzati al decollo.`,
+            ()=>{fase='autorizzato';avvisa(L(`Entra in pista ${te.nome}, allineati e decolla`,`Enter runway ${te.nome}, line up and take off`));}));
+      }else if(staz.torre){
         atcDice(frase(CSB,', enter and backtrack ',pistaF(te),', line up, ',ventoF(),', cleared for take-off'),
           `${CSB.d}, entrate e risalite la pista ${te.nome}, allineatevi, ${ventoIt()}, autorizzati al decollo.`,
           readback(frase('Backtrack and line up ',pistaF(te),', cleared for take-off, ',CSB),`Risaliamo e ci allineiamo pista ${te.nome}, autorizzati al decollo, ${CSB.d}.`,
