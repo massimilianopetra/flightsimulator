@@ -1,5 +1,9 @@
 # Flight Simulator · Simulatore di Volo
 
+<p align="center">
+  <img src="istruzioni/en/cabina.jpg" alt="Cockpit of the Cessna 172 with G1000 screens on an ILS approach / Cabina del Cessna 172 con gli schermi G1000 in avvicinamento ILS" width="100%">
+</p>
+
 **[English](#english)** · **[Italiano](#italiano)**
 
 **Play online / Gioca online: https://massimilianopetra.github.io/flightsimulator/**
@@ -22,6 +26,35 @@ navigate with VOR and ILS, and land following the PAPI lights.
 
 The game and its manual are available in **Italian and English**: choose the language in the
 briefing, or open `index.html?lang=en`. The choice is remembered.
+
+## Screenshots
+
+<p align="center">
+  <img src="istruzioni/en/schermo.jpg" alt="The game screen on the runway at Turin-Caselle, with the controls, PFD, engine panel, map and flight plan" width="100%">
+</p>
+
+<table>
+  <tr>
+    <td width="55%"><img src="istruzioni/en/pfd-ils.png" alt="PFD on an ILS approach"></td>
+    <td width="45%"><img src="istruzioni/en/pannello.png" alt="Engine panel with turn coordinator, trim and fuel"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>PFD on an ILS approach: localizer needle and glide slope diamond</sub></td>
+    <td align="center"><sub>Engine panel: turn coordinator, trim, fuel and endurance</sub></td>
+  </tr>
+  <tr>
+    <td><img src="istruzioni/en/mappa.png" alt="Moving map over Turin"></td>
+    <td><img src="istruzioni/en/piano.png" alt="Flight plan from Turin-Caselle to Cuneo-Levaldigi"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Moving map with roads, airports and VORs</sub></td>
+    <td align="center"><sub>Flight plan with ILS and VOR for the arrival</sub></td>
+  </tr>
+</table>
+
+<p align="center">
+  <img src="istruzioni/en/volo.jpg" alt="The Cessna turning over the hills of Valle Azzurra" width="100%">
+</p>
 
 ## The worlds
 
@@ -344,6 +377,35 @@ si naviga con VOR e ILS e si atterra seguendo le luci PAPI.
 
 Il gioco e il manuale sono in **italiano e in inglese**: la lingua si sceglie nel briefing, oppure
 aprendo `index.html?lang=en`. La scelta viene ricordata.
+
+## Immagini
+
+<p align="center">
+  <img src="istruzioni/schermo.jpg" alt="La schermata del gioco sulla pista di Torino-Caselle, con comandi, PFD, pannello motore, mappa e piano di volo" width="100%">
+</p>
+
+<table>
+  <tr>
+    <td width="55%"><img src="istruzioni/pfd-ils.png" alt="PFD in avvicinamento ILS"></td>
+    <td width="45%"><img src="istruzioni/pannello.png" alt="Pannello motore con virosbandometro, trim e carburante"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>PFD in avvicinamento ILS: ago del localizzatore e rombo del sentiero di discesa</sub></td>
+    <td align="center"><sub>Pannello motore: virosbandometro, trim, carburante e autonomia</sub></td>
+  </tr>
+  <tr>
+    <td><img src="istruzioni/mappa.png" alt="Mappa mobile su Torino"></td>
+    <td><img src="istruzioni/piano.png" alt="Piano di volo da Torino-Caselle a Cuneo-Levaldigi"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Mappa mobile con strade, aeroporti e VOR</sub></td>
+    <td align="center"><sub>Piano di volo con ILS e VOR per l'arrivo</sub></td>
+  </tr>
+</table>
+
+<p align="center">
+  <img src="istruzioni/volo.jpg" alt="Il Cessna in virata sopra le colline della Valle Azzurra" width="100%">
+</p>
 
 ## I mondi
 
