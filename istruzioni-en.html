@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Flight Manual</title>
+<title>Manual · Flight Simulator</title>
 <meta name="description" content="Flight Simulator manual: controls, instruments, take-off, landing, VOR and ILS navigation.">
 <link rel="icon" href="icone/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="icone/favicon-32.png" sizes="32x32" type="image/png">
@@ -34,6 +34,8 @@ h2{font-size:24px;margin:56px 0 12px;padding-top:12px;border-top:1px solid var(-
 h3{font-size:18px;margin:28px 0 8px;color:var(--cyan)}
 p,li{max-width:72ch}
 .sotto{color:var(--dim);margin:0}
+.progetto{font:700 13px var(--f-ui);letter-spacing:.14em;color:var(--cyan);margin:0 0 6px}
+.autore{margin:6px 0 0;font-size:15px}
 .galleria{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin:18px 0}
 .galleria figure{margin:0}
 .lingua{display:inline-block;margin:14px 0 0 14px;font-weight:700}
@@ -92,8 +94,10 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 
 <main>
 <header>
+  <p class="progetto">FLIGHT SIMULATOR · SIMULATORE DI VOLO</p>
   <h1>Flight manual</h1>
   <p class="sotto">Browser flight simulator · Cessna 172 with Garmin G1000 avionics</p>
+  <p class="autore">A project by <b>Massimiliano Petra</b> · <a href="https://github.com/massimilianopetra/flightsimulator">code on GitHub</a></p>
   <a class="torna" href="index.html?lang=en">Open the simulator</a>
   <a class="lingua" href="istruzioni.html" lang="it">Versione italiana</a>
 </header>
@@ -495,6 +499,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 
 <footer>
   <p>Real data: airports and VORs © OurAirports (public domain) · lakes, towns, urban areas, roads, railways and rivers © OpenStreetMap contributors (ODbL) · terrain Mapzen Terrain Tiles (SRTM). ILS stations and their frequencies are simulated.</p>
+  <p><b>Flight Simulator · Simulatore di Volo</b> · © 2026 Massimiliano Petra · <a href="https://github.com/massimilianopetra/flightsimulator">github.com/massimilianopetra/flightsimulator</a></p>
   <p>Free software under the GPL-3.0-or-later licence. This simulator is a game: do not use it for real navigation.</p>
   <a class="torna" href="index.html?lang=en">Open the simulator</a>
 </footer>
