@@ -218,6 +218,15 @@ function alternaAiuto(){alternaPannello('aiuto');}
 function alternaAudio(){audio.avvia();const on=audio.alterna();aggiornaBtnAudio(on);}
 function aggiornaBtnAudio(on){$('btnAudio').textContent=on?'AUDIO ON':'AUDIO OFF';}
 aggiornaBtnAudio(audio.attivo);
+// torna al briefing iniziale: il volo si ferma e si possono cambiare mondo, partenza, destinazione, ora e carburante
+function apriBriefing(){
+  if(!avviato) return;
+  avviato=false;inPausa=false;atc.pausa(false);
+  $('pausa').hidden=true;$('crash').hidden=true;$('msg').hidden=true;
+  modalita='decollo';ricomincia();
+  $('brief').hidden=false;
+}
+for(const b of document.querySelectorAll('.vaiBriefing'))b.addEventListener('click',()=>{apriBriefing();b.blur();});
 function inizia(m){
   if(avviato) return;
   avviato=true;$('brief').hidden=true;audio.avvia();
@@ -257,6 +266,7 @@ addEventListener('keydown',e=>{
     case 'KeyI':alternaPannello('piano');break;
     case 'KeyR':if(avviato)ricomincia();break;
     case 'Enter':case 'NumpadEnter':if(!avviato)inizia();else if(st.crashed)ricomincia();break;
+    case 'Escape':apriBriefing();break;   // (il menu della radio, se aperto, lo chiude prima js/atc.js)
   }
 });
 addEventListener('keyup',e=>{tasti.delete(logico[e.code]||e.code);delete logico[e.code];});
