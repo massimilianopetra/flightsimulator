@@ -300,6 +300,57 @@ and runway, destination, terrain colours by height, and add or correct airports.
 Peaks come out about 150–250 m lower than in reality (Monviso is ~3650 m instead of 3841),
 because the 250 m grid smooths the summits. It makes no difference for flying.
 
+### The monuments
+
+<table>
+  <tr>
+    <td width="50%"><img src="istruzioni/monumenti/mole.jpg" alt="Mole Antonelliana"></td>
+    <td width="50%"><img src="istruzioni/monumenti/superga.jpg" alt="Superga Basilica"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Mole Antonelliana · Turin</sub></td>
+    <td align="center"><sub>Superga Basilica · on the Turin hill</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="istruzioni/monumenti/lingotto.jpg" alt="Lingotto"></td>
+    <td width="50%"><img src="istruzioni/monumenti/regione.jpg" alt="Piedmont Region Tower"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Lingotto · with the rooftop track and the Bubble</sub></td>
+    <td align="center"><sub>Piedmont Region Tower · 209 m</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="istruzioni/monumenti/intesa.jpg" alt="Intesa Sanpaolo Tower"></td>
+    <td width="50%"><img src="istruzioni/monumenti/venaria.jpg" alt="Palace of Venaria"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Intesa Sanpaolo Tower · 166 m</sub></td>
+    <td align="center"><sub>Palace of Venaria · simplified model</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="istruzioni/monumenti/stupinigi.jpg" alt="Stupinigi Hunting Lodge"></td>
+    <td width="50%"><img src="istruzioni/monumenti/sacra.jpg" alt="Sacra di San Michele Abbey"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Stupinigi Hunting Lodge · with the stag on the dome</sub></td>
+    <td align="center"><sub>Sacra di San Michele Abbey · on Mount Pirchiriano</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="istruzioni/monumenti/vicoforte.jpg" alt="Sanctuary of Vicoforte"></td>
+    <td width="50%"><img src="istruzioni/monumenti/gaudenzio.jpg" alt="Basilica of San Gaudenzio"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Sanctuary of Vicoforte · the great elliptical dome</sub></td>
+    <td align="center"><sub>Basilica of San Gaudenzio · Novara, 121 m</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="istruzioni/monumenti/oropa.jpg" alt="Sanctuary of Oropa"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Sanctuary of Oropa · Biella</sub></td>
+  </tr>
+</table>
+
 ## Editing the invented map
 
 Everything is done in `dati/mappa.js`. The rules:
@@ -666,6 +717,57 @@ e pista di partenza, destinazione, colori del terreno per quota, e aggiungere o 
 
 Le vette risultano circa 150–250 m più basse del vero (il Monviso fa ~3650 m invece di 3841),
 perché la griglia di 250 m smussa le punte. Per il volo non cambia nulla.
+
+### I monumenti
+
+<table>
+  <tr>
+    <td width="50%"><img src="istruzioni/monumenti/mole.jpg" alt="Mole Antonelliana"></td>
+    <td width="50%"><img src="istruzioni/monumenti/superga.jpg" alt="Basilica di Superga"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Mole Antonelliana · Torino</sub></td>
+    <td align="center"><sub>Basilica di Superga · sulla collina di Torino</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="istruzioni/monumenti/lingotto.jpg" alt="Lingotto"></td>
+    <td width="50%"><img src="istruzioni/monumenti/regione.jpg" alt="Grattacielo della Regione"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Lingotto · con la pista sul tetto e la Bolla</sub></td>
+    <td align="center"><sub>Grattacielo della Regione · 209 m</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="istruzioni/monumenti/intesa.jpg" alt="Grattacielo Intesa Sanpaolo"></td>
+    <td width="50%"><img src="istruzioni/monumenti/venaria.jpg" alt="Reggia di Venaria"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Grattacielo Intesa Sanpaolo · 166 m</sub></td>
+    <td align="center"><sub>Reggia di Venaria · modello semplificato</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="istruzioni/monumenti/stupinigi.jpg" alt="Palazzina di Stupinigi"></td>
+    <td width="50%"><img src="istruzioni/monumenti/sacra.jpg" alt="Sacra di San Michele"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Palazzina di Stupinigi · con il cervo sulla cupola</sub></td>
+    <td align="center"><sub>Sacra di San Michele · sul Pirchiriano</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="istruzioni/monumenti/vicoforte.jpg" alt="Santuario di Vicoforte"></td>
+    <td width="50%"><img src="istruzioni/monumenti/gaudenzio.jpg" alt="Basilica di San Gaudenzio"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Santuario di Vicoforte · la grande cupola ellittica</sub></td>
+    <td align="center"><sub>Basilica di San Gaudenzio · Novara, 121 m</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="istruzioni/monumenti/oropa.jpg" alt="Santuario di Oropa"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Santuario di Oropa · Biella</sub></td>
+  </tr>
+</table>
 
 ## Modificare la mappa inventata
 
