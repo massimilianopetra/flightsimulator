@@ -74,36 +74,42 @@ SIM.creaNotte=function(scene,mondo,T){
   }
   const luciPiste=punti(pp,pc,7,tex);scene.add(luciPiste);
 
-  /* ---- luci delle città ---- */
-  const cp=[],cc=[],caldo=new THREE.Color(1,0.78,0.45),freddo=new THREE.Color(1,0.95,0.82),col=new THREE.Color();
-  const rnd=T.rng(4242);
-  const den=SIM.densitaEdifici?SIM.densitaEdifici():null;
-  if(den&&den.DEN){
-    const {DS,DEN}=den,P=DS.passo;
-    for(let j=0;j<DS.altezza;j++)for(let i=0;i<DS.larghezza;i++){
-      const v=DEN[j*DS.larghezza+i];if(v<5) continue;
-      const c=v/255, n=(rnd()<Math.min(1,c*5)?1:0)+(c>0.2&&rnd()<0.8?1:0);
-      for(let k=0;k<n;k++){
-        const x=DS.x0+(i+rnd())*P, z=j*P-DS.yNord+rnd()*P;
-        col.copy(caldo).lerp(freddo,rnd());cp.push(x,T.naturale(x,z)+6,z);cc.push(col.r,col.g,col.b);
+  /* ---- luci delle città: calcolate solo la prima volta che servono (tramonto o notte), così di giorno
+     il caricamento resta veloce (sono qualche centinaio di migliaia di punti) ---- */
+  let luciCitta=null,cittaFatte=false;
+  function costruisciCitta(){
+    cittaFatte=true;
+    const cp=[],cc=[],caldo=new THREE.Color(1,0.78,0.45),freddo=new THREE.Color(1,0.95,0.82),col=new THREE.Color();
+    const rnd=T.rng(4242);
+    const den=SIM.densitaEdifici?SIM.densitaEdifici():null;
+    if(den&&den.DEN){
+      const {DS,DEN}=den,P=DS.passo;
+      for(let j=0;j<DS.altezza;j++)for(let i=0;i<DS.larghezza;i++){
+        const v=DEN[j*DS.larghezza+i];if(v<5) continue;
+        const c=v/255, n=(rnd()<Math.min(1,c*5)?1:0)+(c>0.2&&rnd()<0.8?1:0);
+        for(let k=0;k<n;k++){
+          const x=DS.x0+(i+rnd())*P, z=j*P-DS.yNord+rnd()*P;
+          col.copy(caldo).lerp(freddo,rnd());cp.push(x,T.naturale(x,z)+6,z);cc.push(col.r,col.g,col.b);
+        }
+      }
+    }else{ // mondo inventato: luci attorno ai centri dei paesi
+      for(const c of T.citta)for(let k=0;k<(c.n||40)*1.5;k++){
+        const a=rnd()*Math.PI*2,r=c.r*Math.sqrt(rnd()),x=c.x+Math.cos(a)*r,z=c.z+Math.sin(a)*r;
+        col.copy(caldo).lerp(freddo,rnd());cp.push(x,T.terrainH(x,z)+5,z);cc.push(col.r,col.g,col.b);
       }
     }
-  }else{ // mondo inventato: luci attorno ai centri dei paesi
-    for(const c of T.citta)for(let k=0;k<(c.n||40)*1.5;k++){
-      const a=rnd()*Math.PI*2,r=c.r*Math.sqrt(rnd()),x=c.x+Math.cos(a)*r,z=c.z+Math.sin(a)*r;
-      col.copy(caldo).lerp(freddo,rnd());cp.push(x,T.terrainH(x,z)+5,z);cc.push(col.r,col.g,col.b);
-    }
+    // le luci delle città si spengono con la distanza (verso il nero): con la nebbia normale prenderebbero il suo colore e,
+    // sommate a migliaia all'orizzonte, farebbero una striscia chiara
+    luciCitta=cp.length?punti(cp,cc,2.4,tex,false):null;
+    if(luciCitta)luciCitta.material.onBeforeCompile=sh=>{   // e si spengono del tutto oltre ~28 km
+      sh.vertexShader='varying float vVicino;\n'+sh.vertexShader.replace('#include <fog_vertex>','#include <fog_vertex>\nvVicino=1.0-smoothstep(6000.0,28000.0,-mvPosition.z);');
+      sh.fragmentShader='varying float vVicino;\n'+sh.fragmentShader.replace('#include <fog_fragment>','gl_FragColor.rgb*=vVicino;\n#include <fog_fragment>');
+    };
+    if(luciCitta)scene.add(luciCitta);
   }
-  // le luci delle città si spengono con la distanza (verso il nero): con la nebbia normale prenderebbero il suo colore e,
-  // sommate a migliaia all'orizzonte, farebbero una striscia chiara
-  const luciCitta=cp.length?punti(cp,cc,2.4,tex,false):null;
-  if(luciCitta)luciCitta.material.onBeforeCompile=sh=>{   // e si spengono del tutto oltre ~28 km
-    sh.vertexShader='varying float vVicino;\n'+sh.vertexShader.replace('#include <fog_vertex>','#include <fog_vertex>\nvVicino=1.0-smoothstep(6000.0,28000.0,-mvPosition.z);');
-    sh.fragmentShader='varying float vVicino;\n'+sh.fragmentShader.replace('#include <fog_fragment>','gl_FragColor.rgb*=vVicino;\n#include <fog_fragment>');
-  };
-  if(luciCitta)scene.add(luciCitta);
 
   /* ---- stelle (seguono la telecamera, come il cielo) ---- */
+  const rnd=T.rng(4243);
   const sp=[],sc=[];
   for(let i=0;i<1600;i++){
     const u=rnd(),a=rnd()*Math.PI*2,el=Math.asin(0.1+0.9*u), r=7000;   // distribuite sulla volta, non troppo basse
@@ -128,6 +134,7 @@ SIM.creaNotte=function(scene,mondo,T){
     L.sole.color.setHex(c.sole);L.sole.intensity=c.soleI;L.sole.position.set(...c.solePos);
     L.matNuvola.color.setHex(c.nuvola);L.matNuvola.emissive.setHex(c.nuvolaE);
     L.matVetro.emissive.setHex(c.vetroE);
+    if(c.luci&&!cittaFatte)costruisciCitta();
     luciPiste.visible=c.luci;if(luciCitta){luciCitta.visible=c.luci;luciCitta.material.opacity=k==='tramonto'?0.4:1;}stelle.visible=c.stelle;
     faro.intensity=c.faro;
     for(const l of mondo.aereo.luciNav)l.scale.setScalar(c.luci?2.2:1);
