@@ -98,7 +98,8 @@ To work on it with VS Code the *Live Server* extension is fine too.
 | mouse wheel | cockpit zoom (to read the screens) |
 | N | next destination |
 | I | open or close the flight plan |
-| M (or mouse wheel over the map, or the SCALE menu) | map scale: 2, 5, 10, 20, 50, 100 NM or the whole region |
+| J | open or close the map |
+| M (or mouse wheel over the map, or the SCALE menu) | map scale: 0.5, 1, 2, 5, 10, 20, 50, 100 NM or the whole region |
 | O (or click on the map) | map with north up or heading up |
 | T | radio: talk to the tower (then 1…4 to choose the sentence) |
 | U | radio COM1: tune the next nearest station |
@@ -551,7 +552,8 @@ Per lavorarci con VS Code va bene anche l'estensione *Live Server*.
 | rotellina del mouse | zoom in cabina (per leggere gli schermi) |
 | N | prossima destinazione |
 | I | apre o chiude il piano di volo |
-| M (o rotellina sopra la mappa, o il menu SCALA) | scala della mappa: 2, 5, 10, 20, 50, 100 NM o tutta la regione |
+| J | apre o chiude la mappa |
+| M (o rotellina sopra la mappa, o il menu SCALA) | scala della mappa: 0,5, 1, 2, 5, 10, 20, 50, 100 NM o tutta la regione |
 | O (o clic sulla mappa) | mappa con il nord in alto oppure con la prua in alto |
 | T | radio: parla con la torre (poi 1…4 per scegliere la frase) |
 | U | radio COM1: sintonizza la prossima stazione vicina |

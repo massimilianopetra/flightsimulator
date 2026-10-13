@@ -312,6 +312,7 @@ addEventListener('keydown',e=>{
     case 'KeyP':alternaPausa();break;
     case 'KeyH':alternaAiuto();break;
     case 'KeyI':alternaPannello('piano');break;
+    case 'KeyJ':alternaPannello('mappa');break;
     case 'KeyR':if(avviato)ricomincia();break;
     case 'Enter':case 'NumpadEnter':if(!avviato)inizia();else if(st.crashed)ricomincia();break;
     case 'Escape':apriBriefing();break;   // (il menu della radio, se aperto, lo chiude prima js/atc.js)
