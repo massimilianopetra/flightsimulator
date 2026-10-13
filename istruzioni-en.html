@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flight Manual</title>
+<meta name="description" content="Flight Simulator manual: controls, instruments, take-off, landing, VOR and ILS navigation.">
+<link rel="icon" href="icone/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icone/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&display=swap">
+<style>
+:root{
+  --fondo:#0b1322; --carta:#111c2e; --riga:#22324a;
+  --ink:#e8f1f8; --dim:#8ea6bb; --cyan:#39d7ff; --magenta:#ff5ad9; --amber:#ffb020; --verde:#4ade80; --rosso:#ff4d3d;
+  --f-ui:"B612",system-ui,sans-serif; --f-num:"B612 Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+body{margin:0;background:var(--fondo);color:var(--ink);font:16px/1.6 var(--f-ui)}
+a{color:var(--cyan)}
+.pagina{display:grid;grid-template-columns:250px minmax(0,1fr);gap:40px;max-width:1240px;margin:0 auto;padding:32px 24px 80px}
+nav.indice{position:sticky;top:16px;align-self:start;max-height:calc(100vh - 32px);overflow:auto;font-size:14px}
+nav.indice b{display:block;font:700 11px var(--f-ui);letter-spacing:.14em;color:var(--dim);margin-bottom:8px}
+nav.indice ol{margin:0;padding-left:30px}
+nav.indice li{margin:3px 0}
+nav.indice a{color:var(--ink);text-decoration:none}
+nav.indice a:hover{color:var(--cyan)}
+header{margin-bottom:28px}
+h1{font-size:34px;line-height:1.2;margin:0 0 8px}
+h2{font-size:24px;margin:56px 0 12px;padding-top:12px;border-top:1px solid var(--riga)}
+h3{font-size:18px;margin:28px 0 8px;color:var(--cyan)}
+p,li{max-width:72ch}
+.sotto{color:var(--dim);margin:0}
+.lingua{display:inline-block;margin:14px 0 0 14px;font-weight:700}
+.torna{display:inline-block;margin-top:14px;padding:8px 14px;border:1px solid var(--cyan);border-radius:5px;text-decoration:none;font-weight:700}
+figure{margin:18px 0;background:var(--carta);border:1px solid var(--riga);border-radius:8px;padding:10px}
+figure img{display:block;max-width:100%;height:auto;border-radius:4px;margin:0 auto}
+figcaption{color:var(--dim);font-size:14px;margin-top:8px}
+.affianca{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
+.affianca figure{margin-top:0}
+kbd{font:700 13px var(--f-num);color:var(--cyan);border:1px solid rgba(57,215,255,.4);border-radius:3px;padding:0 5px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:15px;margin:12px 0}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--riga);vertical-align:top}
+th{font:700 12px var(--f-ui);letter-spacing:.08em;color:var(--dim)}
+td.num{font-family:var(--f-num);white-space:nowrap}
+.nota{background:rgba(57,215,255,.08);border-left:3px solid var(--cyan);padding:10px 14px;border-radius:0 6px 6px 0;margin:16px 0}
+.attenzione{background:rgba(255,176,32,.09);border-left:3px solid var(--amber);padding:10px 14px;border-radius:0 6px 6px 0;margin:16px 0}
+ol.passi>li{margin:6px 0}
+.c-mag{color:var(--magenta)}.c-ver{color:var(--verde)}.c-amb{color:var(--amber)}.c-ros{color:var(--rosso)}.c-cya{color:var(--cyan)}
+.papi{display:inline-flex;gap:4px;vertical-align:middle}
+.papi i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.papi .w{background:#fff}.papi .r{background:#ff3b30}
+footer{margin-top:60px;color:var(--dim);font-size:14px}
+@media (max-width:900px){
+  .pagina{grid-template-columns:1fr;gap:16px;padding:20px 16px 60px}
+  nav.indice{position:static;max-height:none}
+  .affianca{grid-template-columns:1fr}
+  h1{font-size:28px}
+}
+</style>
+</head>
+<body>
+<div class="pagina">
+
+<nav class="indice" aria-label="Contents">
+  <b>CONTENTS</b>
+  <ol>
+    <li><a href="#inizio">Getting started</a></li>
+    <li><a href="#comandi">Controls</a></li>
+    <li><a href="#schermo">The screen</a></li>
+    <li><a href="#pfd">The PFD</a></li>
+    <li><a href="#pannello">Engine, turn coordinator, trim, fuel</a></li>
+    <li><a href="#mappa">Map and NAV1</a></li>
+    <li><a href="#piano">Flight plan</a></li>
+    <li><a href="#cabina">The G1000 cockpit</a></li>
+    <li><a href="#decollo">Take-off step by step</a></li>
+    <li><a href="#volo">In flight: attitude, trim, turns</a></li>
+    <li><a href="#atterraggio">Landing and PAPI</a></li>
+    <li><a href="#vor">Navigating with a VOR</a></li>
+    <li><a href="#ils">ILS approach</a></li>
+    <li><a href="#emergenze">Warnings and emergencies</a></li>
+    <li><a href="#numeri">Cessna 172 numbers</a></li>
+    <li><a href="#mondi">Worlds and the editable map</a></li>
+  </ol>
+</nav>
+
+<main>
+<header>
+  <h1>Flight manual</h1>
+  <p class="sotto">Browser flight simulator · Cessna 172 with Garmin G1000 avionics</p>
+  <a class="torna" href="index.html?lang=en">Open the simulator</a>
+  <a class="lingua" href="istruzioni.html" lang="it">Versione italiana</a>
+</header>
+
+<!-- ================================================================ -->
+<h2 id="inizio">1. Getting started</h2>
+<div class="affianca">
+  <div>
+    <p>When the simulator opens you see the <b>flight briefing</b>. Here you choose:</p>
+    <ul>
+      <li><b>Language</b>: Italiano or English. The game remembers your choice.</li>
+      <li><b>World</b>: <i>Piedmont</i> (real: mountains, lakes, towns, roads and 32 real airports in north-west Italy) or <i>Valle Azzurra</i> (invented, small, great for learning).</li>
+      <li><b>Departure airport</b> and <b>runway</b>: the suggested runway is the one most into the wind.</li>
+      <li><b>Destination</b>: the simulator prepares the flight plan by itself.</li>
+      <li><b>Fuel</b>: from full tanks (about 6 hours) to almost empty (about 15 minutes).</li>
+    </ul>
+    <p>Then press <b>Take off</b> (<kbd>Enter</kbd>) to start at the runway threshold, or <b>Practise landing</b> to start on final approach, about 2.7 NM from the runway.</p>
+    <div class="nota">The simulator is designed for a PC with a keyboard. Mouse and gamepads work too.</div>
+  </div>
+  <figure>
+    <img src="istruzioni/en/briefing.png" alt="Flight briefing window with language, world, airport, runway, destination and fuel selectors" loading="lazy">
+    <figcaption>The briefing: first choices and the pre-take-off checklist.</figcaption>
+  </figure>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="comandi">2. Controls</h2>
+<h3>Keyboard</h3>
+<table>
+  <thead><tr><th>Key</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>W</kbd> / <kbd>S</kbd> (or arrows ↑ ↓)</td><td>Stick forward (nose down) / back (nose up)</td></tr>
+    <tr><td><kbd>A</kbd> / <kbd>D</kbd> (or arrows ← →)</td><td>Roll left / right (ailerons)</td></tr>
+    <tr><td><kbd>K</kbd></td><td>Centre the stick</td></tr>
+    <tr><td><kbd>Q</kbd> / <kbd>E</kbd></td><td>Rudder left / right; on the ground it steers the nose wheel</td></tr>
+    <tr><td><kbd>+</kbd> / <kbd>−</kbd></td><td>Throttle up / down (hold)</td></tr>
+    <tr><td><kbd>1</kbd> … <kbd>9</kbd>, <kbd>0</kbd></td><td>Throttle at 10 … 90%, <kbd>0</kbd> = 100%</td></tr>
+    <tr><td><kbd>F</kbd> / <kbd>G</kbd></td><td>Flaps down / up (0°, 10°, 20°, 30°)</td></tr>
+    <tr><td><kbd>Z</kbd> / <kbd>X</kbd></td><td>Trim nose up / nose down</td></tr>
+    <tr><td><kbd>B</kbd> or <kbd>Space</kbd></td><td>Brakes (hold)</td></tr>
+    <tr><td><kbd>C</kbd></td><td>Change view: outside, cockpit, tower</td></tr>
+    <tr><td>Mouse wheel</td><td>Zoom in the cockpit</td></tr>
+    <tr><td><kbd>N</kbd></td><td>Next destination</td></tr>
+    <tr><td><kbd>I</kbd></td><td>Show / hide the flight plan</td></tr>
+    <tr><td><kbd>M</kbd> / <kbd>O</kbd></td><td>Map scale / north up or heading up</td></tr>
+    <tr><td><kbd>V</kbd></td><td>NAV1: tune the next VOR or ILS station in range (nearest first)</td></tr>
+    <tr><td><kbd>L</kbd></td><td>NAV1: tune the ILS of the arrival runway</td></tr>
+    <tr><td><kbd>,</kbd> / <kbd>.</kbd></td><td>VOR course CRS −1° / +1° (with <kbd>Shift</kbd> ±10°)</td></tr>
+    <tr><td><kbd>H</kbd></td><td>Show / hide the controls panel</td></tr>
+    <tr><td><kbd>P</kbd> / <kbd>R</kbd></td><td>Pause / restart</td></tr>
+  </tbody>
+</table>
+<div class="nota">The game never uses the <kbd>Ctrl</kbd> key: <kbd>Ctrl</kbd>+<kbd>W</kbd> would close the browser tab in the middle of a dive.</div>
+
+<h3>How the keyboard moves the stick</h3>
+<p>While you hold <kbd>W</kbd> or <kbd>S</kbd> the stick moves little by little. When you release the key it normally <b>stays where you left it</b>, like a pilot holding it still. You can see its position in the small <b>STICK</b> square of the bottom panel: the dot low down means the stick is pulled back.</p>
+<p>The <b>CONTROLS</b> panel has two settings, which the game remembers:</p>
+<ul>
+  <li><b>Stick sensitivity</b> (1–10, default 5): the lower it is, the softer the controls near the centre and the slower the keys move the stick. At full deflection you always have the full range.</li>
+  <li><b>The stick returns to the centre when you release the keys</b>: the aircraft, which is stable, goes back to balanced flight by itself. For long climbs or descents you then use the trim.</li>
+</ul>
+
+<h3>Mouse and gamepad</h3>
+<p><b>Mouse</b>: drag on the screen as if it were a control stick; dragging starts from the current stick position.</p>
+<table>
+  <thead><tr><th>Gamepad</th><th>Control</th></tr></thead>
+  <tbody>
+    <tr><td>Left stick</td><td>Control stick (roll and pitch)</td></tr>
+    <tr><td>Third axis</td><td>Rudder</td></tr>
+    <tr><td>Right / left trigger (or fourth axis)</td><td>Throttle up / down</td></tr>
+    <tr><td>Right / left bumper</td><td>Flaps down / up</td></tr>
+    <tr><td>A (first button)</td><td>Brakes</td></tr>
+    <tr><td>Y</td><td>Change view</td></tr>
+    <tr><td>Start</td><td>Start / pause</td></tr>
+  </tbody>
+</table>
+
+<!-- ================================================================ -->
+<h2 id="schermo">3. The screen</h2>
+<figure>
+  <img src="istruzioni/en/schermo.jpg" alt="Game screen on the Turin-Caselle runway with the controls, PFD, engine, map and flight plan panels" loading="lazy">
+  <figcaption>On runway 36 at Turin-Caselle, with the Caselle VOR tuned.</figcaption>
+</figure>
+<ul>
+  <li><b>CONTROLS</b> (top left): the list of keys and the stick settings. Hide it with <kbd>H</kbd>.</li>
+  <li><b>PFD</b> (bottom left): the main instrument, with speed, attitude, altitude, vertical speed and compass.</li>
+  <li><b>Engine and systems panel</b> (bottom centre): RPM, flaps, trim, g-load, turn coordinator, fuel, stick, throttle and buttons.</li>
+  <li><b>MAP</b> (top right): moving map, destination, distance, bearing, wind and NAV1 radio.</li>
+  <li><b>FLIGHT PLAN</b> (below the map): the phases of the flight and the arrival runway.</li>
+</ul>
+<p>At the top centre you see <b>messages</b> (take-off, landing, radio…) and flashing <b>warnings</b> (stall, pull up…).</p>
+
+<!-- ================================================================ -->
+<h2 id="pfd">4. The PFD (Primary Flight Display)</h2>
+<figure>
+  <img src="istruzioni/en/pfd-ils.png" alt="PFD on final approach with the ILS tuned: airspeed tape, horizon, altitude, vertical speed, localizer needle and glide slope diamond" loading="lazy">
+  <figcaption>On final for runway 27 at Valle Azzurra with the ILS tuned.</figcaption>
+</figure>
+<h3>Artificial horizon (centre)</h3>
+<p>The orange aircraft symbol stays still while the sky and the ground move. The horizontal lines are the <b>pitch degrees</b> (10°, 20°…). The arc with ticks at the top is the <b>bank scale</b> (10°, 20°, 30°, 45°, 60°). The small orange bar under the triangle is the <b>slip/skid indicator</b>: if it moves sideways the turn is not coordinated; correct with rudder on the side it moved to.</p>
+<h3>Airspeed tape (left)</h3>
+<p>Shows indicated airspeed (IAS) in knots. The coloured bands:</p>
+<ul>
+  <li><b>white</b> (40–85 kt): speeds where flaps may be used;</li>
+  <li><b class="c-ver">green</b> (48–129 kt): normal operating speed;</li>
+  <li><b class="c-amb">yellow</b> (129–163 kt): only in smooth air;</li>
+  <li><b class="c-ros">red</b> (above 163 kt): never exceed.</li>
+</ul>
+<p>Below it is <b>GS</b>, the ground speed, which changes with the wind.</p>
+<h3>Altitude tape and vertical speed (right)</h3>
+<p>Altitude in feet above sea level. When the terrain is close it appears in brown, with an orange line. <b>RA</b> (radio altimeter) is the height above the ground, in yellow below 1000 ft. The <b>vertical speed</b> scale on the right shows how fast you climb or descend, in thousands of ft/min.</p>
+<h3>Compass (bottom)</h3>
+<p>The heading is in the middle. The small <span class="c-mag">magenta</span> triangle points to the next point of the flight plan. The <span class="c-mag">magenta bar</span> starting from the centre is the <b>turn rate trend</b>: it shows where the heading will be in 6 seconds. The two white ticks mark a standard-rate turn (3°/s).</p>
+<h3>NAV1 radio navigation (green)</h3>
+<p>When the NAV1 radio is tuned you see:</p>
+<ul>
+  <li>top left, a box with the type (VOR or LOC), identifier, frequency, the course <b>CRS</b> and the <b>DME</b> distance in nautical miles;</li>
+  <li>at the bottom, the <b>course deviation indicator</b> (CDI) with the green needle: the needle shows <b>which side the course is on</b>, so fly towards the needle. The triangle on the right points up for <b>TO</b> (towards the station) and down for <b>FROM</b> (away from it). <span class="c-ros">NO</span> means no signal;</li>
+  <li>with an ILS only, a <b>vertical scale</b> next to the altitude tape with the green <b>glide slope</b> diamond.</li>
+</ul>
+<figure>
+  <img src="istruzioni/en/pfd-vor.png" alt="PFD with the VAZ VOR tuned: NAV1 box and course deviation scale with the TO triangle" loading="lazy">
+  <figcaption>The same PFD with a VOR: there is no glide slope scale.</figcaption>
+</figure>
+
+<!-- ================================================================ -->
+<h2 id="pannello">5. Engine, turn coordinator, trim, fuel</h2>
+<div class="affianca">
+  <div>
+    <ul>
+      <li><b>RPM</b>: engine revolutions (2100–2700 in flight).</li>
+      <li><b>FLAP</b>: flap position in degrees.</li>
+      <li><b>TRIM</b>: trim position (+ = nose up, − = nose down).</li>
+      <li><b>G</b>: the load you feel: 1.0 in level flight, more in turns and pull-ups.</li>
+    </ul>
+    <h3>Turn coordinator</h3>
+    <p>The little aircraft banks according to <b>how fast the heading changes</b>. When its wing touches the <b>L</b> or <b>R</b> mark you are flying a standard-rate turn: 3° per second, a full circle in 2 minutes. At 90–100 kt that needs about 15° of bank.</p>
+    <p>The <b>ball</b> in the tube shows coordination. If it slides to one side, “step on the ball”: a little rudder (<kbd>Q</kbd> or <kbd>E</kbd>) on the same side.</p>
+    <h3>Trim</h3>
+    <p>The trim takes the effort off the stick. The blue pointer goes down (<b>UP</b>, nose up) or up (<b>DN</b>, nose down); the green band is the take-off setting.</p>
+    <h3>Fuel</h3>
+    <p>Shows the US gallons left (1 gallon = 3.8 litres), the consumption in gal/h and the <b>endurance</b> at the current consumption. The engine burns about 1.5 gal/h at idle, 8.5 in cruise and 11.5 at full throttle. The number turns yellow below 10 gallons and red below 5.</p>
+  </div>
+  <figure>
+    <img src="istruzioni/en/pannello.png" alt="Engine panel with RPM, flaps, trim, g-load, turn coordinator, trim indicator, fuel, stick, throttle and buttons" loading="lazy">
+    <figcaption>The bottom panel. The buttons also work with the mouse or on a phone.</figcaption>
+  </figure>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="mappa">6. Map and NAV1 radio</h2>
+<div class="affianca">
+  <figure>
+    <img src="istruzioni/en/mappa.png" alt="Moving map over Turin with roads, airports, VORs and the magenta route" loading="lazy">
+    <figcaption>The map: the aircraft is the orange arrow in the middle.</figcaption>
+  </figure>
+  <div>
+    <ul>
+      <li>Click on the map (or <kbd>O</kbd>): <b>north up</b> or <b>heading up</b>.</li>
+      <li>Mouse wheel on the map, the <b>SCALE</b> menu or <kbd>M</kbd>: from 2 to 100 NM or the whole region.</li>
+      <li><span class="c-mag">Magenta</span> line: the flight plan route; the solid part goes from the aircraft to the next point.</li>
+      <li><span class="c-cya">Blue</span> hexagons: <b>VOR</b> stations; those with a square around them also have <b>DME</b>, which measures distance.</li>
+      <li><span class="c-ver">Green dashed</span> line: the CRS course of the tuned VOR. The <span class="c-ver">green fan</span> in front of a runway is the beam of the tuned ILS localizer.</li>
+    </ul>
+    <p>Below the map:</p>
+    <ul>
+      <li><b>DEST</b>: the destination (also <kbd>N</kbd>);</li>
+      <li><b>DIST</b> and <b>BRG</b>: distance and bearing of the next point;</li>
+      <li><b>WIND</b>: where it blows from, and how many knots;</li>
+      <li><b>NAV1</b>: menu to choose the station;</li>
+      <li><b>CRS</b> and <b>DME</b>: the selected course and the distance from the station.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="piano">7. Flight plan</h2>
+<div class="affianca">
+  <div>
+    <p>The simulator plans the flight to the destination by itself:</p>
+    <table>
+      <tbody>
+        <tr><td class="num">DEP</td><td>take-off, then climb at 74 kt</td></tr>
+        <tr><td class="num">CLB</td><td>climb to cruising altitude</td></tr>
+        <tr><td class="num">CRZ</td><td>cruise at 100 kt on the course shown</td></tr>
+        <tr><td class="num">DES</td><td>descent at 500 ft/min</td></tr>
+        <tr><td class="num">F27…</td><td>final approach point, 5 NM before the runway</td></tr>
+        <tr><td class="num">LDG</td><td>landing at 65 kt with flaps 30°</td></tr>
+      </tbody>
+    </table>
+    <p>The <b>cruising altitude</b> follows the visual flight rule: 1000 ft above the highest terrain along the route; eastbound (courses 000–179°) at odd thousands + 500 ft, westbound at even thousands + 500 ft.</p>
+    <p>Below are the details of the <b>arrival runway</b>: length, surface, field elevation, pattern altitude and the wind relative to the runway. When available you also see the <b>ILS</b> frequency (tune it with <kbd>L</kbd>) and the <b>VOR</b> nearest to the destination. The last line changes during the flight and tells you what to do now.</p>
+  </div>
+  <figure>
+    <img src="istruzioni/en/piano.png" alt="Flight plan panel from Turin-Caselle to Cuneo-Levaldigi with phases, arrival runway, ILS and VOR" loading="lazy">
+    <figcaption>From Turin-Caselle (LIMF) to Cuneo-Levaldigi (LIMZ).</figcaption>
+  </figure>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="cabina">8. The G1000 cockpit</h2>
+<figure>
+  <img src="istruzioni/en/cabina.jpg" alt="Cockpit view: windscreen, G1000 PFD and MFD screens, control yokes and standby instruments" loading="lazy">
+  <figcaption>In the cockpit (<kbd>C</kbd>), on final with the ILS. The mouse wheel zooms.</figcaption>
+</figure>
+<ul>
+  <li><b>Left screen (PFD)</b>: the same PFD described above.</li>
+  <li><b>Right screen (MFD)</b>: at the top GS, DTK (desired track), TRK (actual track), DIS (distance) and ETE (time en route). On the left the engine column: RPM, fuel flow (FFLOW), oil, the two tanks (FUEL L and R) and the trim (ELEV TRIM). On the right the map.</li>
+  <li><b>Standby instruments</b>, below the screens: airspeed indicator, attitude indicator, altimeter and turn coordinator, as in aircraft without screens.</li>
+  <li>The <b>yokes</b>, throttle, flap lever and trim wheel move with the controls.</li>
+</ul>
+<p>The third view, <b>tower</b>, watches the aircraft from the nearest control tower and follows it with the zoom: perfect for replaying a landing.</p>
+
+<!-- ================================================================ -->
+<h2 id="decollo">9. Take-off step by step</h2>
+<ol class="passi">
+  <li>Flaps <b>10°</b>: press <kbd>F</kbd> once.</li>
+  <li>Throttle <b>100%</b>: <kbd>0</kbd> (or hold <kbd>+</kbd>).</li>
+  <li>Stay on the centre line with small touches of rudder, <kbd>Q</kbd> / <kbd>E</kbd>.</li>
+  <li>At <b>55 knots</b> pull gently (<kbd>S</kbd>) until the nose is about 8–10° up: the aircraft lifts off by itself. The ground roll is about 240 m.</li>
+  <li>Hold about <b>74 knots</b> (best rate of climb, about 570 ft/min). If the speed drops, lower the nose a little.</li>
+  <li>Above 500 ft retract the flaps (<kbd>G</kbd>) and use the trim (<kbd>Z</kbd>/<kbd>X</kbd>) so you do not have to hold the stick.</li>
+  <li>Follow the magenta triangle on the compass towards the destination.</li>
+</ol>
+
+<!-- ================================================================ -->
+<h2 id="volo">10. In flight: attitude, trim, turns</h2>
+<figure>
+  <img src="istruzioni/en/volo.jpg" alt="Outside view of the Cessna in a gentle turn over the hills of Valle Azzurra" loading="lazy">
+  <figcaption>Outside view in a gentle turn: the turn coordinator and the magenta trend on the compass show how fast it turns.</figcaption>
+</figure>
+<p><b>Attitude + power = performance.</b> The nose sets the speed, the throttle decides whether you climb or descend. To stay level at 100 kt you need about 65% throttle with the nose on the horizon.</p>
+<ul>
+  <li><b>Small corrections</b>: short taps on the keys, then wait a few seconds for the aircraft to respond. The Cessna is stable: when well trimmed it almost flies by itself.</li>
+  <li><b>Trim</b>: when the aircraft flies the way you want, press <kbd>Z</kbd> or <kbd>X</kbd> until you no longer need to hold the stick, then centre it with <kbd>K</kbd>.</li>
+  <li><b>Turning</b>: bank 15–30° with <kbd>A</kbd>/<kbd>D</kbd>, bring the ailerons nearly back to the centre and pull very slightly so you do not lose height. To roll out, bank the other way. A 30° turn can be felt: about 1.15 g.</li>
+  <li><b>Stall</b>: below about 48 kt without flaps (40 kt with flaps 30°) the wing stops lifting. The horn sounds and <b>STALL</b> appears. Lower the nose at once and add power.</li>
+</ul>
+
+<!-- ================================================================ -->
+<h2 id="atterraggio">11. Landing and PAPI</h2>
+<ol class="passi">
+  <li>Reach the final approach point (5 NM) at the altitude in the plan, lined up with the runway.</li>
+  <li>Speed <b>65 knots</b>, flaps 30° (<kbd>F</kbd> three times, below 85 kt).</li>
+  <li>Descend at about 500 ft/min following the <b>PAPI</b>, the four lights on the left of the runway:
+    <ul>
+      <li><span class="papi"><i class="w"></i><i class="w"></i><i class="r"></i><i class="r"></i></span> two white and two red = <b>correct slope</b> (3°);</li>
+      <li><span class="papi"><i class="w"></i><i class="w"></i><i class="w"></i><i class="r"></i></span> or all white = you are <b>too high</b>;</li>
+      <li><span class="papi"><i class="w"></i><i class="r"></i><i class="r"></i><i class="r"></i></span> or all red = you are <b>too low</b>: add power!</li>
+    </ul>
+  </li>
+  <li>A few metres above the ground close the throttle and <b>flare</b> gently: pull the stick to keep the nose slightly up and let the aircraft settle on the main wheels.</li>
+  <li>On the ground brake with <kbd>B</kbd> or <kbd>Space</kbd>.</li>
+</ol>
+<p>The game rates the touchdown by the vertical speed:</p>
+<table>
+  <thead><tr><th>Vertical speed at touchdown</th><th>Rating</th></tr></thead>
+  <tbody>
+    <tr><td class="num">less than 120 ft/min</td><td>Butter! Perfect landing</td></tr>
+    <tr><td class="num">120–250 ft/min</td><td>Great landing</td></tr>
+    <tr><td class="num">250–450 ft/min</td><td>Good landing</td></tr>
+    <tr><td class="num">450–700 ft/min</td><td>Hard landing</td></tr>
+    <tr><td class="num">more than about 700 ft/min</td><td class="c-ros">Landing gear destroyed</td></tr>
+  </tbody>
+</table>
+<p>The message also tells you how many metres past the threshold and from the centre line you touched down. The ideal point is about 300 m past the threshold.</p>
+
+<!-- ================================================================ -->
+<h2 id="vor">12. Navigating with a VOR</h2>
+<p>A <b>VOR</b> is a ground radio station that transmits in all directions. The receiver on board works out which <b>radial</b> you are on, that is, in which direction you are as seen from the station: on radial 090 you are east of the station. If the station has <b>DME</b>, you also know how many miles away you are.</p>
+<ol class="passi">
+  <li><b>Tune it</b>: press <kbd>V</kbd> (several times to move to the other stations in range) or choose from the <b>NAV1</b> menu. The CRS course is set direct to the station.</li>
+  <li><b>Choose the course</b> with <kbd>,</kbd> and <kbd>.</kbd> (with <kbd>Shift</kbd> in steps of 10°).</li>
+  <li><b>Read the needle</b>: if it is on the right, the course is to your right. Turn 20–30° towards the needle to intercept it, then when the needle centres put the heading on the CRS course.</li>
+  <li><b>TO / FROM</b>: with TO the course leads you towards the station, with FROM away from it. When you fly over the station it changes from TO to FROM.</li>
+  <li>With a crosswind, keep the nose a few degrees into the wind to stay on course.</li>
+</ol>
+<div class="nota"><b>Exercise:</b> from Turin-Caselle tune <b>TOP 114.50</b> and fly towards the station (TO). After passing over it set <b>CRS 204</b> and follow radial 204 (FROM): it takes you to Cuneo-Levaldigi, about 25 NM further on, where you can switch to the runway 03 ILS with <kbd>L</kbd>.</div>
+<p>Stations can only be received within a certain distance, and the higher you are the further they reach (the signal travels in a straight line, like light). If you see <b>OUT OF RANGE</b>, climb or get closer.</p>
+<p>In the Piedmont world the VORs are the <b>real</b> ones, for example TOP Torino 114.50, CSL Caselle 116.75, VOG Voghera 115.50, SRN Saronno 113.70 and BLA Biella 116.10. One difference from reality: the simulator uses degrees referred to true north, while real VORs use magnetic north, which in Piedmont is about 3° further east.</p>
+
+<!-- ================================================================ -->
+<h2 id="ils">13. ILS approach</h2>
+<p>The <b>ILS</b> guides you all the way to the runway with two radio beams:</p>
+<ul>
+  <li>the <b>localizer</b> (LOC) tells you whether you are left or right of the runway centre line. It is much more precise than a VOR: the needle is at full scale when you are 2.5° off;</li>
+  <li>the <b>glide slope</b> tells you whether you are above or below the 3° slope. Full scale: 0.7°.</li>
+</ul>
+<ol class="passi">
+  <li>Press <kbd>L</kbd> to tune the ILS of the arrival runway; the frequency is also in the flight plan.</li>
+  <li>Approach the extended runway centre line at an angle of about 30°, 2000–2500 ft above the field, towards the final approach point.</li>
+  <li>When the <b>LOC</b> needle moves towards the centre, turn onto the runway course (CRS). From now on make small corrections of a few degrees.</li>
+  <li>When the glide slope <b>diamond</b> comes down to the centre, set flaps and power to descend at about 400–500 ft/min at 65 kt.</li>
+  <li>Diamond <b>above</b> the centre = you are low, descend less. Diamond <b>below</b> the centre = you are high, descend more.</li>
+  <li>Over the threshold you will be at about 50 ft: look outside, flare and land.</li>
+</ol>
+<div class="attenzione">In the simulator every asphalt runway at least 1000 m long has an ILS at both ends. Their <b>frequencies are invented</b> and do not match the real ones.</div>
+
+<!-- ================================================================ -->
+<h2 id="emergenze">14. Warnings and emergencies</h2>
+<table>
+  <thead><tr><th>Warning</th><th>Meaning</th><th>What to do</th></tr></thead>
+  <tbody>
+    <tr><td class="c-ros"><b>PULL UP</b></td><td>You are about to hit the ground while descending</td><td>Pull up and apply full power</td></tr>
+    <tr><td class="c-ros"><b>STALL</b></td><td>The wing is close to stalling (the horn sounds)</td><td>Nose down, add power</td></tr>
+    <tr><td class="c-ros"><b>OVERSPEED</b></td><td>Above 163 kt</td><td>Reduce power, raise the nose gently</td></tr>
+    <tr><td class="c-amb"><b>FLAP SPEED</b></td><td>Flaps extended above 85 kt</td><td>Slow down or retract the flaps</td></tr>
+    <tr><td class="c-amb"><b>OVER-G</b></td><td>Load above 3.8 g</td><td>Gentler manoeuvres</td></tr>
+    <tr><td class="c-amb"><b>LOW FUEL</b></td><td>Less than 5 gallons</td><td>Land as soon as possible</td></tr>
+    <tr><td class="c-amb"><b>ENGINE OUT</b></td><td>Out of fuel</td><td>Glide at 65 kt towards a field</td></tr>
+  </tbody>
+</table>
+<h3>Engine failure</h3>
+<p>Without fuel the engine stops and the propeller only turns in the airflow. Hold <b>65 knots</b> at once, the best glide speed: descending at about 800 ft/min the Cessna covers about 2.5 km (1.4 NM) for every 1000 ft of height. Look for a runway or a field into the wind, and use flaps only when you are sure you will make it.</p>
+<h3>Crashes</h3>
+<p>You crash if you touch down faster than about 700 ft/min, end up in the water, hit the ground with a wing, the propeller or the fuselage, exceed about 183 kt, or exceed +5.7 / −2.3 g. Press <kbd>R</kbd> or <kbd>Enter</kbd> to start again.</p>
+
+<!-- ================================================================ -->
+<h2 id="numeri">15. Cessna 172 numbers</h2>
+<table>
+  <thead><tr><th>Speed</th><th>Knots</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td>Vso</td><td class="num">40</td><td>stall with flaps 30°</td></tr>
+    <tr><td>Vs1</td><td class="num">48</td><td>stall without flaps</td></tr>
+    <tr><td>Vr</td><td class="num">55</td><td>rotation (raise the nose on take-off)</td></tr>
+    <tr><td>Approach</td><td class="num">65</td><td>final with flaps 30°; also best glide</td></tr>
+    <tr><td>Vy</td><td class="num">74</td><td>best rate of climb</td></tr>
+    <tr><td>Vfe</td><td class="num">85</td><td>maximum with flaps extended</td></tr>
+    <tr><td>Cruise</td><td class="num">100–110</td><td>at 65–75% throttle</td></tr>
+    <tr><td>Vno</td><td class="num">129</td><td>maximum in turbulent air</td></tr>
+    <tr><td>Vne</td><td class="num">163</td><td>never exceed</td></tr>
+  </tbody>
+</table>
+<p>Other data: 1000 kg with pilot and fuel, 11 m wingspan, 53 US gallons of usable fuel. The flight model (6 degrees of freedom) uses the aerodynamic coefficients of the real C172: you can read and change them in <code>dati/aereo.js</code>.</p>
+
+<!-- ================================================================ -->
+<h2 id="mondi">16. Worlds and the editable map</h2>
+<ul>
+  <li><b>Piedmont</b>: real terrain (250 m grid), 32 airports with their real runways, lakes, towns, roads, railways, rivers, villages with buildings and the real VORs. It covers Piedmont plus parts of Lombardy, Liguria, Aosta Valley, Switzerland and France (about 219 × 287 km).</li>
+  <li><b>Valle Azzurra</b>: an invented world, small and simple. Everything is in the file <code>dati/mappa.js</code>, written to be edited by hand: mountains, lakes, airports and runways, towns, woods, VORs, weather and starting point. The comments in the file are in Italian.</li>
+</ul>
+<p>Shortcuts to add to the page address: <code>?lang=en</code> or <code>?lang=it</code> choose the language; <code>?mappa=valle</code> or <code>?mappa=piemonte</code> choose the world; <code>#salta</code> skips the briefing, <code>#finale</code> starts on final, <code>#vista=1</code> starts in the cockpit.</p>
+
+<footer>
+  <p>Real data: airports and VORs © OurAirports (public domain) · lakes, towns, urban areas, roads, railways and rivers © OpenStreetMap contributors (ODbL) · terrain Mapzen Terrain Tiles (SRTM). ILS stations and their frequencies are simulated.</p>
+  <p>Free software under the GPL-3.0-or-later licence. This simulator is a game: do not use it for real navigation.</p>
+  <a class="torna" href="index.html?lang=en">Open the simulator</a>
+</footer>
+</main>
+</div>
+</body>
+</html>

@@ -39,7 +39,7 @@ SIM.creaRadio=function(T){
   for(const p of piste)for(const te of p.testate){
     const loc={x:te.x+te.dir.x*(p.L+300),z:te.z+te.dir.z*(p.L+300)};   // antenna oltre la fine della pista
     const gs={x:te.x+te.dir.x*300,z:te.z+te.dir.z*300};                // antenna del sentiero, 300 m dopo la soglia
-    stazioni.push({tipo:'ILS',id:sigla('I'+p.ap.codice.slice(2)+te.nome),nome:p.ap.codice+' pista '+te.nome,ap:p.ap,te,
+    stazioni.push({tipo:'ILS',id:sigla('I'+p.ap.codice.slice(2)+te.nome),nome:p.ap.codice+(SIM.L?SIM.L(' pista ',' runway '):' pista ')+te.nome,ap:p.ap,te,
       freq:canali[n++%canali.length],dme:true,x:loc.x,z:loc.z,gs,quota:p.quota,crs:te.hdg,portata:18});
   }
   stazioni.sort((a,b)=>a.tipo===b.tipo?a.id.localeCompare(b.id):a.tipo==='VOR'?-1:1);

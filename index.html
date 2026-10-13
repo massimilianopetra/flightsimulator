@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="it">
+<html lang="it" data-en-title="Flight Simulator">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -19,62 +19,62 @@
   <canvas id="gl" aria-label="Vista 3D del volo"></canvas>
 
   <!-- in alto a sinistra: comandi -->
-  <section id="aiuto" class="hud aiuto" aria-label="Comandi">
+  <section id="aiuto" class="hud aiuto" aria-label="Comandi" data-en-aria="Controls">
     <button type="button" class="testa" data-pannello="aiuto" aria-expanded="true" aria-controls="aiutoCorpo">
-      <span>COMANDI <span class="dim">(H)</span></span><span class="freccia" aria-hidden="true">▾</span>
+      <span data-en="CONTROLS <span class=&quot;dim&quot;>(H)</span>">COMANDI <span class="dim">(H)</span></span><span class="freccia" aria-hidden="true">▾</span>
     </button>
     <div id="aiutoCorpo" class="corpo">
     <dl>
-      <dt>W / S</dt><dd>picchia / cabra (anche frecce)</dd>
-      <dt>K</dt><dd>cloche al centro</dd>
-      <dt>A / D</dt><dd>rollio sinistra / destra</dd>
-      <dt>Q / E</dt><dd>timone e ruotino a terra</dd>
-      <dt>+ / −</dt><dd>manetta (1…9 = 10…90%, 0 = 100%)</dd>
-      <dt>F / G</dt><dd>flap giù / su</dd>
-      <dt>Z / X</dt><dd>trim cabra / picchia</dd>
-      <dt>B o Spazio</dt><dd>freni (tieni premuto)</dd>
-      <dt>C</dt><dd>vista: esterna, cabina, torre</dd>
-      <dt>Rotellina</dt><dd>zoom in cabina</dd>
-      <dt>N</dt><dd>prossima destinazione</dd>
-      <dt>I</dt><dd>piano di volo e pista di arrivo</dd>
-      <dt>V</dt><dd>NAV1: prossimo VOR/ILS ricevuto (il più vicino per primo)</dd>
-      <dt>L</dt><dd>NAV1: ILS della pista di arrivo</dd>
-      <dt>, / .</dt><dd>rotta CRS del VOR −1° / +1° (con Maiusc ±10°)</dd>
-      <dt>M / O</dt><dd>scala mappa (anche rotellina sulla mappa) / nord o prua in alto</dd>
-      <dt>P / R</dt><dd>pausa / ricomincia</dd>
+      <dt>W / S</dt><dd data-en="nose down / nose up (or arrow keys)">picchia / cabra (anche frecce)</dd>
+      <dt>K</dt><dd data-en="centre the stick">cloche al centro</dd>
+      <dt>A / D</dt><dd data-en="roll left / right">rollio sinistra / destra</dd>
+      <dt>Q / E</dt><dd data-en="rudder and nose wheel on the ground">timone e ruotino a terra</dd>
+      <dt>+ / −</dt><dd data-en="throttle (1…9 = 10…90%, 0 = 100%)">manetta (1…9 = 10…90%, 0 = 100%)</dd>
+      <dt>F / G</dt><dd data-en="flaps down / up">flap giù / su</dd>
+      <dt>Z / X</dt><dd data-en="trim nose up / nose down">trim cabra / picchia</dd>
+      <dt data-en="B or Space">B o Spazio</dt><dd data-en="brakes (hold)">freni (tieni premuto)</dd>
+      <dt>C</dt><dd data-en="view: outside, cockpit, tower">vista: esterna, cabina, torre</dd>
+      <dt data-en="Mouse wheel">Rotellina</dt><dd data-en="cockpit zoom">zoom in cabina</dd>
+      <dt>N</dt><dd data-en="next destination">prossima destinazione</dd>
+      <dt>I</dt><dd data-en="flight plan and arrival runway">piano di volo e pista di arrivo</dd>
+      <dt>V</dt><dd data-en="NAV1: next VOR/ILS in range (nearest first)">NAV1: prossimo VOR/ILS ricevuto (il più vicino per primo)</dd>
+      <dt>L</dt><dd data-en="NAV1: ILS of the arrival runway">NAV1: ILS della pista di arrivo</dd>
+      <dt>, / .</dt><dd data-en="VOR course CRS −1° / +1° (with Shift ±10°)">rotta CRS del VOR −1° / +1° (con Maiusc ±10°)</dd>
+      <dt>M / O</dt><dd data-en="map scale (or mouse wheel on the map) / north or heading up">scala mappa (anche rotellina sulla mappa) / nord o prua in alto</dd>
+      <dt>P / R</dt><dd data-en="pause / restart">pausa / ricomincia</dd>
     </dl>
-    <div class="dim">Mouse: trascina sullo schermo come una cloche. Gamepad supportato.</div>
-    <a class="istr" href="istruzioni.html" target="_blank" rel="noopener">Istruzioni complete, con le foto degli strumenti ↗</a>
-    <label class="regola" for="sens" title="Più bassa = comandi più dolci vicino al centro e tasti più lenti">
-      <span>Sensibilità cloche</span>
-      <input id="sens" type="range" min="1" max="10" step="1" value="5" aria-label="Sensibilità della cloche">
+    <div class="dim" data-en="Mouse: drag on the screen like a control stick. Gamepads are supported.">Mouse: trascina sullo schermo come una cloche. Gamepad supportato.</div>
+    <a class="istr" href="istruzioni.html" data-en-href="istruzioni-en.html" target="_blank" rel="noopener" data-en="Full manual, with pictures of the instruments ↗">Istruzioni complete, con le foto degli strumenti ↗</a>
+    <label class="regola" for="sens" title="Più bassa = comandi più dolci vicino al centro e tasti più lenti" data-en-title="Lower = softer controls near the centre and slower keys">
+      <span data-en="Stick sensitivity">Sensibilità cloche</span>
+      <input id="sens" type="range" min="1" max="10" step="1" value="5" aria-label="Sensibilità della cloche" data-en-aria="Stick sensitivity">
       <span id="sensv" class="val">5</span>
     </label>
-    <label class="regola"><input id="centro" type="checkbox"> <span>La cloche torna al centro quando lasci i tasti</span></label>
+    <label class="regola"><input id="centro" type="checkbox"> <span data-en="The stick returns to the centre when you release the keys">La cloche torna al centro quando lasci i tasti</span></label>
     </div>
   </section>
 
   <!-- in alto a destra: navigazione e piano di volo -->
   <div id="destra" class="destra">
-  <section id="mappa" class="hud nav" aria-label="Navigazione">
+  <section id="mappa" class="hud nav" aria-label="Navigazione" data-en-aria="Navigation">
     <button type="button" class="testa" data-pannello="mappa" aria-expanded="true" aria-controls="minimap">
-      <span>MAPPA</span><span class="freccia" aria-hidden="true">▾</span>
+      <span data-en="MAP">MAPPA</span><span class="freccia" aria-hidden="true">▾</span>
     </button>
-    <canvas id="minimap" aria-label="Mappa (clic: nord o prua in alto)" title="Clic: nord in alto / prua in alto"></canvas>
+    <canvas id="minimap" aria-label="Mappa (clic: nord o prua in alto)" title="Clic: nord in alto / prua in alto" data-en-aria="Map (click: north or heading up)" data-en-title="Click: north up / heading up"></canvas>
     <div class="navinfo">
-      <div class="row"><span class="lbl">DEST</span><select id="selDest" class="seldest" aria-label="Aeroporto di destinazione"></select></div>
+      <div class="row"><span class="lbl">DEST</span><select id="selDest" class="seldest" aria-label="Aeroporto di destinazione" data-en-aria="Destination airport"></select></div>
       <div class="row"><span class="lbl">DIST</span><span id="dist" class="val mag">0.0</span><span class="unit">NM</span></div>
-      <div class="row"><span class="lbl">ROTTA</span><span id="brg" class="val mag">000</span><span class="unit">°</span></div>
-      <div class="row riga-scala"><span class="lbl">SCALA</span><select id="selScala" class="selscala" aria-label="Scala della mappa"></select></div>
-      <div class="row"><span class="lbl">VENTO</span><span id="vento" class="val sm">270/6</span></div>
-      <div class="row riga-nav"><span class="lbl">NAV1</span><select id="selNav" class="selnav" aria-label="Radioaiuto sintonizzato (NAV1)"></select></div>
+      <div class="row"><span class="lbl" data-en="BRG">ROTTA</span><span id="brg" class="val mag">000</span><span class="unit">°</span></div>
+      <div class="row riga-scala"><span class="lbl" data-en="SCALE">SCALA</span><select id="selScala" class="selscala" aria-label="Scala della mappa" data-en-aria="Map scale"></select></div>
+      <div class="row"><span class="lbl" data-en="WIND">VENTO</span><span id="vento" class="val sm">270/6</span></div>
+      <div class="row riga-nav"><span class="lbl">NAV1</span><select id="selNav" class="selnav" aria-label="Radioaiuto sintonizzato (NAV1)" data-en-aria="Tuned navaid (NAV1)"></select></div>
       <div class="row"><span class="lbl">CRS</span><span id="crs" class="val verde">---</span><span class="unit">°</span></div>
       <div class="row"><span class="lbl">DME</span><span id="dme" class="val verde sm">--.-</span><span class="unit">NM</span></div>
     </div>
   </section>
-  <section id="piano" class="hud piano" aria-label="Piano di volo">
+  <section id="piano" class="hud piano" aria-label="Piano di volo" data-en-aria="Flight plan">
     <button type="button" class="testa" data-pannello="piano" aria-expanded="true" aria-controls="pianoCorpo">
-      <span>PIANO DI VOLO <span class="dim">(I)</span></span><span class="freccia" aria-hidden="true">▾</span>
+      <span data-en="FLIGHT PLAN <span class=&quot;dim&quot;>(I)</span>">PIANO DI VOLO <span class="dim">(I)</span></span><span class="freccia" aria-hidden="true">▾</span>
     </button>
     <div id="pianoCorpo" class="corpo"></div>
   </section>
@@ -85,39 +85,39 @@
 
   <!-- in basso: PFD e pannello motore/sistemi -->
   <div class="basso">
-    <section class="hud pfdbox" aria-label="Strumenti di volo"><canvas id="pfd"></canvas></section>
-    <section class="hud sys" aria-label="Motore e sistemi">
+    <section class="hud pfdbox" aria-label="Strumenti di volo" data-en-aria="Flight instruments"><canvas id="pfd"></canvas></section>
+    <section class="hud sys" aria-label="Motore e sistemi" data-en-aria="Engine and systems">
       <div class="griglia">
         <div class="row"><span class="lbl">RPM</span><span id="rpm" class="val">0000</span></div>
         <div class="row"><span class="lbl">FLAP</span><span id="flap" class="val">0</span><span class="unit">°</span></div>
         <div class="row"><span class="lbl">TRIM</span><span id="trim" class="val">0</span></div>
         <div class="row"><span class="lbl">G</span><span id="gload" class="val">1.0</span></div>
       </div>
-      <canvas id="aux" class="aux" aria-label="Virosbandometro, trim e carburante"></canvas>
+      <canvas id="aux" class="aux" aria-label="Virosbandometro, trim e carburante" data-en-aria="Turn coordinator, trim and fuel"></canvas>
       <div class="riga-cloche">
-        <div class="cloche-ind" title="Posizione della cloche: in basso = tirata (cabra)"><i id="puntoCloche"></i></div>
-        <span class="lbl">CLOCHE</span>
-        <button type="button" data-azione="centra" title="Riporta la cloche al centro (K)">CENTRA (K)</button>
+        <div class="cloche-ind" title="Posizione della cloche: in basso = tirata (cabra)" data-en-title="Stick position: down = pulled back (nose up)"><i id="puntoCloche"></i></div>
+        <span class="lbl" data-en="STICK">CLOCHE</span>
+        <button type="button" data-azione="centra" title="Riporta la cloche al centro (K)" data-en-title="Centre the stick (K)" data-en="CENTRE (K)">CENTRA (K)</button>
       </div>
       <div class="spie">
-        <span id="spiaFreni" class="spia">FRENI</span>
-        <span id="spiaTerra" class="spia">A TERRA</span>
+        <span id="spiaFreni" class="spia" data-en="BRAKES">FRENI</span>
+        <span id="spiaTerra" class="spia" data-en="ON GROUND">A TERRA</span>
         <span id="spiaVista" class="spia on">ESTERNA</span>
       </div>
       <label class="manetta" for="thr">
-        <span class="lbl">MANETTA</span>
-        <input id="thr" type="range" min="0" max="100" value="0" aria-label="Manetta">
+        <span class="lbl" data-en="THROTTLE">MANETTA</span>
+        <input id="thr" type="range" min="0" max="100" value="0" aria-label="Manetta" data-en-aria="Throttle">
         <span id="thrv" class="val">0</span><span class="unit">%</span>
       </label>
       <div class="bottoni">
-        <button type="button" data-azione="flapsu" title="Flap su (G)">FLAP −</button>
-        <button type="button" data-azione="flapgiu" title="Flap giù (F)">FLAP +</button>
-        <button type="button" data-tieni="rudS" title="Timone sinistra (Q)">◀ TIM</button>
-        <button type="button" data-tieni="rudD" title="Timone destra (E)">TIM ▶</button>
-        <button type="button" data-tieni="freni" title="Freni (B)">FRENI</button>
-        <button type="button" data-azione="vista" title="Cambia vista (C)">VISTA</button>
+        <button type="button" data-azione="flapsu" title="Flap su (G)" data-en-title="Flaps up (G)">FLAP −</button>
+        <button type="button" data-azione="flapgiu" title="Flap giù (F)" data-en-title="Flaps down (F)">FLAP +</button>
+        <button type="button" data-tieni="rudS" title="Timone sinistra (Q)" data-en-title="Rudder left (Q)" data-en="◀ RUD">◀ TIM</button>
+        <button type="button" data-tieni="rudD" title="Timone destra (E)" data-en-title="Rudder right (E)" data-en="RUD ▶">TIM ▶</button>
+        <button type="button" data-tieni="freni" title="Freni (B)" data-en-title="Brakes (B)" data-en="BRAKES">FRENI</button>
+        <button type="button" data-azione="vista" title="Cambia vista (C)" data-en-title="Change view (C)" data-en="VIEW">VISTA</button>
         <button type="button" data-azione="audio" id="btnAudio" title="Audio">AUDIO</button>
-        <button type="button" data-azione="reset" title="Ricomincia (R)">RICOMINCIA</button>
+        <button type="button" data-azione="reset" title="Ricomincia (R)" data-en-title="Restart (R)" data-en="RESTART">RICOMINCIA</button>
       </div>
     </section>
   </div>
@@ -127,55 +127,62 @@
   <!-- briefing iniziale -->
   <div id="brief" class="overlay">
     <div class="card">
-      <h1>Briefing di volo</h1>
+      <h1 data-en="Flight briefing">Briefing di volo</h1>
       <div class="scelte">
-        <label>Mondo
-          <select id="selMondo">
-            <option value="piemonte">Piemonte (reale)</option>
-            <option value="valle">Valle Azzurra (inventata)</option>
+        <label><span data-en="Language">Lingua</span>
+          <select id="selLingua">
+            <option value="it">Italiano</option>
+            <option value="en">English</option>
           </select>
         </label>
-        <label>Aeroporto di partenza <select id="selAeroporto"></select></label>
-        <label>Pista <select id="selPista"></select></label>
-        <label>Destinazione <select id="selDestBrief"></select></label>
-        <label>Carburante
+        <label><span data-en="World">Mondo</span>
+          <select id="selMondo">
+            <option value="piemonte" data-en="Piedmont, Italy (real)">Piemonte (reale)</option>
+            <option value="valle" data-en="Valle Azzurra (invented)">Valle Azzurra (inventata)</option>
+          </select>
+        </label>
+        <label><span data-en="Departure airport">Aeroporto di partenza</span> <select id="selAeroporto"></select></label>
+        <label><span data-en="Runway">Pista</span> <select id="selPista"></select></label>
+        <label><span data-en="Destination">Destinazione</span> <select id="selDestBrief"></select></label>
+        <label><span data-en="Fuel">Carburante</span>
           <select id="selCarb">
-            <option value="53">Pieno: 53 gal (circa 6 ore)</option>
-            <option value="26.5">Metà: 26,5 gal (circa 3 ore)</option>
-            <option value="8">Riserva: 8 gal (circa 55 minuti)</option>
-            <option value="2">Quasi vuoto: 2 gal (circa 15 minuti)</option>
+            <option value="53" data-en="Full: 53 gal (about 6 hours)">Pieno: 53 gal (circa 6 ore)</option>
+            <option value="26.5" data-en="Half: 26.5 gal (about 3 hours)">Metà: 26,5 gal (circa 3 ore)</option>
+            <option value="8" data-en="Reserve: 8 gal (about 55 minutes)">Riserva: 8 gal (circa 55 minuti)</option>
+            <option value="2" data-en="Almost empty: 2 gal (about 15 minutes)">Quasi vuoto: 2 gal (circa 15 minuti)</option>
           </select>
         </label>
       </div>
       <p id="briefTesto"></p>
-      <p id="crediti" class="crediti" hidden>Dati reali: aeroporti © OurAirports (pubblico dominio) · laghi, città, aree urbane, strade, ferrovie e fiumi © OpenStreetMap contributors (ODbL) · rilievo Mapzen Terrain Tiles (SRTM) · VOR © OurAirports (pubblico dominio); gli ILS e le loro frequenze sono simulati.</p>
+      <p id="crediti" class="crediti" hidden data-en="Real data: airports and VORs © OurAirports (public domain) · lakes, towns, urban areas, roads, railways and rivers © OpenStreetMap contributors (ODbL) · terrain Mapzen Terrain Tiles (SRTM); ILS stations and their frequencies are simulated.">Dati reali: aeroporti © OurAirports (pubblico dominio) · laghi, città, aree urbane, strade, ferrovie e fiumi © OpenStreetMap contributors (ODbL) · rilievo Mapzen Terrain Tiles (SRTM) · VOR © OurAirports (pubblico dominio); gli ILS e le loro frequenze sono simulati.</p>
       <ol class="check">
-        <li>Flap a <b>10°</b> con <kbd>F</kbd>.</li>
-        <li>Manetta al <b>100%</b> con <kbd>0</kbd> (oppure tieni premuto <kbd>+</kbd>); resta sulla linea centrale con <kbd>Q</kbd>/<kbd>E</kbd>.</li>
-        <li>A <b id="briefVr">55</b> nodi tira dolcemente (<kbd>S</kbd>): il muso si alza e l'aereo decolla. <span id="briefCloche">La cloche <b>resta dove la lasci</b>: correggi con <kbd>W</kbd>/<kbd>S</kbd> o centrala con <kbd>K</kbd>.</span> Sensibilità e ritorno al centro si regolano nel pannello COMANDI.</li>
-        <li>Sali a circa <b id="briefVy">74</b> nodi; sopra 500 ft retrai i flap (<kbd>G</kbd>).</li>
-        <li>Per atterrare: circa <b>65 nodi</b>, flap 30°, e segui le luci PAPI a sinistra della pista: <span class="papi"><i class="w"></i><i class="w"></i><i class="r"></i><i class="r"></i></span> = giusta pendenza.</li>
+        <li data-en="Flaps <b>10°</b> with <kbd>F</kbd>.">Flap a <b>10°</b> con <kbd>F</kbd>.</li>
+        <li data-en="Throttle <b>100%</b> with <kbd>0</kbd> (or hold <kbd>+</kbd>); stay on the centre line with <kbd>Q</kbd>/<kbd>E</kbd>.">Manetta al <b>100%</b> con <kbd>0</kbd> (oppure tieni premuto <kbd>+</kbd>); resta sulla linea centrale con <kbd>Q</kbd>/<kbd>E</kbd>.</li>
+        <li data-en="At <b id=&quot;briefVr&quot;>55</b> knots pull gently (<kbd>S</kbd>): the nose rises and the aircraft lifts off. <span id=&quot;briefCloche&quot;></span> Sensitivity and stick centring are in the CONTROLS panel.">A <b id="briefVr">55</b> nodi tira dolcemente (<kbd>S</kbd>): il muso si alza e l'aereo decolla. <span id="briefCloche">La cloche <b>resta dove la lasci</b>: correggi con <kbd>W</kbd>/<kbd>S</kbd> o centrala con <kbd>K</kbd>.</span> Sensibilità e ritorno al centro si regolano nel pannello COMANDI.</li>
+        <li data-en="Climb at about <b id=&quot;briefVy&quot;>74</b> knots; above 500 ft retract the flaps (<kbd>G</kbd>).">Sali a circa <b id="briefVy">74</b> nodi; sopra 500 ft retrai i flap (<kbd>G</kbd>).</li>
+        <li data-en="To land: about <b>65 knots</b>, flaps 30°, and follow the PAPI lights on the left of the runway: <span class=&quot;papi&quot;><i class=&quot;w&quot;></i><i class=&quot;w&quot;></i><i class=&quot;r&quot;></i><i class=&quot;r&quot;></i></span> = correct slope.">Per atterrare: circa <b>65 nodi</b>, flap 30°, e segui le luci PAPI a sinistra della pista: <span class="papi"><i class="w"></i><i class="w"></i><i class="r"></i><i class="r"></i></span> = giusta pendenza.</li>
       </ol>
       <div class="azioni">
-        <button id="inizia" type="button" class="primario">Decolla (Invio)</button>
-        <button id="finale" type="button">Prova l'atterraggio</button>
-        <a class="istr" href="istruzioni.html" target="_blank" rel="noopener">Istruzioni complete ↗</a>
+        <button id="inizia" type="button" class="primario" data-en="Take off (Enter)">Decolla (Invio)</button>
+        <button id="finale" type="button" data-en="Practise landing">Prova l'atterraggio</button>
+        <a class="istr" href="istruzioni.html" data-en-href="istruzioni-en.html" target="_blank" rel="noopener" data-en="Full manual ↗">Istruzioni complete ↗</a>
       </div>
     </div>
   </div>
 
-  <div id="pausa" class="overlay" hidden><div class="card"><h2>PAUSA</h2><p>Premi <kbd>P</kbd> per continuare.</p></div></div>
+  <div id="pausa" class="overlay" hidden><div class="card"><h2 data-en="PAUSED">PAUSA</h2><p data-en="Press <kbd>P</kbd> to continue.">Premi <kbd>P</kbd> per continuare.</p></div></div>
 
   <div id="crash" class="overlay" hidden>
     <div class="card allarme">
-      <h2>INCIDENTE</h2>
+      <h2 data-en="CRASH">INCIDENTE</h2>
       <p id="crashMsg"></p>
-      <button id="ancora" type="button" class="primario">Ricomincia (R)</button>
+      <button id="ancora" type="button" class="primario" data-en="Restart (R)">Ricomincia (R)</button>
     </div>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/lingua.js"></script>
 <!-- dati modificabili: il mondo si sceglie con ?mappa=piemonte (predefinito) o ?mappa=valle -->
 <script>
 (function(){

@@ -77,10 +77,10 @@ window.AEREO = {
 
   // punti che NON devono toccare terra (altrimenti è un incidente)
   puntiUrto: [
-    { x:  0,    y: -0.95, z: -3.0, motivo: "L'elica ha toccato terra" },
-    { x: -5.5,  y:  0.85, z: -0.5, motivo: "L'ala sinistra ha toccato terra" },
-    { x:  5.5,  y:  0.85, z: -0.5, motivo: "L'ala destra ha toccato terra" },
-    { x:  0,    y: -0.70, z: -0.6, motivo: "La fusoliera ha toccato terra" },
+    { x:  0,    y: -0.95, z: -3.0, motivo: "L'elica ha toccato terra", motivoEn: "The propeller hit the ground" },
+    { x: -5.5,  y:  0.85, z: -0.5, motivo: "L'ala sinistra ha toccato terra", motivoEn: "The left wing hit the ground" },
+    { x:  5.5,  y:  0.85, z: -0.5, motivo: "L'ala destra ha toccato terra", motivoEn: "The right wing hit the ground" },
+    { x:  0,    y: -0.70, z: -0.6, motivo: "La fusoliera ha toccato terra", motivoEn: "The fuselage hit the ground" },
   ],
 
   limiti: {
