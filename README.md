@@ -132,6 +132,14 @@ The landing gear survives touchdowns below 600–700 ft/min.
 
 The **Practise landing** button in the briefing puts you straight on final approach to your destination.
 
+**Taxiing**: choose *Start: from the parking area* in the briefing. You start on the apron; ask for taxi (T), follow the
+yellow lines and the magenta route to the holding point, then call the tower: you enter the runway, backtrack to the
+threshold, turn around and take off. Keep below 15 knots on the ground.
+
+**Taking off again**: after landing, once you have stopped (on the apron if you started from the parking area), that airport
+becomes the departure of the next flight: the flight plan is recalculated and the radio is ready for a new clearance.
+Esc takes you back to the briefing at any time.
+
 The full manual, with pictures of every instrument, explains the PFD, the turn coordinator,
 VOR and ILS navigation and the emergencies step by step:
 [English](https://massimilianopetra.github.io/flightsimulator/istruzioni-en.html).
@@ -571,6 +579,14 @@ Poco sopra la pista togli motore e alza leggermente il muso (richiamata).
 Sotto 600–700 ft/min di discesa al contatto il carrello resiste.
 
 Il pulsante **Prova l'atterraggio** del briefing ti mette già in finale sulla destinazione.
+
+**Rullaggio**: nel briefing scegli *Partenza: dal parcheggio*. Parti dal piazzale; chiedi di rullare (T), segui le linee
+gialle e la rotta magenta fino al punto attesa, poi chiama la torre: entri in pista, la risali fino alla testata, ti giri
+e decolli. A terra resta sotto i 15 nodi.
+
+**Ripartire**: dopo l'atterraggio, quando sei fermo (sul piazzale, se eri partito dal parcheggio), quell'aeroporto diventa la
+partenza del volo successivo: il piano di volo viene ricalcolato e la radio è pronta per una nuova autorizzazione.
+Esc ti riporta al briefing in qualsiasi momento.
 
 Il manuale completo, con le immagini di tutti gli strumenti, spiega passo passo il PFD, il
 virosbandometro, la navigazione VOR e ILS e le emergenze:
