@@ -59,6 +59,26 @@ function testataControvento(ap){
   }
   return best;
 }
+// partenza "in pista" (sulla soglia, pronti al decollo) oppure "dal parcheggio" (sul piazzale: si rulla fino alla pista)
+let daParcheggio=false;
+try{daParcheggio=localStorage.getItem('volo-partenza-da')==='parcheggio';}catch(e){}
+/* rullaggio: il piazzale e il raccordo che js/mondo.js disegna accanto alla pista principale (a metà pista, sul lato
+   destro): u lungo la pista, v verso destra. Parcheggio in (-45, 115), punto attesa a 30 m dal bordo della pista. */
+function geometriaRullaggio(ap){
+  const p=ap.piste[0],rx=-p.dir.z,rz=p.dir.x;
+  const P=(u,v)=>({x:p.cx+p.dir.x*u+rx*v,z:p.cz+p.dir.z*u+rz*v});
+  return {p,P,parcheggio:P(-45,115),attesa:P(0,p.W/2+30),hdg:(p.hdg+270)%360};
+}
+function partenzaParcheggio(ap,te){
+  const g=geometriaRullaggio(ap);
+  // dal piazzale si arriva alla pista principale: la testata scelta se è sua, altrimenti la più controvento
+  if(!te||te.pista!==g.p)te=g.p.testate.reduce((a,b)=>Math.cos((a.hdg-met.ventoDa)*D2R)>=Math.cos((b.hdg-met.ventoDa)*D2R)?a:b);
+  const c=g.parcheggio;
+  const percorso=[c,g.P(-45,100),g.P(0,100),g.P(0,70),Object.assign(g.attesa,{nome:L('ATT','HP')}),g.P(0,0),
+    {x:te.x+te.dir.x*15,z:te.z+te.dir.z*15,nome:te.nome}];
+  return {x:c.x,z:c.z,y:ap.quota+fis.altRuote()-0.04,hdg:g.hdg,v:0,thr:0,ap,te,parcheggio:true,attesa:g.attesa,percorso};
+}
+const creaPartenza=(ap,te)=>daParcheggio?partenzaParcheggio(ap,te):partenzaDa(ap,te);
 // punto di partenza sulla soglia di una testata
 function partenzaDa(ap,te){
   te=te||testataControvento(ap);
@@ -70,14 +90,13 @@ function puntoPartenza(){
     const ap=T.aeroporti.find(a=>a.codice===p.aeroporto)||T.aeroporti[0];
     let te=null;
     for(const pi of ap.piste)for(const t of pi.testate)if(t.nome===nomeTestata(p.pista))te=t;
-    return partenzaDa(ap,te);
+    return creaPartenza(ap,te);
   }
   const x=p.x||0,z=-(p.y||0);
   const y=Math.max(p.quota||600,T.terrainH(x,z)+150);
   return {x,z,y,hdg:p.direzione||0,v:(p.velocitaNodi||100)/KT,thr:0.7};
 }
 let partenza=puntoPartenza();
-// esercizio di atterraggio: in finale a 2,7 NM dalla pista di partenza, sul sentiero di 3°
 // dove si prova l'atterraggio: la pista di arrivo della destinazione (la più controvento, come nel piano di volo);
 // se non c'è una destinazione diversa dalla partenza, la pista di partenza
 function pistaFinale(){
@@ -103,7 +122,7 @@ const piano=SIM.creaPiano(T,A,met,radio);
 // comunicazioni radio con la torre (js/atc.js)
 const atc=SIM.creaATC({A,T,met,audio,radio});
 piano.impostaCom(atc.stazioneDi);
-const ctxATC=()=>({part:partenza.ap?{ap:partenza.ap,te:partenza.te}:null,arr:piano.piano?{ap:piano.piano.arr,te:piano.piano.te}:null,finale:modalita==='finale',fin:modalita==='finale'?pistaFinale():null});
+const ctxATC=()=>({parcheggio:!!partenza.parcheggio&&modalita!=='finale',attesa:partenza.attesa||null,part:partenza.ap?{ap:partenza.ap,te:partenza.te}:null,arr:piano.piano?{ap:piano.piano.arr,te:piano.piano.te}:null,finale:modalita==='finale',fin:modalita==='finale'?pistaFinale():null});
 let faseMostrata=-1;
 function ricalcolaPiano(){
   const d=dest(),p=piano.calcola(partenza,d,d&&testataControvento(d));
@@ -111,11 +130,17 @@ function ricalcolaPiano(){
   strum.impostaRotta(p?{punti:[{x:p.x0,z:p.z0},{x:p.faf.x,z:p.faf.z,nome:p.nomeFaf},{x:p.te.x,z:p.te.z}],prossimo:1}:null);
   aggiornaPiano();adattaDestra();
 }
+// rullaggio in corso (partenza dal parcheggio, prima del decollo): la mappa mostra il percorso a terra
+let rull=null;
 function aggiornaPiano(){
-  const p=piano.aggiorna(st);if(!p) return;
+  if(rull){
+    while(rull.i<rull.punti.length-1&&Math.hypot(rull.punti[rull.i].x-st.pos.x,rull.punti[rull.i].z-st.pos.z)<22)rull.i++;
+  }
+  const p=piano.aggiorna(st);if(!p){if(rull)strum.impostaRotta({punti:rull.punti,prossimo:rull.i});return;}
   if(p.fase!==faseMostrata){faseMostrata=p.fase;$('pianoCorpo').innerHTML=piano.html();}
   const f=$('pvFase');if(f)scrivi(f,piano.testoFase());
-  strum.impostaRotta({punti:[{x:p.x0,z:p.z0},{x:p.faf.x,z:p.faf.z,nome:p.nomeFaf},{x:p.te.x,z:p.te.z}],prossimo:p.prossimo+1});
+  if(rull)strum.impostaRotta({punti:rull.punti,prossimo:rull.i});
+  else strum.impostaRotta({punti:[{x:p.x0,z:p.z0},{x:p.faf.x,z:p.faf.z,nome:p.nomeFaf},{x:p.te.x,z:p.te.z}],prossimo:p.prossimo+1});
 }
 /* la colonna di destra (mappa + piano) non deve finire sotto il pannello in basso: se serve, la mappa si rimpicciolisce */
 function adattaDestra(){
@@ -151,11 +176,17 @@ function ricomincia(){
   terreno.aggiorna(st.pos.x,st.pos.z,true);
   primaCamera=true;
   $('thr').value=Math.round(st.thr*100);
+  rull=partenza.parcheggio&&modalita!=='finale'?{punti:partenza.percorso,i:1}:null;
   if(piano.piano){piano.piano.prossimo=0;aggiornaPiano();}
   atc.reset(ctxATC());
   atterratoA=null;
   if(avviato&&modalita==='finale'){const f=pistaFinale();messaggio(L(`In finale per la pista <b>${f.te.nome}</b> di <b>${f.ap.codice}</b>: segui le luci PAPI, 65 nodi, flap 30°`,`On final for runway <b>${f.te.nome}</b> at <b>${f.ap.codice}</b>: follow the PAPI lights, 65 knots, flaps 30°`),6);}
-  else if(avviato) messaggio(partenza.te?L(`Pronto al decollo: pista <b>${partenza.te.nome}</b> di <b>${partenza.ap.codice}</b>`,`Ready for take-off: runway <b>${partenza.te.nome}</b> at <b>${partenza.ap.codice}</b>`):L('In volo!','Airborne!'),4);
+  else if(avviato) messaggioPartenza();
+}
+function messaggioPartenza(){
+  if(partenza.parcheggio)messaggio(L(`Sei al parcheggio di <b>${partenza.ap.codice}</b>: chiedi alla torre di rullare (T), poi segui la linea magenta fino al punto attesa della pista <b>${partenza.te.nome}</b>.`,
+    `You are at the parking area of <b>${partenza.ap.codice}</b>: ask the tower for taxi (T), then follow the magenta line to the holding point of runway <b>${partenza.te.nome}</b>.`),8);
+  else messaggio(partenza.te?L(`Pronto al decollo: pista <b>${partenza.te.nome}</b> di <b>${partenza.ap.codice}</b>`,`Ready for take-off: runway <b>${partenza.te.nome}</b> at <b>${partenza.ap.codice}</b>`):L('In volo!','Airborne!'),4);
 }
 
 /* ---------- messaggi e avvisi ---------- */
@@ -238,7 +269,7 @@ function inizia(m){
   if(avviato) return;
   avviato=true;$('brief').hidden=true;audio.avvia();
   if(m==='finale'){modalita='finale';ricomincia();return;}
-  messaggio(partenza.te?L(`Pronto al decollo: pista <b>${partenza.te.nome}</b> di <b>${partenza.ap.codice}</b>`,`Ready for take-off: runway <b>${partenza.te.nome}</b> at <b>${partenza.ap.codice}</b>`):L('In volo!','Airborne!'),4);
+  messaggioPartenza();
 }
 
 addEventListener('keydown',e=>{
@@ -406,6 +437,7 @@ function gestisciEventi(){
     atc.evento(e,st,ctxATC());
     if(e.tipo==='decollo'){
       atterratoA=null;
+      if(rull){rull=null;aggiornaPiano();}
       const pv=T.pistaVicina(e.x,e.z,80);
       messaggio(pv?L(`Decollo da <b>${pv.pista.ap.codice}</b>: buon volo!`,`Take-off from <b>${pv.pista.ap.codice}</b>: have a good flight!`):L('Decollo!','Take-off!'),3);
     }else if(e.tipo==='atterraggio'){
@@ -553,6 +585,7 @@ function aggiornaTesti(hdg,bug){
     else if(st.g>3.8||st.g<-1.5)w=L('SOVRACCARICO','OVER-G');
     else if(st.carburante<=0)w=L('MOTORE SPENTO','ENGINE OUT');
     else if(st.carburante<5)w=L('CARBURANTE BASSO','LOW FUEL');
+    else if(st.aTerra&&st.gs*KT>15&&sulPiazzale())w=L('RULLA PIÙ PIANO','TAXI SLOWER');
   }
   el.avviso.hidden=!w;
   if(w){scrivi(el.avviso,w);el.avviso.classList.toggle('rosso',rosso);}
@@ -588,9 +621,11 @@ for(const sel of [selAp,selDB,selD])opzioniAeroporti(sel);
 function impostaDest(i){destIdx=i;selDB.value=selD.value=String(i);aggiornaBriefing();}
 /* fermi dopo un atterraggio: l'aeroporto diventa la partenza del volo successivo (si continua lo stesso volo:
    carburante e posizione restano; R da qui in poi riparte da questo aeroporto) */
+function sulPiazzale(){T.suolo(st.pos.x,st.pos.z);return T.tipo==='piazzale';}
 function nuovaPartenza(ap){
-  const te=testataControvento(ap);
-  partenza=partenzaDa(ap,te);modalita='decollo';
+  let te=testataControvento(ap);
+  partenza=creaPartenza(ap,te);te=partenza.te;modalita='decollo';
+  rull=partenza.parcheggio?{punti:partenza.percorso,i:1}:null;
   selAp.value=String(T.aeroporti.indexOf(ap));riempiPiste(ap,te);
   if(dest()===ap){ // arrivati a destinazione: si propone l'aeroporto più vicino come prossima tappa
     let best=-1,bd=Infinity;
@@ -602,6 +637,7 @@ function nuovaPartenza(ap){
   const d=dest();
   messaggio(L(`Sei fermo a <b>${ap.codice}</b>. Prossima destinazione: <b>${d?d.codice:'—'}</b> (cambiala con N o il menu DEST).<br>Rulla fino alla pista <b>${te.nome}</b> e chiedi il decollo alla torre (T).`,
               `You are stopped at <b>${ap.codice}</b>. Next destination: <b>${d?d.codice:'—'}</b> (change it with N or the DEST menu).<br>Taxi to runway <b>${te.nome}</b> and ask the tower for take-off clearance (T).`),10);
+  if(partenza.parcheggio)setTimeout(messaggioPartenza,10500);
 }
 function riempiPiste(ap,scelta){
   const opz=[];
@@ -612,7 +648,7 @@ function riempiPiste(ap,scelta){
 function scegliPartenza(){
   const ap=T.aeroporti[+selAp.value];
   const [i,j]=selPista.value.split('|').map(Number);
-  partenza=partenzaDa(ap,ap.piste[i]&&ap.piste[i].testate[j]);
+  partenza=creaPartenza(ap,ap.piste[i]&&ap.piste[i].testate[j]);
   ricomincia();aggiornaBriefing();
 }
 if(partenza.ap){selAp.value=String(T.aeroporti.indexOf(partenza.ap));riempiPiste(partenza.ap,partenza.te);}
@@ -666,6 +702,9 @@ function cambiaCrs(d){
 }
 selNav.addEventListener('change',()=>{const i=+selNav.value;sintonizza(i>=0?radio.stazioni[i]:null);selNav.blur();});
 sintonizza(null,true);
+const selDa=$('selPartenzaDa');
+selDa.value=daParcheggio?'parcheggio':'pista';
+selDa.addEventListener('change',()=>{daParcheggio=selDa.value==='parcheggio';try{localStorage.setItem('volo-partenza-da',selDa.value);}catch(e){}scegliPartenza();selDa.blur();});
 const selOra=$('selOra');
 selOra.value=oraVolo;
 selOra.addEventListener('change',()=>{oraVolo=selOra.value;notte.imposta(oraVolo);try{localStorage.setItem('volo-ora',oraVolo);}catch(e){}selOra.blur();});
@@ -704,7 +743,7 @@ function ciclo(ora){
   if(monumenti&&n%10===0)monumenti.aggiorna(camera.position,terreno.vicino());
   if(attivo&&n%15===0){
     atc.aggiorna(st,ctxATC());
-    if(atterratoA&&st.aTerra&&st.gs<1.5&&!st.crashed&&atc.libero){const ap=atterratoA;atterratoA=null;nuovaPartenza(ap);}
+    if(atterratoA&&st.aTerra&&st.gs<1.5&&!st.crashed&&atc.libero&&(!daParcheggio||sulPiazzale())){const ap=atterratoA;atterratoA=null;nuovaPartenza(ap);}
   }
   mondo.aggiorna(st,camera.position,vento,attivo?dt:0,vista===1);
   notte.aggiorna(camera.position);

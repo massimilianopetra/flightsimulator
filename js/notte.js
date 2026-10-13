@@ -63,6 +63,15 @@ SIM.creaNotte=function(scene,mondo,T){
       }
     }
   }
+  // luci blu ai bordi del raccordo e del piazzale (pista principale di ogni aeroporto, come in js/mondo.js)
+  const BLU=new THREE.Color(0.25,0.45,1);
+  for(const p of T.piste){
+    if(p!==p.ap.piste[0]) continue;
+    const rx=-p.dir.z,rz=p.dir.x,y=p.quota+0.4,P=(u,v)=>metti(p.cx+p.dir.x*u+rx*v,y,p.cz+p.dir.z*u+rz*v,BLU);
+    for(let v=p.W/2+6;v<=70;v+=12){P(-8,v);P(8,v);}
+    for(let u=-80;u<=80;u+=20){P(u,140);if(Math.abs(u)>12)P(u,70);}
+    for(let v=90;v<140;v+=20){P(-80,v);P(80,v);}
+  }
   const luciPiste=punti(pp,pc,7,tex);scene.add(luciPiste);
 
   /* ---- luci delle città ---- */

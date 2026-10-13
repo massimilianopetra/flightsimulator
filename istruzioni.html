@@ -111,6 +111,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
       <li><b>Lingua</b>: italiano o inglese. Il gioco ricorda la scelta.</li>
       <li><b>Mondo</b>: <i>Piemonte</i> (reale, con montagne, laghi, città, strade e 32 aeroporti veri) oppure <i>Valle Azzurra</i> (inventata, piccola, ottima per imparare).</li>
       <li><b>Aeroporto di partenza</b> e <b>pista</b>: la pista proposta è quella più controvento.</li>
+      <li><b>Partenza</b>: <i>in pista</i>, pronto al decollo, oppure <i>dal parcheggio</i>, sul piazzale: si rulla fino alla pista (vedi <a href="#decollo">Decollo passo passo</a>).</li>
       <li><b>Destinazione</b>: il simulatore prepara da solo il piano di volo.</li>
       <li><b>Ora del volo</b>: giorno, tramonto o notte.</li>
       <li><b>Carburante</b>: dal pieno (circa 6 ore) a quasi vuoto (circa 15 minuti).</li>
@@ -337,6 +338,15 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   <li>Segui il triangolino magenta sulla bussola verso la destinazione.</li>
 </ol>
 
+<h3>Partire dal parcheggio: il rullaggio</h3>
+<p>Se nel briefing scegli <b>Partenza: dal parcheggio</b>, sei fermo sul piazzale accanto alla pista principale, con il motore al minimo. Sul terreno ci sono le <b>linee gialle</b>: la linea di guida, il centro del raccordo e il <b>punto attesa</b> (due linee piene e due tratteggiate) prima della pista. Sulla mappa (scala 0,5 NM) la <span class="c-mag">linea magenta</span> ti mostra il percorso.</p>
+<ol class="passi">
+  <li>Chiedi di rullare alla torre: <kbd>T</kbd>, “request taxi”. La torre risponde “taxi to holding point runway …” con il QNH: ripetilo.</li>
+  <li>Rulla piano (sotto i 15 nodi, altrimenti compare <b>RULLA PIÙ PIANO</b>): un filo di manetta, sterza con <kbd>Q</kbd>/<kbd>E</kbd>, frena con <kbd>B</kbd>.</li>
+  <li>Fermati al <b>punto attesa</b>, prima della pista, e chiama: “holding point runway …, ready for departure”.</li>
+  <li>La torre risponde “enter and <b>backtrack</b> runway …, line up, cleared for take-off”: entri in pista e la risali fino alla testata (il raccordo arriva a metà pista), ti giri e decolli.</li>
+</ol>
+<p>Dopo l'atterraggio la torre ti dice di liberare la pista e di rullare al piazzale: quando sei fermo sul piazzale il volo è concluso e puoi preparare il successivo. Di notte raccordo e piazzale hanno le luci blu.</p>
 <!-- ================================================================ -->
 <h2 id="volo">10. In volo: assetto, trim, virate</h2>
 <figure>

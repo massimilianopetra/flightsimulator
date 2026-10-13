@@ -98,6 +98,8 @@ SIM.creaMondo=function(scene,renderer){
   const matVetro=new THREE.MeshStandardMaterial({color:0x234452,roughness:.2,metalness:.4,emissive:0x0c1a20});
   const matManica=new THREE.MeshStandardMaterial({color:0xff6a1a,roughness:.7,side:THREE.DoubleSide});
   const matPalo=new THREE.MeshStandardMaterial({color:0xdddddd,roughness:.6});
+  // segnaletica gialla di rullaggio (sopra piazzale e raccordo)
+  const matGiallo=new THREE.MeshStandardMaterial({color:0xf2c200,roughness:.8,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});
   const papi=[], maniche=[];
   const torri=[];
 
@@ -113,8 +115,18 @@ SIM.creaMondo=function(scene,renderer){
     suPista(p,new THREE.Mesh(new THREE.PlaneGeometry(p.W,p.L).rotateX(-Math.PI/2),mat),0,0,p.quota+0.06);
     // piazzale, raccordo, hangar e torre sul lato destro della PRIMA pista di ogni aeroporto
     if(p===p.ap.piste[0]){
-      suPista(p,new THREE.Mesh(new THREE.PlaneGeometry(160,70).rotateX(-Math.PI/2),matPiazzale),0,105,p.quota+0.04);
+      // piazzale: 160 m lungo la pista (x locale = traverso, z = lungo la pista) e 70 di profondità, da v 70 a 140
+      suPista(p,new THREE.Mesh(new THREE.PlaneGeometry(70,160).rotateX(-Math.PI/2),matPiazzale),0,105,p.quota+0.04);
       suPista(p,new THREE.Mesh(new THREE.PlaneGeometry(15,70-p.W/2+2).rotateX(-Math.PI/2).rotateY(Math.PI/2),matRaccordo),0,(70+p.W/2)/2,p.quota+0.05);
+      // linee gialle: guida dal parcheggio (u -45, v 115) al raccordo, centro del raccordo, punto attesa, stop al parcheggio
+      // (stessa geometria del rullaggio in js/main.js)
+      const lineaU=(u0,u1,v,w=0.3)=>suPista(p,new THREE.Mesh(new THREE.PlaneGeometry(w,Math.abs(u1-u0)).rotateX(-Math.PI/2),matGiallo),(u0+u1)/2,v,p.quota+0.08);
+      const lineaV=(u,v0,v1,w=0.3)=>suPista(p,new THREE.Mesh(new THREE.PlaneGeometry(w,Math.abs(v1-v0)).rotateX(-Math.PI/2).rotateY(Math.PI/2),matGiallo),u,(v0+v1)/2,p.quota+0.08);
+      lineaV(-45,100,115);lineaU(-45,0,100);lineaV(0,70,100);lineaV(0,p.W/2+2,70);
+      lineaU(-3,3,113,0.5);                                              // stop al parcheggio (sotto la ruota anteriore)
+      const va=p.W/2+30;                                                 // punto attesa: due linee piene e due tratteggiate (lato pista)
+      lineaU(-7,7,va+0.4,0.25);lineaU(-7,7,va+0.9,0.25);
+      for(let k=0;k<5;k++){const u0=-7+k*3;lineaU(u0,u0+1.6,va-0.4,0.25);lineaU(u0,u0+1.6,va-0.9,0.25);}
       // hangar: in coordinate pista x = traverso (profondità 22), z = lungo la pista (30)
       const geoTetto=new THREE.CylinderGeometry(11,11,30,12,1,false,0,Math.PI).rotateX(Math.PI/2).rotateZ(Math.PI/2);
       for(const u of [-50,-15,20]){

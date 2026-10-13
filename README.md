@@ -72,7 +72,7 @@ You can open a world directly from the address: `index.html?mappa=piemonte` or `
 
 In the briefing you also choose the **departure airport** (with its real code, e.g. LIMF Turin-Caselle,
 LIMZ Cuneo-Levaldigi, LIMC Milan-Malpensa), the **runway** (the one most into the wind is suggested),
-the **destination**, the **time of day** (day, sunset or night: at night runways, towns and the landing light are lit) and the **fuel** on board. The destination can be changed in flight from the map panel.
+the **start** (on the runway, or from the parking area with taxiing and ground radio), the **destination**, the **time of day** (day, sunset or night: at night runways, towns and the landing light are lit) and the **fuel** on board. The destination can be changed in flight from the map panel.
 
 ## How to start
 
@@ -508,7 +508,7 @@ Si può aprire direttamente un mondo dall'indirizzo: `index.html?mappa=piemonte`
 
 Nel briefing si scelgono anche l'**aeroporto di partenza** (con la sigla vera, es. LIMF Torino-Caselle,
 LIMZ Cuneo-Levaldigi, LIMC Milano-Malpensa), la **pista** (viene proposta quella più controvento),
-la **destinazione**, l'**ora del volo** (giorno, tramonto o notte: di notte si accendono piste, città e faro di atterraggio) e il **carburante** a bordo. La destinazione si può cambiare in volo dal menu nel
+la **partenza** (in pista, oppure dal parcheggio con il rullaggio e la radio a terra), la **destinazione**, l'**ora del volo** (giorno, tramonto o notte: di notte si accendono piste, città e faro di atterraggio) e il **carburante** a bordo. La destinazione si può cambiare in volo dal menu nel
 pannello della mappa.
 
 ## Come si avvia

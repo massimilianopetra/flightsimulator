@@ -420,14 +420,14 @@ SIM.creaStrumenti=function(A){
     }
   }
   // scale della mappa: larghezza visibile in miglia nautiche, più "tutta la mappa"
-  const SCALE_NM=[2,5,10,20,50,100].filter(nm=>nm*1852<EST*0.9);
+  const SCALE_NM=[0.5,1,2,5,10,20,50,100].filter(nm=>nm*1852<EST*0.9);
   const scale=[...SCALE_NM.map(nm=>nm*1852),EST];
   const nomeScala=i=>i<SCALE_NM.length?SCALE_NM[i]+' NM':(T.reale?Lg('Tutta la regione','Whole region'):Lg('Tutta la mappa','Whole map'));
   let zoom=Math.max(0,SCALE_NM.indexOf(10));
-  try{const z=+localStorage.getItem('volo-mappa-zoom');if(localStorage.getItem('volo-mappa-zoom')!==null&&z>=0&&z<scale.length)zoom=z;}catch(e){}
+  try{const z=+localStorage.getItem('volo-mappa-zoom2');if(localStorage.getItem('volo-mappa-zoom2')!==null&&z>=0&&z<scale.length)zoom=z;}catch(e){}
   function impostaZoom(z){
     zoom=clamp(z,0,scale.length-1);
-    try{localStorage.setItem('volo-mappa-zoom',String(zoom));}catch(e){}
+    try{localStorage.setItem('volo-mappa-zoom2',String(zoom));}catch(e){}
     if(ultimaMappa)disegnaMappa(...ultimaMappa);
     if(alCambioZoom)alCambioZoom(zoom);
   }
