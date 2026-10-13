@@ -6,6 +6,7 @@
 'use strict';
 const SIM=window.SIM, M=window.MAPPA||{}, A=window.AEREO;
 const $=id=>document.getElementById(id);
+const L=SIM.L;   // testo nella lingua scelta: L('italiano','English') (js/lingua.js)
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const D2R=Math.PI/180, R2D=180/Math.PI, KT=1.943844, FT=3.28084, FPM=196.85;
 
@@ -119,7 +120,7 @@ let avviato=false, inPausa=false, vista=0, tempo=0;
 // carburante alla partenza (galloni), scelto nel briefing e ricordato
 let carbIniziale=A.carburante.capacita;
 try{const c=parseFloat(localStorage.getItem('volo-carburante'));if(c>0&&c<=A.carburante.capacita)carbIniziale=c;}catch(e){}
-const NOMI_VISTA=['ESTERNA','CABINA','TORRE'];
+const NOMI_VISTA=[L('ESTERNA','OUTSIDE'),L('CABINA','COCKPIT'),L('TORRE','TOWER')];
 
 function ricomincia(){
   centraCloche();
@@ -132,8 +133,8 @@ function ricomincia(){
   primaCamera=true;
   $('thr').value=Math.round(st.thr*100);
   if(piano.piano){piano.piano.prossimo=0;aggiornaPiano();}
-  if(avviato&&modalita==='finale') messaggio('In finale per la pista <b>'+partenza.te.nome+'</b>: segui le luci PAPI, 65 nodi, flap 30°',6);
-  else if(avviato) messaggio(partenza.te?`Pronto al decollo: pista <b>${partenza.te.nome}</b> di <b>${partenza.ap.codice}</b>`:'In volo!',4);
+  if(avviato&&modalita==='finale') messaggio(L('In finale per la pista <b>'+partenza.te.nome+'</b>: segui le luci PAPI, 65 nodi, flap 30°','On final for runway <b>'+partenza.te.nome+'</b>: follow the PAPI lights, 65 knots, flaps 30°'),6);
+  else if(avviato) messaggio(partenza.te?L(`Pronto al decollo: pista <b>${partenza.te.nome}</b> di <b>${partenza.ap.codice}</b>`,`Ready for take-off: runway <b>${partenza.te.nome}</b> at <b>${partenza.ap.codice}</b>`):L('In volo!','Airborne!'),4);
 }
 
 /* ---------- messaggi e avvisi ---------- */
@@ -159,17 +160,17 @@ const BLOCCA=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','PageUp','P
 function flap(d){
   const n=A.flap.posizioni.length;
   const nuovo=clamp(st.flapSel+d,0,n-1);
-  if(nuovo!==st.flapSel){st.flapSel=nuovo;messaggio(`Flap <b>${A.flap.posizioni[nuovo]}°</b>`,1.5);}
+  if(nuovo!==st.flapSel){st.flapSel=nuovo;messaggio(L(`Flap <b>${A.flap.posizioni[nuovo]}°</b>`,`Flaps <b>${A.flap.posizioni[nuovo]}°</b>`),1.5);}
 }
 function cambiaVista(){vista=(vista+1)%3;primaCamera=true;}
 function prossimaDest(){
   if(!T.aeroporti.length) return;
   impostaDest((destIdx+1)%T.aeroporti.length);
-  const d=dest();messaggio(`Destinazione: <b>${d.codice}</b> ${d.nome}`,2.5);
+  const d=dest();messaggio(`${L('Destinazione','Destination')}: <b>${d.codice}</b> ${d.nome}`,2.5);
 }
 function orientaMappa(){
   const o=strum.cambiaOrientamento();
-  messaggio(o==='prua'?'Mappa: <b>prua in alto</b>':'Mappa: <b>nord in alto</b>',1.5);
+  messaggio(o==='prua'?L('Mappa: <b>prua in alto</b>','Map: <b>heading up</b>'):L('Mappa: <b>nord in alto</b>','Map: <b>north up</b>'),1.5);
 }
 $('minimap').addEventListener('click',orientaMappa);
 // scala della mappa: menu, rotellina sopra la mappa, tasto M
@@ -207,7 +208,7 @@ function inizia(m){
   if(avviato) return;
   avviato=true;$('brief').hidden=true;audio.avvia();
   if(m==='finale'){modalita='finale';ricomincia();return;}
-  messaggio(partenza.te?`Pronto al decollo: pista <b>${partenza.te.nome}</b> di <b>${partenza.ap.codice}</b>`:'In volo!',4);
+  messaggio(partenza.te?L(`Pronto al decollo: pista <b>${partenza.te.nome}</b> di <b>${partenza.ap.codice}</b>`,`Ready for take-off: runway <b>${partenza.te.nome}</b> at <b>${partenza.ap.codice}</b>`):L('In volo!','Airborne!'),4);
 }
 
 addEventListener('keydown',e=>{
@@ -273,8 +274,10 @@ function curva(v){const e=clamp(0.9-0.08*opz.sens,0.1,0.82);return v*(1-e+e*v*v)
 function aggiornaOpzioni(){
   $('sens').value=String(opz.sens);$('sensv').textContent=String(opz.sens);$('centro').checked=opz.centro;
   $('briefCloche').innerHTML=opz.centro
-    ?'Quando lasci i tasti la cloche <b>torna al centro</b>: per salire o scendere a lungo usa il trim (<kbd>Z</kbd>/<kbd>X</kbd>).'
-    :'La cloche <b>resta dove la lasci</b>: correggi con <kbd>W</kbd>/<kbd>S</kbd> o centrala con <kbd>K</kbd>.';
+    ?L('Quando lasci i tasti la cloche <b>torna al centro</b>: per salire o scendere a lungo usa il trim (<kbd>Z</kbd>/<kbd>X</kbd>).',
+       'When you release the keys the stick <b>returns to the centre</b>: for long climbs or descents use the trim (<kbd>Z</kbd>/<kbd>X</kbd>).')
+    :L('La cloche <b>resta dove la lasci</b>: correggi con <kbd>W</kbd>/<kbd>S</kbd> o centrala con <kbd>K</kbd>.',
+       'The stick <b>stays where you leave it</b>: correct with <kbd>W</kbd>/<kbd>S</kbd> or centre it with <kbd>K</kbd>.');
   try{localStorage.setItem('volo-sens',String(opz.sens));localStorage.setItem('volo-centro',opz.centro?'1':'0');}catch(e){}
 }
 $('sens').addEventListener('input',()=>{opz.sens=+$('sens').value;aggiornaOpzioni();});
@@ -348,23 +351,25 @@ function gestisciEventi(){
   for(const e of st.eventi){
     if(e.tipo==='decollo'){
       const pv=T.pistaVicina(e.x,e.z,80);
-      messaggio(pv?`Decollo da <b>${pv.pista.ap.codice}</b>: buon volo!`:'Decollo!',3);
+      messaggio(pv?L(`Decollo da <b>${pv.pista.ap.codice}</b>: buon volo!`,`Take-off from <b>${pv.pista.ap.codice}</b>: have a good flight!`):L('Decollo!','Take-off!'),3);
     }else if(e.tipo==='atterraggio'){
       const fpm=-e.vs*FPM;
       audio.colpo(clamp(fpm/700,0,1));
-      const giudizio=fpm<120?'Burro! Atterraggio perfetto':fpm<250?'Ottimo atterraggio':fpm<450?'Buon atterraggio':'Atterraggio duro';
+      const giudizio=fpm<120?L('Burro! Atterraggio perfetto','Butter! Perfect landing'):fpm<250?L('Ottimo atterraggio','Great landing'):fpm<450?L('Buon atterraggio','Good landing'):L('Atterraggio duro','Hard landing');
       const pv=e.suolo==='pista'?T.pistaVicina(e.x,e.z,0):null;
       let txt=`<b>${giudizio}</b> — ${Math.round(fpm)} ft/min`;
       if(pv){
         assi();
         const te=pv.pista.testate.find(t=>t.dir.x*fwd.x+t.dir.z*fwd.z>0)||pv.pista.testate[0];
         const dalla=(e.x-te.x)*te.dir.x+(e.z-te.z)*te.dir.z;
-        txt+=`<br>${pv.pista.ap.codice} pista ${te.nome}: ${Math.round(dalla)} m dalla soglia, ${Math.abs(pv.v).toFixed(1)} m dalla linea centrale`;
-        if(pv.pista.ap===dest()) txt+='<br><b>Destinazione raggiunta!</b>';
-      }else txt+=`<br>Fuori pista${e.suolo==='erba'?', sull\'erba':''}`;
+        txt+=L(`<br>${pv.pista.ap.codice} pista ${te.nome}: ${Math.round(dalla)} m dalla soglia, ${Math.abs(pv.v).toFixed(1)} m dalla linea centrale`,
+              `<br>${pv.pista.ap.codice} runway ${te.nome}: ${Math.round(dalla)} m past the threshold, ${Math.abs(pv.v).toFixed(1)} m from the centre line`);
+        if(pv.pista.ap===dest()) txt+=L('<br><b>Destinazione raggiunta!</b>','<br><b>Destination reached!</b>');
+      }else txt+=e.suolo==='erba'?L('<br>Fuori pista, sull\'erba','<br>Off the runway, on the grass'):L('<br>Fuori pista','<br>Off the runway');
       messaggio(txt,8);
     }else if(e.tipo==='senzaCarburante'){
-      messaggio('<b>Motore spento: carburante esaurito!</b><br>Tieni circa 65 nodi (miglior planata) e cerca un campo o una pista vicina.',10);
+      messaggio(L('<b>Motore spento: carburante esaurito!</b><br>Tieni circa 65 nodi (miglior planata) e cerca un campo o una pista vicina.',
+                '<b>Engine stopped: out of fuel!</b><br>Hold about 65 knots (best glide) and look for a field or a nearby runway.'),10);
     }else if(e.tipo==='incidente'){
       audio.colpo(1);mostraIncidente(e.motivo);
     }
@@ -477,12 +482,12 @@ function aggiornaTesti(hdg,bug){
   if(avviato&&!st.crashed){
     const agl=st.agl, vs=st.vs;
     if(!st.aTerra&&agl<90&&vs<-4&&agl/-vs<10){w='PULL UP';rosso=true;}
-    else if(st.avvisoStallo){w='STALLO';rosso=true;}
-    else if(st.ias*KT>A.velocita.vne){w='VELOCITÀ ECCESSIVA';rosso=true;}
-    else if(st.flap>1&&st.ias*KT>A.velocita.vfe+5)w='VELOCITÀ FLAP';
-    else if(st.g>3.8||st.g<-1.5)w='SOVRACCARICO';
-    else if(st.carburante<=0)w='MOTORE SPENTO';
-    else if(st.carburante<5)w='CARBURANTE BASSO';
+    else if(st.avvisoStallo){w=L('STALLO','STALL');rosso=true;}
+    else if(st.ias*KT>A.velocita.vne){w=L('VELOCITÀ ECCESSIVA','OVERSPEED');rosso=true;}
+    else if(st.flap>1&&st.ias*KT>A.velocita.vfe+5)w=L('VELOCITÀ FLAP','FLAP SPEED');
+    else if(st.g>3.8||st.g<-1.5)w=L('SOVRACCARICO','OVER-G');
+    else if(st.carburante<=0)w=L('MOTORE SPENTO','ENGINE OUT');
+    else if(st.carburante<5)w=L('CARBURANTE BASSO','LOW FUEL');
   }
   el.avviso.hidden=!w;
   if(w){scrivi(el.avviso,w);el.avviso.classList.toggle('rosso',rosso);}
@@ -493,12 +498,15 @@ $('crediti').hidden=!M.reale;
 function aggiornaBriefing(){
   const d=dest(), te=partenza.te, ap=partenza.ap;
   let t='';
-  if(te) t+=`Sei all'aeroporto <b>${ap.codice} – ${ap.nome}</b> (quota ${Math.round(ap.quota*FT)} ft), allineato sulla pista <b>${te.nome}</b> lunga ${te.pista.L} m${te.pista.erba?' (in erba)':''}. `;
-  else t+=`Parti già in volo a ${Math.round(partenza.y*FT)} ft. `;
-  t+=met.ventoNodi>0?`Vento da ${String(met.ventoDa).padStart(3,'0')}° a ${met.ventoNodi} nodi${met.raffiche?` con raffiche di ${met.raffiche}`:''}. `:'Vento calmo. ';
+  const vda=String(met.ventoDa).padStart(3,'0');
+  if(te) t+=L(`Sei all'aeroporto <b>${ap.codice} – ${ap.nome}</b> (quota ${Math.round(ap.quota*FT)} ft), allineato sulla pista <b>${te.nome}</b> lunga ${te.pista.L} m${te.pista.erba?' (in erba)':''}. `,
+              `You are at <b>${ap.codice} – ${ap.nome}</b> (elevation ${Math.round(ap.quota*FT)} ft), lined up on runway <b>${te.nome}</b>, ${te.pista.L} m long${te.pista.erba?' (grass)':''}. `);
+  else t+=L(`Parti già in volo a ${Math.round(partenza.y*FT)} ft. `,`You start in flight at ${Math.round(partenza.y*FT)} ft. `);
+  t+=met.ventoNodi>0?L(`Vento da ${vda}° a ${met.ventoNodi} nodi${met.raffiche?` con raffiche di ${met.raffiche}`:''}. `,`Wind from ${vda}° at ${met.ventoNodi} knots${met.raffiche?` gusting ${met.raffiche} more`:''}. `):L('Vento calmo. ','Calm wind. ');
   if(d&&d!==ap){
     const dist=Math.hypot(d.x-partenza.x,d.z-partenza.z)/1852;
-    t+=`Destinazione: <b>${d.codice} – ${d.nome}</b>, a ${dist.toFixed(1)} NM (quota ${Math.round(d.quota*FT)} ft). Il rombo magenta sulla bussola e la linea sulla mappa indicano la rotta.`;
+    t+=L(`Destinazione: <b>${d.codice} – ${d.nome}</b>, a ${dist.toFixed(1)} NM (quota ${Math.round(d.quota*FT)} ft). Il rombo magenta sulla bussola e la linea sulla mappa indicano la rotta.`,
+         `Destination: <b>${d.codice} – ${d.nome}</b>, ${dist.toFixed(1)} NM away (elevation ${Math.round(d.quota*FT)} ft). The magenta marker on the compass and the line on the map show the way.`);
   }
   $('briefTesto').innerHTML=t;
   ricalcolaPiano();
@@ -507,12 +515,15 @@ function aggiornaBriefing(){
 const selMondo=$('selMondo'),selAp=$('selAeroporto'),selPista=$('selPista'),selDB=$('selDestBrief'),selD=$('selDest');
 selMondo.value=window.MONDO_SCELTO||'piemonte';
 selMondo.addEventListener('change',()=>{location.search='?mappa='+selMondo.value;});
+const selLingua=$('selLingua');
+selLingua.value=SIM.lingua;
+selLingua.addEventListener('change',()=>SIM.cambiaLingua(selLingua.value));
 const opzioniAeroporti=sel=>{sel.innerHTML=T.aeroporti.map((a,i)=>`<option value="${i}">${a.codice} – ${a.nome}</option>`).join('');};
 for(const sel of [selAp,selDB,selD])opzioniAeroporti(sel);
 function impostaDest(i){destIdx=i;selDB.value=selD.value=String(i);aggiornaBriefing();}
 function riempiPiste(ap,scelta){
   const opz=[];
-  ap.piste.forEach((pi,i)=>pi.testate.forEach((t,j)=>opz.push(`<option value="${i}|${j}">${t.nome} (${pi.L} m${pi.erba?', erba':''})</option>`)));
+  ap.piste.forEach((pi,i)=>pi.testate.forEach((t,j)=>opz.push(`<option value="${i}|${j}">${t.nome} (${pi.L} m${pi.erba?L(', erba',', grass'):''})</option>`)));
   selPista.innerHTML=opz.join('');
   if(scelta){const i=ap.piste.indexOf(scelta.pista);selPista.value=i+'|'+scelta.pista.testate.indexOf(scelta);}
 }
@@ -526,15 +537,15 @@ if(partenza.ap){selAp.value=String(T.aeroporti.indexOf(partenza.ap));riempiPiste
 selAp.addEventListener('change',()=>{const ap=T.aeroporti[+selAp.value];riempiPiste(ap,testataControvento(ap));scegliPartenza();selAp.blur();});
 selPista.addEventListener('change',()=>{scegliPartenza();selPista.blur();});
 selDB.addEventListener('change',()=>{impostaDest(+selDB.value);selDB.blur();});
-selD.addEventListener('change',()=>{impostaDest(+selD.value);messaggio(`Destinazione: <b>${dest().codice}</b> ${dest().nome}`,2.5);selD.blur();});
+selD.addEventListener('change',()=>{impostaDest(+selD.value);messaggio(`${L('Destinazione','Destination')}: <b>${dest().codice}</b> ${dest().nome}`,2.5);selD.blur();});
 impostaDest(destIdx);
 /* ---------- NAV1: scelta del radioaiuto e della rotta ---------- */
 const selNav=$('selNav');
 {
   const gr=t=>radio.stazioni.filter(s=>s.tipo===t).map(s=>`<option value="${radio.stazioni.indexOf(s)}">${s.freq.toFixed(2)} ${s.id} – ${s.nome}</option>`).join('');
-  selNav.innerHTML='<option value="-1">— spento —</option>'+
+  selNav.innerHTML=`<option value="-1">${L('— spento —','— off —')}</option>`+
     (radio.stazioni.some(s=>s.tipo==='VOR')?'<optgroup label="VOR">'+gr('VOR')+'</optgroup>':'')+
-    (radio.stazioni.some(s=>s.tipo==='ILS')?'<optgroup label="ILS (simulati)">'+gr('ILS')+'</optgroup>':'');
+    (radio.stazioni.some(s=>s.tipo==='ILS')?`<optgroup label="${L('ILS (simulati)','ILS (simulated)')}">`+gr('ILS')+'</optgroup>':'');
 }
 let ultimaNav=null;
 function misuraNav(){
@@ -548,22 +559,23 @@ function sintonizza(s,silenzioso){
   if(s)nav.crs=s.tipo==='ILS'?s.crs:rottaVerso(s);   // VOR: rotta diretta verso la stazione
   strum.impostaNav(nav);
   if(silenzioso) return;
-  if(!s){messaggio('NAV1 spento',1.5);return;}
+  if(!s){messaggio(L('NAV1 spento','NAV1 off'),1.5);return;}
   const m=radio.misura(s,st.pos,nav.crs);
-  messaggio(`NAV1: <b>${s.freq.toFixed(2)} ${s.id}</b> ${s.nome}${m.ricevuto?'':' — <b>fuori portata</b>'}`+
-    (s.tipo==='VOR'?`<br>CRS ${String(nav.crs).padStart(3,'0')}° (diretto alla stazione) · cambialo con , e .`:`<br>localizzatore ${String(Math.round(s.crs)).padStart(3,'0')}° · sentiero 3°`),4);
+  messaggio(`NAV1: <b>${s.freq.toFixed(2)} ${s.id}</b> ${s.nome}${m.ricevuto?'':L(' — <b>fuori portata</b>',' — <b>out of range</b>')}`+
+    (s.tipo==='VOR'?`<br>CRS ${String(nav.crs).padStart(3,'0')}° `+L('(diretto alla stazione) · cambialo con , e .','(direct to the station) · change it with , and .')
+                  :`<br>${L('localizzatore','localizer')} ${String(Math.round(s.crs)).padStart(3,'0')}° · ${L('sentiero','glide slope')} 3°`),4);
 }
 function prossimaNav(){
   // stazioni ricevute, dalla più vicina; ogni pressione passa alla successiva
   const ric=radio.stazioni.filter(s=>radio.misura(s,st.pos,0).ricevuto)
     .sort((a,b)=>Math.hypot(a.x-st.pos.x,a.z-st.pos.z)-Math.hypot(b.x-st.pos.x,b.z-st.pos.z));
-  if(!ric.length){messaggio('Nessun VOR o ILS ricevuto da qui: sali di quota',2.5);return;}
+  if(!ric.length){messaggio(L('Nessun VOR o ILS ricevuto da qui: sali di quota','No VOR or ILS in range from here: climb higher'),2.5);return;}
   const i=ric.indexOf(nav.staz);
   sintonizza(ric[(i+1)%ric.length]);
 }
 function navIlsArrivo(){
   const p=piano.piano,ils=p&&radio.ilsDi(p.te);
-  if(!ils){messaggio('La pista di arrivo non ha l’ILS (serve asfalto e almeno 1000 m)',3);return;}
+  if(!ils){messaggio(L('La pista di arrivo non ha l’ILS (serve asfalto e almeno 1000 m)','The arrival runway has no ILS (it needs asphalt and at least 1000 m)'),3);return;}
   sintonizza(ils);
 }
 function cambiaCrs(d){

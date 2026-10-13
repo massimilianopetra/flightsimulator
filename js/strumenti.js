@@ -7,6 +7,7 @@ const SIM = window.SIM = window.SIM || {};
 const D2R=Math.PI/180;
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const MONO='"B612 Mono", ui-monospace, monospace';
+const Lg=(it,en)=>SIM.L?SIM.L(it,en):it;   // lingua (js/lingua.js)
 
 SIM.creaStrumenti=function(A){
   const T=SIM.terreno, M=window.MAPPA||{};
@@ -152,7 +153,7 @@ SIM.creaStrumenti=function(A){
     g.save();g.beginPath();g.rect(0,AH,W,HB);g.clip();
     const pd=W/90;
     g.strokeStyle='#fff';g.fillStyle='#fff';g.lineWidth=1.5;g.textAlign='center';g.textBaseline='middle';g.font=`700 ${fs}px ${MONO}`;
-    const card={0:'N',90:'E',180:'S',270:'O'};
+    const card={0:'N',90:'E',180:'S',270:Lg('O','W')};
     for(let h=Math.floor((d.hdg-50)/5)*5;h<=d.hdg+50;h+=5){
       const x=cx+(h-d.hdg)*pd,hh=((h%360)+360)%360;
       g.beginPath();g.moveTo(x,AH);g.lineTo(x,AH+(hh%10?5:10));g.stroke();
@@ -183,7 +184,7 @@ SIM.creaStrumenti=function(A){
     const fsn=Math.round(fs*0.78), bx=tx+tw+6, by=ty;
     g.font=`700 ${fsn}px ${MONO}`;g.textAlign='left';g.textBaseline='top';
     const righe=[`${ils?'LOC':'VOR'} ${s.id} ${s.freq.toFixed(2)}`,
-      n.ricevuto?`CRS ${String(Math.round(n.crs)%360).padStart(3,'0')}°${n.dme!=null?` DME ${n.dme.toFixed(1)}`:''}`:'FUORI PORTATA'];
+      n.ricevuto?`CRS ${String(Math.round(n.crs)%360).padStart(3,'0')}°${n.dme!=null?` DME ${n.dme.toFixed(1)}`:''}`:Lg('FUORI PORTATA','OUT OF RANGE')];
     const bw=Math.max(...righe.map(r=>g.measureText(r).width))+8;
     g.fillStyle='rgba(8,14,26,.7)';g.fillRect(bx,by,bw,fsn*2.5);
     g.fillStyle=n.ricevuto?VERDE:'#fbbf24';righe.forEach((r,i)=>g.fillText(r,bx+4,by+3+i*fsn*1.2));
@@ -239,7 +240,7 @@ SIM.creaStrumenti=function(A){
     c.fillText('L',x-Math.cos(STD+0.32)*r*0.72,y+Math.sin(STD+0.32)*r*0.72);
     c.fillText('R',x+Math.cos(STD+0.32)*r*0.72,y+Math.sin(STD+0.32)*r*0.72);
     c.font=`700 ${Math.round(r*0.15)}px ${MONO}`;c.fillStyle='#cbd5e1';
-    c.fillText('2 MIN',x,y+r*0.8);c.fillText('VIRATA',x,y-r*0.5);
+    c.fillText('2 MIN',x,y+r*0.8);c.fillText(Lg('VIRATA','TURN'),x,y-r*0.5);
     // tubo con la pallina
     const cy2=y-r*1.6, rt=r*2.15, a0=Math.PI/2;
     c.lineCap='round';c.strokeStyle='#d8d2b0';c.lineWidth=r*0.2;
@@ -276,7 +277,7 @@ SIM.creaStrumenti=function(A){
     c.fillStyle='#2b3445';c.fillRect(tx,t0,7,t1-t0);
     c.fillStyle='#22c55e';c.fillRect(tx,tm-2,7,(t1-t0)*0.08);   // zona per il decollo
     c.fillStyle='#e8eef4';c.fillRect(tx-3,tm-1,13,2);
-    c.fillStyle='#8ea6bb';c.font=`700 9px ${MONO}`;c.fillText('PIC',tx+12,t0+3);c.fillText('CAB',tx+12,t1-3);
+    c.fillStyle='#8ea6bb';c.font=`700 9px ${MONO}`;c.fillText(Lg('PIC','DN'),tx+12,t0+3);c.fillText(Lg('CAB','UP'),tx+12,t1-3);
     const yt=tm+clamp(d.trim/0.5,-1,1)*(t1-t0)/2;
     c.fillStyle='#39d7ff';c.beginPath();c.moveTo(tx+8,yt);c.lineTo(tx+15,yt-5);c.lineTo(tx+15,yt+5);c.closePath();c.fill();
     const tr=Math.round(d.trim*200);
@@ -284,7 +285,7 @@ SIM.creaStrumenti=function(A){
     // carburante
     const fx=tx+50, fw=w-fx-2, cap=A.carburante.capacita, carb=d.carb;
     const col=carb<5?'#ef4444':carb<10?'#fbbf24':'#e8eef4';
-    c.fillStyle='#8ea6bb';c.font=`700 10px ${MONO}`;c.fillText('CARBURANTE',fx,7);
+    c.fillStyle='#8ea6bb';c.font=`700 10px ${MONO}`;c.fillText(Lg('CARBURANTE','FUEL'),fx,7);
     c.fillStyle=col;c.font=`700 18px ${MONO}`;c.fillText(carb.toFixed(1),fx,27);
     const wn=c.measureText(carb.toFixed(1)).width;
     c.font=`700 10px ${MONO}`;c.fillText('gal',fx+wn+4,29);
@@ -293,9 +294,9 @@ SIM.creaStrumenti=function(A){
     c.fillStyle='#e8eef4';c.font=`700 11px ${MONO}`;
     c.fillText(d.flusso.toFixed(1)+' gal/h',fx,58);
     const aut=d.flusso>0?carb/d.flusso:0;
-    c.fillStyle='#8ea6bb';c.font=`700 10px ${MONO}`;c.fillText('AUTONOMIA',fx,74);
+    c.fillStyle='#8ea6bb';c.font=`700 10px ${MONO}`;c.fillText(Lg('AUTONOMIA','ENDURANCE'),fx,74);
     c.fillStyle=col;c.font=`700 11px ${MONO}`;
-    c.fillText(d.flusso>0?Math.floor(aut)+'h '+String(Math.floor((aut%1)*60)).padStart(2,'0')+'m':'MOTORE SPENTO',fx,88);
+    c.fillText(d.flusso>0?Math.floor(aut)+'h '+String(Math.floor((aut%1)*60)).padStart(2,'0')+'m':Lg('MOTORE SPENTO','ENGINE OUT'),fx,88);
   }
 
   /* ---------- minimappa ---------- */
@@ -414,7 +415,7 @@ SIM.creaStrumenti=function(A){
   // scale della mappa: larghezza visibile in miglia nautiche, più "tutta la mappa"
   const SCALE_NM=[2,5,10,20,50,100].filter(nm=>nm*1852<EST*0.9);
   const scale=[...SCALE_NM.map(nm=>nm*1852),EST];
-  const nomeScala=i=>i<SCALE_NM.length?SCALE_NM[i]+' NM':(T.reale?'Tutta la regione':'Tutta la mappa');
+  const nomeScala=i=>i<SCALE_NM.length?SCALE_NM[i]+' NM':(T.reale?Lg('Tutta la regione','Whole region'):Lg('Tutta la mappa','Whole map'));
   let zoom=Math.max(0,SCALE_NM.indexOf(10));
   try{const z=+localStorage.getItem('volo-mappa-zoom');if(localStorage.getItem('volo-mappa-zoom')!==null&&z>=0&&z<scale.length)zoom=z;}catch(e){}
   function impostaZoom(z){
@@ -543,7 +544,7 @@ SIM.creaStrumenti=function(A){
     mg.fillStyle='rgba(8,14,26,.8)';mg.beginPath();mg.arc(nx,ny,9,0,Math.PI*2);mg.fill();
     mg.fillStyle='#fbbf24';mg.textAlign='center';mg.fillText('N',nx,ny+1);
     // etichette: modalità e scala
-    const etich=orient==='prua'?'PRUA ↑':'NORD ↑';
+    const etich=orient==='prua'?Lg('PRUA ↑','HDG ↑'):Lg('NORD ↑','NORTH ↑');
     mg.fillStyle='rgba(8,14,26,.75)';mg.fillRect(4,MH-20,56,16);mg.fillRect(MW-58,MH-20,54,16);
     mg.fillStyle='#e8f1f8';
     mg.fillText(etich,32,MH-12);
@@ -603,7 +604,7 @@ SIM.creaStrumenti=function(A){
     barraStr('FUEL L GAL',serb/meta,serb.toFixed(1),0.15,1);
     barraStr('FUEL R GAL',serb/meta,serb.toFixed(1),0.15,1);
     const tr=Math.round(d.s.trim*200);
-    barraStr('ELEV TRIM',0.5+d.s.trim,(tr>0?'CAB ':tr<0?'PIC ':'')+Math.abs(tr),0.47,0.6);
+    barraStr('ELEV TRIM',0.5+d.s.trim,(tr>0?'UP ':tr<0?'DN ':'')+Math.abs(tr),0.47,0.6);
     c.textAlign='left';c.fillStyle='#e8eef4';c.font=`700 ${Math.round(fs*0.8)}px ${MONO}`;
     c.fillText('VOLTS',8,y);c.textAlign='right';c.fillText('28.0',eis-8,y);
     // mappa

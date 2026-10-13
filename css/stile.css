@@ -32,7 +32,9 @@ body{background:#c9dceb;color:var(--ink);font-family:var(--f-ui);overflow:hidden
 kbd{font:700 11px var(--f-num);color:var(--cyan);border:1px solid rgba(57,215,255,.35);border-radius:3px;padding:0 4px}
 
 /* comandi */
-.aiuto{top:calc(12px + env(safe-area-inset-top,0px));left:12px;font-size:12px;line-height:1.45;max-width:20rem}
+.aiuto{top:calc(12px + env(safe-area-inset-top,0px));left:12px;font-size:12px;line-height:1.45;max-width:23rem}
+/* il riquadro dei comandi non deve coprire il PFD: se non ci sta, scorre */
+.aiuto .corpo{max-height:calc(100vh - 400px);overflow-y:auto;pointer-events:auto;scrollbar-width:thin}
 .testa{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:2px 0;border:0;background:none;
   font:700 11px var(--f-ui);letter-spacing:.14em;text-transform:none;color:var(--ink);pointer-events:auto;cursor:pointer}
 .testa:hover{color:var(--cyan)}

@@ -14,6 +14,7 @@ const D2R=Math.PI/180, FT=3.28084, NM=1852;
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const tre=n=>String(Math.round(((n%360)+360)%360)%360).padStart(3,'0');
 const nm=m=>(m/NM).toFixed(1);
+const Lg=(it,en)=>SIM.L?SIM.L(it,en):it;   // lingua (js/lingua.js)
 const rotta=(ax,az,bx,bz)=>((Math.atan2(bx-ax,-(bz-az))/D2R)+360)%360;
 
 // velocità e ratei del C172 nel simulatore (vedi le prove in CLAUDE.md)
@@ -115,32 +116,32 @@ SIM.creaPiano=function(T,A,met,radio){
 
   /* ---------- testo del riquadro ---------- */
   function html(){
-    const p=piano;if(!p) return '<div class="dim">Nessuna destinazione.</div>';
+    const p=piano;if(!p) return `<div class="dim">${Lg('Nessuna destinazione.','No destination.')}</div>`;
     const te=p.te,pi=te.pista,arr=p.arr,v=ventoPista(te.hdg);
-    const dep=p.da.ap?p.da.ap.codice:'in volo';
+    const dep=p.da.ap?p.da.ap.codice:Lg('in volo','airborne');
     const riga=(n,cod,testo)=>`<li class="${p.fase===n?'ora':''}${p.fase>n?' fatto':''}"><b>${cod}</b><span>${testo}</span></li>`;
     let tappe='';
-    tappe+=riga(0,'DEC',p.da.te?`${dep} pista ${p.da.te.nome}, sali a ${V_SALITA} kt`:`in volo da ${Math.round(p.quotaDep)} ft`);
+    tappe+=riga(0,Lg('DEC','DEP'),p.da.te?Lg(`${dep} pista ${p.da.te.nome}, sali a ${V_SALITA} kt`,`${dep} runway ${p.da.te.nome}, climb at ${V_SALITA} kt`):Lg(`in volo da ${Math.round(p.quotaDep)} ft`,`airborne at ${Math.round(p.quotaDep)} ft`));
     if(p.circuito){
-      tappe+=riga(2,'CIR',`circuito a <em>${p.crociera} ft</em>, poi verso ${p.nomeFaf}`);
+      tappe+=riga(2,Lg('CIR','PAT'),Lg(`circuito a <em>${p.crociera} ft</em>, poi verso ${p.nomeFaf}`,`pattern at <em>${p.crociera} ft</em>, then to ${p.nomeFaf}`));
     }else{
-      tappe+=riga(1,'SAL',`fino a <em>${p.crociera} ft</em> (${nm(p.dSalita)} NM)`);
-      tappe+=riga(2,'CRO',p.continua?`rotta ${tre(p.rt)}°, nessun tratto livellato`:`rotta <em>${tre(p.rt)}°</em> · ${nm(p.dCrociera)} NM · ${V_CROCIERA} kt`);
-      tappe+=riga(3,'DIS',`a ${nm(p.dDiscesa)} NM da ${p.nomeFaf}, −${RATEO_DISCESA} ft/min`);
+      tappe+=riga(1,Lg('SAL','CLB'),Lg(`fino a <em>${p.crociera} ft</em> (${nm(p.dSalita)} NM)`,`to <em>${p.crociera} ft</em> (${nm(p.dSalita)} NM)`));
+      tappe+=riga(2,Lg('CRO','CRZ'),p.continua?Lg(`rotta ${tre(p.rt)}°, nessun tratto livellato`,`course ${tre(p.rt)}°, no level segment`):Lg(`rotta <em>${tre(p.rt)}°</em>`,`course <em>${tre(p.rt)}°</em>`)+` · ${nm(p.dCrociera)} NM · ${V_CROCIERA} kt`);
+      tappe+=riga(3,Lg('DIS','DES'),Lg(`a ${nm(p.dDiscesa)} NM da ${p.nomeFaf}, −${RATEO_DISCESA} ft/min`,`${nm(p.dDiscesa)} NM before ${p.nomeFaf}, −${RATEO_DISCESA} ft/min`));
     }
-    tappe+=riga(4,p.nomeFaf,`finale 5 NM · rotta ${tre(te.hdg)}° · <em>${p.qFaf} ft</em>`);
-    tappe+=riga(5,'ATT',`pista ${te.nome} · ${A.velocita.avvicinamento} kt · flap 30°`);
-    const lato=v.traverso>0.5?'da destra':v.traverso<-0.5?'da sinistra':'';
-    const vento=(met.ventoNodi||0)<1?'calmo':
-      `${Math.round(Math.abs(v.fronte))} kt ${v.fronte>=0?'frontale':'in coda'}`+(lato?` · ${Math.round(Math.abs(v.traverso))} kt ${lato}`:'');
+    tappe+=riga(4,p.nomeFaf,Lg(`finale 5 NM · rotta ${tre(te.hdg)}° · <em>${p.qFaf} ft</em>`,`final 5 NM · course ${tre(te.hdg)}° · <em>${p.qFaf} ft</em>`));
+    tappe+=riga(5,Lg('ATT','LDG'),Lg(`pista ${te.nome} · ${A.velocita.avvicinamento} kt · flap 30°`,`runway ${te.nome} · ${A.velocita.avvicinamento} kt · flaps 30°`));
+    const lato=v.traverso>0.5?Lg('da destra','from the right'):v.traverso<-0.5?Lg('da sinistra','from the left'):'';
+    const vento=(met.ventoNodi||0)<1?Lg('calmo','calm'):
+      `${Math.round(Math.abs(v.fronte))} kt ${v.fronte>=0?Lg('frontale','headwind'):Lg('in coda','tailwind')}`+(lato?` · ${Math.round(Math.abs(v.traverso))} kt ${lato}`:'');
     const altre=arr.piste.flatMap(q=>q.testate).filter(t=>t!==te).map(t=>t.nome).join(' ');
     const ore=Math.floor(p.minuti/60),min=Math.round(p.minuti%60);
     return `<div class="pv-testa"><b>${dep} ▸ ${arr.codice}</b><span>${nm(p.L+FINALE)} NM · ${ore?ore+' h ':''}${min} min</span></div>`+
       `<ol class="pv-tappe">${tappe}</ol>`+
-      `<div class="pv-pista"><div><span class="lbl">PISTA</span><b>${te.nome}</b> ${pi.L}×${pi.W} m · ${pi.erba?'erba':'asfalto'} · QFU ${tre(te.hdg)}°</div>`+
-      `<div><span class="lbl">CAMPO</span>${Math.round(p.qCampo)} ft · circuito ${Math.ceil((p.qCampo+1000)/100)*100} ft${altre?` · altre: ${altre}`:''}</div>`+
-      `<div><span class="lbl">VENTO</span>${vento}</div>`+radioHtml(p)+`</div>`+
-      (p.alta?`<div class="pv-nota">Montagne alte sulla rotta: valuta un giro più lungo per le valli.</div>`:'')+
+      `<div class="pv-pista"><div><span class="lbl">${Lg('PISTA','RWY')}</span><b>${te.nome}</b> ${pi.L}×${pi.W} m · ${pi.erba?Lg('erba','grass'):Lg('asfalto','asphalt')} · QFU ${tre(te.hdg)}°</div>`+
+      `<div><span class="lbl">${Lg('CAMPO','FIELD')}</span>${Math.round(p.qCampo)} ft · ${Lg('circuito','pattern')} ${Math.ceil((p.qCampo+1000)/100)*100} ft${altre?` · ${Lg('altre','others')}: ${altre}`:''}</div>`+
+      `<div><span class="lbl">${Lg('VENTO','WIND')}</span>${vento}</div>`+radioHtml(p)+`</div>`+
+      (p.alta?`<div class="pv-nota">${Lg('Montagne alte sulla rotta: valuta un giro più lungo per le valli.','High mountains on the route: consider a longer way through the valleys.')}</div>`:'')+
       `<div class="pv-fase" id="pvFase"></div>`;
   }
   // radioaiuti utili all'arrivo: ILS della pista e VOR più vicino alla destinazione
@@ -148,12 +149,12 @@ SIM.creaPiano=function(T,A,met,radio){
     if(!radio) return '';
     let t='';
     const ils=radio.ilsDi(p.te);
-    if(ils) t+=`<div><span class="lbl">ILS</span><b>${ils.freq.toFixed(2)}</b> ${ils.id} · CRS ${tre(ils.crs)}° · tasto <b>L</b></div>`;
+    if(ils) t+=`<div><span class="lbl">ILS</span><b>${ils.freq.toFixed(2)}</b> ${ils.id} · CRS ${tre(ils.crs)}° · ${Lg('tasto','key')} <b>L</b></div>`;
     let vor=null,dv=Infinity;
     for(const s of radio.stazioni){if(s.tipo!=='VOR')continue;const d=Math.hypot(s.x-p.arr.x,s.z-p.arr.z);if(d<dv){dv=d;vor=s;}}
     if(vor&&dv<60*NM){
       const r=rotta(vor.x,vor.z,p.arr.x,p.arr.z);
-      t+=`<div><span class="lbl">VOR</span><b>${vor.freq.toFixed(2)}</b> ${vor.id} ${vor.nome} · ${nm(dv)} NM${dv>0.5*NM?` · radiale ${tre(r)}°`:''}</div>`;
+      t+=`<div><span class="lbl">VOR</span><b>${vor.freq.toFixed(2)}</b> ${vor.id} ${vor.nome} · ${nm(dv)} NM${dv>0.5*NM?` · ${Lg('radiale','radial')} ${tre(r)}°`:''}</div>`;
     }
     return t;
   }
@@ -161,12 +162,12 @@ SIM.creaPiano=function(T,A,met,radio){
   function testoFase(){
     const p=piano;if(!p) return '';
     switch(p.fase){
-      case 0:return `Pronto al decollo · poi rotta ${tre(rotta(p.x0,p.z0,p.faf.x,p.faf.z))}°`;
-      case 1:return `Salita a ${p.crociera} ft · crociera tra ${nm(p.tra)} NM`;
-      case 2:return p.circuito?`Verso ${p.nomeFaf} · ${nm(p.tra)} NM`:`Crociera · inizia la discesa tra ${nm(p.tra)} NM`;
-      case 3:return `Discesa verso ${p.nomeFaf} a ${p.qFaf} ft · ${nm(p.tra)} NM`;
-      case 4:return `Finale pista ${p.te.nome} · ${nm(p.tra)} NM · segui il PAPI`;
-      default:return `Atterrato a ${p.arr.codice}!`;
+      case 0:return Lg(`Pronto al decollo · poi rotta ${tre(rotta(p.x0,p.z0,p.faf.x,p.faf.z))}°`,`Ready for take-off · then course ${tre(rotta(p.x0,p.z0,p.faf.x,p.faf.z))}°`);
+      case 1:return Lg(`Salita a ${p.crociera} ft · crociera tra ${nm(p.tra)} NM`,`Climb to ${p.crociera} ft · cruise in ${nm(p.tra)} NM`);
+      case 2:return p.circuito?Lg(`Verso ${p.nomeFaf} · ${nm(p.tra)} NM`,`To ${p.nomeFaf} · ${nm(p.tra)} NM`):Lg(`Crociera · inizia la discesa tra ${nm(p.tra)} NM`,`Cruise · start descent in ${nm(p.tra)} NM`);
+      case 3:return Lg(`Discesa verso ${p.nomeFaf} a ${p.qFaf} ft · ${nm(p.tra)} NM`,`Descend to ${p.nomeFaf} at ${p.qFaf} ft · ${nm(p.tra)} NM`);
+      case 4:return Lg(`Finale pista ${p.te.nome} · ${nm(p.tra)} NM · segui il PAPI`,`Final runway ${p.te.nome} · ${nm(p.tra)} NM · follow the PAPI`);
+      default:return Lg(`Atterrato a ${p.arr.codice}!`,`Landed at ${p.arr.codice}!`);
     }
   }
   return {calcola,aggiorna,bersaglio,html,testoFase,get piano(){return piano;}};

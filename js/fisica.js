@@ -22,7 +22,8 @@ SIM.creaFisica=function(A,terra){
   const disco=Math.PI*Math.pow(A.motore.diametroElica/2,2);
   const altRuote=-Math.min(...A.carrello.filter(r=>!r.pattino).map(r=>r.y));
   const ruote=A.carrello.map(r=>Object.assign({},r,{p:new V3(r.x,r.y,r.z),contatto:false,comp:0}));
-  const punti=A.puntiUrto.map(p=>({p:new V3(p.x,p.y,p.z),motivo:p.motivo}));
+  const Lg=SIM.L||((it)=>it);   // lingua (js/lingua.js)
+  const punti=A.puntiUrto.map(p=>({p:new V3(p.x,p.y,p.z),motivo:Lg(p.motivo,p.motivoEn||p.motivo)}));
 
   const st={
     pos:new V3(), vel:new V3(), q:new THREE.Quaternion(), w:new V3(),
@@ -161,10 +162,10 @@ SIM.creaFisica=function(A,terra){
       const gh=terra.suolo(pw.x,pw.z), tipo=terra.tipo;
       const pen=gh-pw.y;
       if(pen<=0){w.contatto=false;w.comp=0;continue;}
-      if(tipo==='acqua'){crash('Ammaraggio: sei finito in acqua');return;}
+      if(tipo==='acqua'){crash(Lg('Ammaraggio: sei finito in acqua','Ditched: you ended up in the water'));return;}
       vp.crossVectors(wW,rw).add(st.vel);
       if(!w.contatto){
-        if(-vp.y>A.limiti.vsContatto){crash(w.pattino?'La coda ha colpito violentemente la pista':'Atterraggio troppo duro: carrello distrutto');return;}
+        if(-vp.y>A.limiti.vsContatto){crash(w.pattino?Lg('La coda ha colpito violentemente la pista','The tail struck the runway hard'):Lg('Atterraggio troppo duro: carrello distrutto','Landing too hard: landing gear destroyed'));return;}
         w.contatto=true; primoContatto=true;
       }
       contatto=true;
@@ -190,7 +191,7 @@ SIM.creaFisica=function(A,terra){
     if(st.agl<12){
       for(const pt of punti){
         rw.copy(pt.p).applyQuaternion(st.q); pw.copy(st.pos).add(rw);
-        if(pw.y<terra.suolo(pw.x,pw.z)){crash(terra.tipo==='acqua'?'Ammaraggio: sei finito in acqua':pt.motivo);return;}
+        if(pw.y<terra.suolo(pw.x,pw.z)){crash(terra.tipo==='acqua'?Lg('Ammaraggio: sei finito in acqua','Ditched: you ended up in the water'):pt.motivo);return;}
       }
     }
 
@@ -220,8 +221,8 @@ SIM.creaFisica=function(A,terra){
     }
 
     /* ---- limiti strutturali ---- */
-    if(st.ias*KT>A.velocita.vne*1.12) crash('Velocità eccessiva: struttura danneggiata');
-    else if(st.g>A.limiti.gMax||st.g<A.limiti.gMin) crash('Sovraccarico strutturale ('+st.g.toFixed(1)+' g)');
+    if(st.ias*KT>A.velocita.vne*1.12) crash(Lg('Velocità eccessiva: struttura danneggiata','Overspeed: structure damaged'));
+    else if(st.g>A.limiti.gMax||st.g<A.limiti.gMin) crash(Lg('Sovraccarico strutturale (','Structural overload (')+st.g.toFixed(1)+' g)');
   }
 
   return {st, reset, passo, ruote, altRuote:altRuoteFn};

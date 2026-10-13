@@ -34,6 +34,7 @@ h2{font-size:24px;margin:56px 0 12px;padding-top:12px;border-top:1px solid var(-
 h3{font-size:18px;margin:28px 0 8px;color:var(--cyan)}
 p,li{max-width:72ch}
 .sotto{color:var(--dim);margin:0}
+.lingua{display:inline-block;margin:14px 0 0 14px;font-weight:700}
 .torna{display:inline-block;margin-top:14px;padding:8px 14px;border:1px solid var(--cyan);border-radius:5px;text-decoration:none;font-weight:700}
 figure{margin:18px 0;background:var(--carta);border:1px solid var(--riga);border-radius:8px;padding:10px}
 figure img{display:block;max-width:100%;height:auto;border-radius:4px;margin:0 auto}
@@ -90,7 +91,8 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <header>
   <h1>Istruzioni di volo</h1>
   <p class="sotto">Simulatore di volo nel browser · Cessna 172 con avionica Garmin G1000</p>
-  <a class="torna" href="index.html">Apri il simulatore</a>
+  <a class="torna" href="index.html?lang=it">Apri il simulatore</a>
+  <a class="lingua" href="istruzioni-en.html" lang="en">English version</a>
 </header>
 
 <!-- ================================================================ -->
@@ -99,6 +101,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   <div>
     <p>All'apertura compare il <b>briefing di volo</b>. Qui scegli:</p>
     <ul>
+      <li><b>Lingua</b>: italiano o inglese. Il gioco ricorda la scelta.</li>
       <li><b>Mondo</b>: <i>Piemonte</i> (reale, con montagne, laghi, città, strade e 32 aeroporti veri) oppure <i>Valle Azzurra</i> (inventata, piccola, ottima per imparare).</li>
       <li><b>Aeroporto di partenza</b> e <b>pista</b>: la pista proposta è quella più controvento.</li>
       <li><b>Destinazione</b>: il simulatore prepara da solo il piano di volo.</li>
@@ -429,12 +432,12 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   <li><b>Piemonte</b>: il rilievo vero (griglia di 250 m), 32 aeroporti con le piste vere, laghi, città, strade, ferrovie, fiumi, paesi con gli edifici e i VOR veri. Copre il Piemonte con un po' di Lombardia, Liguria, Valle d'Aosta, Svizzera e Francia (circa 219 × 287 km).</li>
   <li><b>Valle Azzurra</b>: un mondo inventato, piccolo e semplice. Tutto è nel file <code>dati/mappa.js</code>, scritto per essere modificato a mano: montagne, laghi, aeroporti e piste, città, boschi, VOR, meteo e punto di partenza.</li>
 </ul>
-<p>Scorciatoie da aggiungere all'indirizzo della pagina: <code>?mappa=valle</code> o <code>?mappa=piemonte</code> scelgono il mondo; <code>#salta</code> salta il briefing, <code>#finale</code> parte in finale, <code>#vista=1</code> parte dalla cabina.</p>
+<p>Scorciatoie da aggiungere all'indirizzo della pagina: <code>?lang=it</code> o <code>?lang=en</code> scelgono la lingua; <code>?mappa=valle</code> o <code>?mappa=piemonte</code> scelgono il mondo; <code>#salta</code> salta il briefing, <code>#finale</code> parte in finale, <code>#vista=1</code> parte dalla cabina.</p>
 
 <footer>
   <p>Dati reali: aeroporti e VOR © OurAirports (pubblico dominio) · laghi, città, aree urbane, strade, ferrovie e fiumi © OpenStreetMap contributors (ODbL) · rilievo Mapzen Terrain Tiles (SRTM). Gli ILS e le loro frequenze sono simulati.</p>
   <p>Software libero con licenza GPL-3.0-or-later. Questo simulatore è un gioco: non usarlo per la navigazione reale.</p>
-  <a class="torna" href="index.html">Apri il simulatore</a>
+  <a class="torna" href="index.html?lang=it">Apri il simulatore</a>
 </footer>
 </main>
 </div>
