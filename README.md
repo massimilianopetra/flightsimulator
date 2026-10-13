@@ -106,6 +106,7 @@ To work on it with VS Code the *Live Server* extension is fine too.
 | L | NAV1 radio: ILS of the arrival runway |
 | , / . | VOR course (CRS) −1° / +1°, with Shift ±10° |
 | P / R | pause / restart |
+| Esc | back to the briefing |
 | H | open or close the controls panel |
 
 The game never uses the Ctrl key (Ctrl+W would close the browser tab).
@@ -543,6 +544,7 @@ Per lavorarci con VS Code va bene anche l'estensione *Live Server*.
 | L | radio NAV1: ILS della pista di arrivo |
 | , / . | rotta del VOR (CRS) −1° / +1°, con Maiusc ±10° |
 | P / R | pausa / ricomincia |
+| Esc | torna al briefing |
 | H | apre o chiude il pannello dei comandi |
 
 Il gioco non usa mai il tasto Ctrl (Ctrl+W chiuderebbe la scheda del browser).

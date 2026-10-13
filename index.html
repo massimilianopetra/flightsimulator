@@ -45,6 +45,7 @@
       <dt>, / .</dt><dd data-en="VOR course CRS −1° / +1° (with Shift ±10°)">rotta CRS del VOR −1° / +1° (con Maiusc ±10°)</dd>
       <dt>M / O</dt><dd data-en="map scale (or mouse wheel on the map) / north or heading up">scala mappa (anche rotellina sulla mappa) / nord o prua in alto</dd>
       <dt>P / R</dt><dd data-en="pause / restart">pausa / ricomincia</dd>
+      <dt>Esc</dt><dd data-en="back to the briefing (change airport, destination, time…)">torna al briefing (cambia aeroporto, destinazione, ora…)</dd>
     </dl>
     <div class="dim" data-en="Mouse: drag on the screen like a control stick. Gamepads are supported.">Mouse: trascina sullo schermo come una cloche. Gamepad supportato.</div>
     <a class="istr" href="istruzioni.html" data-en-href="istruzioni-en.html" target="_blank" rel="noopener" data-en="Full manual, with pictures of the instruments ↗">Istruzioni complete, con le foto degli strumenti ↗</a>
@@ -192,13 +193,16 @@
     </div>
   </div>
 
-  <div id="pausa" class="overlay" hidden><div class="card"><h2 data-en="PAUSED">PAUSA</h2><p data-en="Press <kbd>P</kbd> to continue.">Premi <kbd>P</kbd> per continuare.</p></div></div>
+  <div id="pausa" class="overlay" hidden><div class="card"><h2 data-en="PAUSED">PAUSA</h2><p data-en="Press <kbd>P</kbd> to continue.">Premi <kbd>P</kbd> per continuare.</p><div class="azioni"><button type="button" class="vaiBriefing" data-en="Back to the briefing (Esc)">Torna al briefing (Esc)</button></div></div></div>
 
   <div id="crash" class="overlay" hidden>
     <div class="card allarme">
       <h2 data-en="CRASH">INCIDENTE</h2>
       <p id="crashMsg"></p>
-      <button id="ancora" type="button" class="primario" data-en="Restart (R)">Ricomincia (R)</button>
+      <div class="azioni">
+        <button id="ancora" type="button" class="primario" data-en="Restart (R)">Ricomincia (R)</button>
+        <button type="button" class="vaiBriefing" data-en="Back to the briefing (Esc)">Torna al briefing (Esc)</button>
+      </div>
     </div>
   </div>
 </div>
