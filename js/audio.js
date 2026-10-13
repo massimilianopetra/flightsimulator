@@ -61,8 +61,18 @@ SIM.creaAudio=function(){
     src.connect(f);f.connect(g);g.connect(n.master);src.start(t,Math.random());src.stop(t+0.4);
   }
 
+  // fruscio della radio all'inizio e alla fine di una trasmissione
+  function fruscio(durata=0.22){
+    if(!ctx||!n) return;
+    const t=ctx.currentTime;
+    const src=ctx.createBufferSource();src.buffer=n.buf;
+    const f=ctx.createBiquadFilter();f.type='bandpass';f.frequency.value=1800;f.Q.value=0.8;
+    const g=ctx.createGain();g.gain.setValueAtTime(0.09,t);g.gain.setTargetAtTime(0,t+durata*0.6,0.03);
+    src.connect(f);f.connect(g);g.connect(n.master);src.start(t,Math.random());src.stop(t+durata+0.2);
+  }
+
   return {
-    avvia, aggiorna, colpo,
+    avvia, aggiorna, colpo, fruscio,
     get attivo(){return attivo;},
     alterna(){
       attivo=!attivo;

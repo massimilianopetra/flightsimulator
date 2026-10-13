@@ -81,6 +81,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <li><a href="#atterraggio">Atterraggio e PAPI</a></li>
     <li><a href="#vor">Navigare con il VOR</a></li>
     <li><a href="#ils">Avvicinamento ILS</a></li>
+    <li><a href="#radio">Comunicazioni radio</a></li>
     <li><a href="#emergenze">Avvisi ed emergenze</a></li>
     <li><a href="#numeri">Numeri del Cessna 172</a></li>
     <li><a href="#mondi">Mondi e mappa modificabile</a></li>
@@ -136,6 +137,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <tr><td><kbd>N</kbd></td><td>Destinazione successiva</td></tr>
     <tr><td><kbd>I</kbd></td><td>Mostra / nasconde il piano di volo</td></tr>
     <tr><td><kbd>M</kbd> / <kbd>O</kbd></td><td>Scala della mappa / nord oppure prua in alto</td></tr>
+    <tr><td><kbd>T</kbd></td><td>Radio: apre il menu delle frasi da dire alla torre (poi <kbd>1</kbd>…<kbd>4</kbd>)</td></tr>
     <tr><td><kbd>V</kbd></td><td>NAV1: sintonizza la stazione VOR o ILS successiva fra quelle ricevute (la più vicina per prima)</td></tr>
     <tr><td><kbd>L</kbd></td><td>NAV1: sintonizza l'ILS della pista di arrivo</td></tr>
     <tr><td><kbd>,</kbd> / <kbd>.</kbd></td><td>Rotta CRS del VOR −1° / +1° (con <kbd>Maiusc</kbd> ±10°)</td></tr>
@@ -390,7 +392,35 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <div class="attenzione">Gli ILS del simulatore si trovano su tutte le piste asfaltate lunghe almeno 1000 m, su entrambe le testate. Le loro <b>frequenze sono inventate</b> e non corrispondono a quelle vere.</div>
 
 <!-- ================================================================ -->
-<h2 id="emergenze">14. Avvisi ed emergenze</h2>
+<h2 id="radio">14. Comunicazioni radio con la torre</h2>
+<p>Le comunicazioni sono in <b>inglese</b>, con la fraseologia standard internazionale (ICAO), come nella realtà. La torre parla con una voce sintetica del browser; tu non devi parlare: premi <kbd>T</kbd>, scegli la frase con <kbd>1</kbd>…<kbd>4</kbd> e il gioco la pronuncia con la voce del pilota. Nel pannello <b>RADIO</b> (sotto la mappa) ogni trasmissione resta scritta, con la traduzione italiana sotto.</p>
+<ul>
+  <li>Il tuo nominativo è <b>I-VOLO</b> (si dice “India Victor Oscar Lima Oscar”). Dopo la prima chiamata la torre usa quello abbreviato, <b>I-LO</b>.</li>
+  <li>I numeri si dicono cifra per cifra: pista 27 = “runway two seven”, QNH 1016 = “Q N H one zero one six”, e il 9 è “niner”.</li>
+  <li>Quando la torre ti dà un'autorizzazione devi <b>ripeterla</b> (readback). Tra le risposte ce n'è a volte una sbagliata, con la pista o il QNH diversi: se la scegli, la torre ti corregge. Ascolta bene!</li>
+  <li>Quando la torre ti chiama, il pannello lampeggia e compare un avviso arancione. Se non rispondi, dopo un po' la torre richiama.</li>
+  <li>Mentre qualcuno sta trasmettendo non si parla: aspetta la fine e poi premi <kbd>T</kbd>.</li>
+</ul>
+<h3>Un volo tipico</h3>
+<table>
+  <thead><tr><th>Quando</th><th>Chi</th><th>Cosa si dice</th></tr></thead>
+  <tbody>
+    <tr><td>Sulla pista, prima di partire</td><td>Tu</td><td>chiedi di partire: “… ready for departure”</td></tr>
+    <tr><td></td><td>Torre</td><td>pista, vento, QNH e “cleared for take-off” (autorizzato al decollo); tu ripeti</td></tr>
+    <tr><td>A 5 NM dall'aeroporto</td><td>Torre</td><td>“leaving the control zone, frequency change approved” (stai lasciando la zona di controllo); tu saluti</td></tr>
+    <tr><td>A 20 NM dalla destinazione</td><td>Tu</td><td>chiami la torre di arrivo: posizione, quota, “inbound for landing”, oppure chiedi l'ILS</td></tr>
+    <tr><td></td><td>Torre</td><td>avvicinamento diretto, circuito di traffico o “cleared ILS approach”, con QNH; poi “report final”</td></tr>
+    <tr><td>In finale</td><td>Tu</td><td>“final runway …”</td></tr>
+    <tr><td></td><td>Torre</td><td>vento e “cleared to land” (autorizzato all'atterraggio); tu ripeti</td></tr>
+    <tr><td>Dopo l'atterraggio</td><td>Torre</td><td>“vacate the runway” (libera la pista) e benvenuto</td></tr>
+  </tbody>
+</table>
+<p>Se decolli o atterri senza autorizzazione, la torre se ne accorge e te lo dice. Se ti si spegne il motore puoi dichiarare emergenza con il <b>MAYDAY</b>: la torre ti indica l'aeroporto più vicino, la prua e la distanza.</p>
+<p>Gli aeroporti con pista asfaltata di almeno 1000 m hanno una <b>torre</b> (“Tower”) che dà le autorizzazioni; gli altri hanno un servizio <b>Radio</b> che dà solo informazioni (pista in uso, vento, traffico) e lascia a te la decisione. La frequenza è scritta in alto nel pannello (COM1).</p>
+<div class="attenzione">Frequenze e procedure sono <b>simulate</b>: assomigliano a quelle vere ma non sono quelle degli aeroporti reali. La voce dipende dal browser e dal sistema: su Windows ci sono già voci inglesi; se non ne trovi, le trasmissioni restano comunque scritte. Con il pulsante AUDIO spento la radio non parla.</div>
+
+<!-- ================================================================ -->
+<h2 id="emergenze">15. Avvisi ed emergenze</h2>
 <table>
   <thead><tr><th>Avviso</th><th>Cosa significa</th><th>Cosa fare</th></tr></thead>
   <tbody>
@@ -409,7 +439,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Si ha un incidente toccando terra a più di circa 700 ft/min, finendo in acqua, toccando il suolo con un'ala, l'elica o la fusoliera, superando circa 183 kt oppure i limiti di +5,7 / −2,3 g. Premi <kbd>R</kbd> o <kbd>Invio</kbd> per ricominciare.</p>
 
 <!-- ================================================================ -->
-<h2 id="numeri">15. Numeri del Cessna 172</h2>
+<h2 id="numeri">16. Numeri del Cessna 172</h2>
 <table>
   <thead><tr><th>Velocità</th><th>Nodi</th><th>Significato</th></tr></thead>
   <tbody>
@@ -427,7 +457,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Altri dati: 1000 kg con pilota e carburante, ala di 11 m, serbatoi da 53 galloni utilizzabili. Il modello di volo (6 gradi di libertà) usa i coefficienti aerodinamici del vero C172: si possono leggere e modificare in <code>dati/aereo.js</code>.</p>
 
 <!-- ================================================================ -->
-<h2 id="mondi">16. Mondi e mappa modificabile</h2>
+<h2 id="mondi">17. Mondi e mappa modificabile</h2>
 <ul>
   <li><b>Piemonte</b>: il rilievo vero (griglia di 250 m), 32 aeroporti con le piste vere, laghi, città, strade, ferrovie, fiumi, paesi con gli edifici e i VOR veri. Copre il Piemonte con un po' di Lombardia, Liguria, Valle d'Aosta, Svizzera e Francia (circa 219 × 287 km). Ci sono anche i principali monumenti, come riferimenti a vista: la Mole Antonelliana, Superga, il Lingotto con la pista sul tetto, i due grattacieli di Torino, la Reggia di Venaria, Stupinigi, la Sacra di San Michele, Vicoforte, San Gaudenzio a Novara e Oropa. Sono modelli semplificati e sulla mappa sono segnati con un triangolo dorato.</li>
   <li><b>Valle Azzurra</b>: un mondo inventato, piccolo e semplice. Tutto è nel file <code>dati/mappa.js</code>, scritto per essere modificato a mano: montagne, laghi, aeroporti e piste, città, boschi, VOR, meteo e punto di partenza.</li>

@@ -12,6 +12,7 @@
 
 window.AEREO = {
   nome: "Cessna 172 Skyhawk",
+  registrazione: "I-VOLO",     // marche (nominativo radio: India Victor Oscar Lima Oscar)
 
   massa: 1000,                 // kg (aereo + pilota + carburante)
   inerzia: {                   // kg·m²: più alto = l'aereo ruota più lentamente
