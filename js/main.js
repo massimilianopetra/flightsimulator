@@ -81,7 +81,10 @@ let destIdx=T.aeroporti.findIndex(a=>a.codice===M.destinazione);
 if(destIdx<0)destIdx=Math.max(0,T.aeroporti.findIndex(a=>a!==partenza.ap));
 const dest=()=>T.aeroporti[destIdx]||null;
 // piano di volo verso la destinazione (js/piano.js)
-const piano=SIM.creaPiano(T,A,met);
+// radionavigazione (js/radio.js): VOR e ILS, ricevitore NAV1
+const radio=SIM.creaRadio(T);strum.impostaRadio(radio);
+const nav={staz:null,crs:0};
+const piano=SIM.creaPiano(T,A,met,radio);
 let faseMostrata=-1;
 function ricalcolaPiano(){
   const d=dest(),p=piano.calcola(partenza,d,d&&testataControvento(d));
@@ -215,6 +218,7 @@ addEventListener('keydown',e=>{
   if(e.key==='+'||e.key==='='||e.code==='NumpadAdd'||e.code==='PageUp') nome='PIU';
   else if(e.key==='-'||e.key==='_'||e.code==='NumpadSubtract'||e.code==='PageDown') nome='MENO';
   logico[e.code]=nome;tasti.add(nome);
+  if(e.code==='Comma'||e.code==='Period'){cambiaCrs((e.code==='Period'?1:-1)*(e.shiftKey?10:1));return;}
   if(e.repeat) return;
   const cifra=/^(Digit|Numpad)([0-9])$/.exec(e.code);
   if(cifra){const n=+cifra[2];st.thr=n===0?1:n/10;$('thr').value=Math.round(st.thr*100);return;}
@@ -226,6 +230,8 @@ addEventListener('keydown',e=>{
     case 'KeyM':strum.cambiaZoom();break;
     case 'KeyO':orientaMappa();break;
     case 'KeyK':centraCloche();break;
+    case 'KeyV':prossimaNav();break;
+    case 'KeyL':navIlsArrivo();break;
     case 'KeyP':alternaPausa();break;
     case 'KeyH':alternaAiuto();break;
     case 'KeyI':alternaPannello('piano');break;
@@ -428,6 +434,7 @@ function aggiornaStrumenti(dt){
     ias:st.ias*KT, alt:st.pos.y*FT, agl:Math.max(0,st.agl)*FT,
     vs:vsFiltrata, hdg, palla:st.palla, bug, gs:st.gs*KT,
     virata:st.aTerra?0:virataFiltrata, trim:st.trim, carb:st.carburante, flusso:st.crashed?0:st.flusso,
+    nav:misuraNav(),
   };
   if(vista===1){
     // in cabina: gli strumenti vengono disegnati sugli schermi del pannello
@@ -442,7 +449,7 @@ function aggiornaStrumenti(dt){
   return {hdg,bug};
 }
 const el={};
-for(const id of ['rpm','flap','trim','gload','thrv','dist','brg','vento','spiaFreni','spiaTerra','spiaVista','avviso'])el[id]=$(id);
+for(const id of ['rpm','flap','trim','gload','thrv','dist','brg','vento','crs','dme','spiaFreni','spiaTerra','spiaVista','avviso'])el[id]=$(id);
 const scrivi=(n,t)=>{if(n.textContent!==t)n.textContent=t;};
 function aggiornaTesti(hdg,bug){
   scrivi(el.rpm,String(Math.round(st.rpm/10)*10));
@@ -456,6 +463,9 @@ function aggiornaTesti(hdg,bug){
     scrivi(el.dist,(Math.hypot(d.x-st.pos.x,d.z-st.pos.z)/1852).toFixed(1));
     scrivi(el.brg,String(Math.round(bug)%360).padStart(3,'0'));
   }
+  const mn=ultimaNav;
+  scrivi(el.crs,nav.staz?String(Math.round(mn&&mn.crs!=null?mn.crs:nav.crs)%360).padStart(3,'0'):'---');
+  scrivi(el.dme,mn&&mn.ricevuto&&mn.dme!=null?mn.dme.toFixed(1):'--.-');
   const vk=Math.hypot(vento.x,vento.z)*KT, vda=((Math.atan2(-vento.x,vento.z)*R2D)+360)%360;
   scrivi(el.vento,vk<0.5?'CALMO':`${String(Math.round(vda)).padStart(3,'0')}/${Math.round(vk)}`);
   el.spiaFreni.classList.toggle('warn',st.freno>0);
@@ -518,6 +528,50 @@ selPista.addEventListener('change',()=>{scegliPartenza();selPista.blur();});
 selDB.addEventListener('change',()=>{impostaDest(+selDB.value);selDB.blur();});
 selD.addEventListener('change',()=>{impostaDest(+selD.value);messaggio(`Destinazione: <b>${dest().codice}</b> ${dest().nome}`,2.5);selD.blur();});
 impostaDest(destIdx);
+/* ---------- NAV1: scelta del radioaiuto e della rotta ---------- */
+const selNav=$('selNav');
+{
+  const gr=t=>radio.stazioni.filter(s=>s.tipo===t).map(s=>`<option value="${radio.stazioni.indexOf(s)}">${s.freq.toFixed(2)} ${s.id} – ${s.nome}</option>`).join('');
+  selNav.innerHTML='<option value="-1">— spento —</option>'+
+    (radio.stazioni.some(s=>s.tipo==='VOR')?'<optgroup label="VOR">'+gr('VOR')+'</optgroup>':'')+
+    (radio.stazioni.some(s=>s.tipo==='ILS')?'<optgroup label="ILS (simulati)">'+gr('ILS')+'</optgroup>':'');
+}
+let ultimaNav=null;
+function misuraNav(){
+  if(!nav.staz){ultimaNav=null;return null;}
+  const m=radio.misura(nav.staz,st.pos,nav.crs);
+  m.staz=nav.staz;ultimaNav=m;return m;
+}
+const rottaVerso=s=>Math.round(((Math.atan2(s.x-st.pos.x,-(s.z-st.pos.z))*R2D)+360)%360);
+function sintonizza(s,silenzioso){
+  nav.staz=s;selNav.value=String(s?radio.stazioni.indexOf(s):-1);
+  if(s)nav.crs=s.tipo==='ILS'?s.crs:rottaVerso(s);   // VOR: rotta diretta verso la stazione
+  strum.impostaNav(nav);
+  if(silenzioso) return;
+  if(!s){messaggio('NAV1 spento',1.5);return;}
+  const m=radio.misura(s,st.pos,nav.crs);
+  messaggio(`NAV1: <b>${s.freq.toFixed(2)} ${s.id}</b> ${s.nome}${m.ricevuto?'':' — <b>fuori portata</b>'}`+
+    (s.tipo==='VOR'?`<br>CRS ${String(nav.crs).padStart(3,'0')}° (diretto alla stazione) · cambialo con , e .`:`<br>localizzatore ${String(Math.round(s.crs)).padStart(3,'0')}° · sentiero 3°`),4);
+}
+function prossimaNav(){
+  // stazioni ricevute, dalla più vicina; ogni pressione passa alla successiva
+  const ric=radio.stazioni.filter(s=>radio.misura(s,st.pos,0).ricevuto)
+    .sort((a,b)=>Math.hypot(a.x-st.pos.x,a.z-st.pos.z)-Math.hypot(b.x-st.pos.x,b.z-st.pos.z));
+  if(!ric.length){messaggio('Nessun VOR o ILS ricevuto da qui: sali di quota',2.5);return;}
+  const i=ric.indexOf(nav.staz);
+  sintonizza(ric[(i+1)%ric.length]);
+}
+function navIlsArrivo(){
+  const p=piano.piano,ils=p&&radio.ilsDi(p.te);
+  if(!ils){messaggio('La pista di arrivo non ha l’ILS (serve asfalto e almeno 1000 m)',3);return;}
+  sintonizza(ils);
+}
+function cambiaCrs(d){
+  if(!nav.staz||nav.staz.tipo!=='VOR') return;
+  nav.crs=(nav.crs+d+360)%360;
+}
+selNav.addEventListener('change',()=>{const i=+selNav.value;sintonizza(i>=0?radio.stazioni[i]:null);selNav.blur();});
+sintonizza(null,true);
 const selCarb=$('selCarb');
 if(![...selCarb.options].some(o=>+o.value===carbIniziale))carbIniziale=A.carburante.capacita;
 selCarb.value=String(carbIniziale);

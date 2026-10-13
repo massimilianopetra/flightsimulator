@@ -21,7 +21,7 @@ const V_SALITA=74, RATEO_SALITA=550, V_CROCIERA=100, V_DISCESA=105, RATEO_DISCES
 const FINALE=5*NM;            // punto di finale a 5 NM dalla soglia
 const PENDENZA=3*D2R;         // sentiero di discesa di 3°
 
-SIM.creaPiano=function(T,A,met){
+SIM.creaPiano=function(T,A,met,radio){
   let piano=null;
 
   // componenti del vento sulla pista: frontale (+) e traverso (+ = da destra)
@@ -139,9 +139,23 @@ SIM.creaPiano=function(T,A,met){
       `<ol class="pv-tappe">${tappe}</ol>`+
       `<div class="pv-pista"><div><span class="lbl">PISTA</span><b>${te.nome}</b> ${pi.L}×${pi.W} m · ${pi.erba?'erba':'asfalto'} · QFU ${tre(te.hdg)}°</div>`+
       `<div><span class="lbl">CAMPO</span>${Math.round(p.qCampo)} ft · circuito ${Math.ceil((p.qCampo+1000)/100)*100} ft${altre?` · altre: ${altre}`:''}</div>`+
-      `<div><span class="lbl">VENTO</span>${vento}</div></div>`+
+      `<div><span class="lbl">VENTO</span>${vento}</div>`+radioHtml(p)+`</div>`+
       (p.alta?`<div class="pv-nota">Montagne alte sulla rotta: valuta un giro più lungo per le valli.</div>`:'')+
       `<div class="pv-fase" id="pvFase"></div>`;
+  }
+  // radioaiuti utili all'arrivo: ILS della pista e VOR più vicino alla destinazione
+  function radioHtml(p){
+    if(!radio) return '';
+    let t='';
+    const ils=radio.ilsDi(p.te);
+    if(ils) t+=`<div><span class="lbl">ILS</span><b>${ils.freq.toFixed(2)}</b> ${ils.id} · CRS ${tre(ils.crs)}° · tasto <b>L</b></div>`;
+    let vor=null,dv=Infinity;
+    for(const s of radio.stazioni){if(s.tipo!=='VOR')continue;const d=Math.hypot(s.x-p.arr.x,s.z-p.arr.z);if(d<dv){dv=d;vor=s;}}
+    if(vor&&dv<60*NM){
+      const r=rotta(vor.x,vor.z,p.arr.x,p.arr.z);
+      t+=`<div><span class="lbl">VOR</span><b>${vor.freq.toFixed(2)}</b> ${vor.id} ${vor.nome} · ${nm(dv)} NM${dv>0.5*NM?` · radiale ${tre(r)}°`:''}</div>`;
+    }
+    return t;
   }
   // riga che cambia durante il volo
   function testoFase(){

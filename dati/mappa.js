@@ -66,6 +66,16 @@ window.MAPPA = {
     },
   ],
 
+  /* ---------- RADIOAIUTI (VOR) ----------
+     id = sigla di 3 lettere, freq = frequenza in MHz (108,00-117,95),
+     dme: true se la stazione misura anche la distanza.
+     Gli ILS non vanno scritti: il simulatore li crea da solo sulle piste
+     asfaltate lunghe almeno 1000 m. */
+  vor: [
+    { id: "VAZ", nome: "Valle Azzurra", freq: 113.30, x:  2500, y:   -500, dme: true },
+    { id: "MTB", nome: "Monte Bianco",  freq: 116.40, x: 12000, y:  11000, dme: true },
+  ],
+
   /* ---------- PAESI E CITTÀ ---------- */
   citta: [
     { nome: "Borgo Azzurro",    x:   2800, y:   4600, raggio: 650, edifici: 110 },

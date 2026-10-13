@@ -144,6 +144,9 @@ SIM.creaStrumenti=function(A){
       g.fillText(Math.round(d.vs/10)*10,vx+vw/2,d.vs>0?ty-fs*0.7:ty+th+fs*0.7);
     }
 
+    /* ---- NAV1: CDI (ago di deviazione), TO/FROM, sentiero di discesa ---- */
+    if(d.nav) disegnaNav(d.nav,{cx,cy,AH,fs,tx,tw,ty,ax});
+
     /* ---- bussola (nastro di prua) ---- */
     g.fillStyle='#0b1322';g.fillRect(0,AH,W,HB);
     g.save();g.beginPath();g.rect(0,AH,W,HB);g.clip();
@@ -170,6 +173,53 @@ SIM.creaStrumenti=function(A){
     g.fillStyle='#fff';g.font=`700 ${Math.round(fs*1.15)}px ${MONO}`;g.textAlign='center';
     g.fillText(String(Math.round(d.hdg)%360).padStart(3,'0')+'°',cx,AH+HB/2+1);
     g.fillStyle='#ffb020';g.beginPath();g.moveTo(cx,AH-1);g.lineTo(cx-6,AH-9);g.lineTo(cx+6,AH-9);g.closePath();g.fill();
+  }
+
+  /* NAV1 sul PFD. n = misura del ricevitore (js/radio.js) + staz */
+  const VERDE='#4ade80';
+  function disegnaNav(n,L){
+    const {cx,cy,AH,fs,tx,tw,ty,ax}=L, s=n.staz, ils=s.tipo==='ILS';
+    // riquadro con frequenza, sigla, rotta e distanza
+    const fsn=Math.round(fs*0.78), bx=tx+tw+6, by=ty;
+    g.font=`700 ${fsn}px ${MONO}`;g.textAlign='left';g.textBaseline='top';
+    const righe=[`${ils?'LOC':'VOR'} ${s.id} ${s.freq.toFixed(2)}`,
+      n.ricevuto?`CRS ${String(Math.round(n.crs)%360).padStart(3,'0')}°${n.dme!=null?` DME ${n.dme.toFixed(1)}`:''}`:'FUORI PORTATA'];
+    const bw=Math.max(...righe.map(r=>g.measureText(r).width))+8;
+    g.fillStyle='rgba(8,14,26,.7)';g.fillRect(bx,by,bw,fsn*2.5);
+    g.fillStyle=n.ricevuto?VERDE:'#fbbf24';righe.forEach((r,i)=>g.fillText(r,bx+4,by+3+i*fsn*1.2));
+    // CDI orizzontale: 2 pallini per lato, fondo scala = 10° (VOR) o 2,5° (LOC)
+    const yc=AH-fs*1.5, half=AH*0.3;
+    g.fillStyle='rgba(8,14,26,.55)';g.fillRect(cx-half-fs*2.2,yc-fs*0.75,2*half+fs*4.4,fs*1.5);
+    g.strokeStyle='#fff';g.lineWidth=1.5;
+    for(const k of [-1,-0.5,0.5,1]){g.beginPath();g.arc(cx+k*half,yc,fs*0.17,0,Math.PI*2);g.stroke();}
+    g.fillStyle='#fff';g.fillRect(cx-1,yc-fs*0.6,2,fs*1.2);
+    g.font=`700 ${Math.round(fs*0.7)}px ${MONO}`;g.textBaseline='middle';g.textAlign='right';
+    g.fillStyle=VERDE;g.fillText(ils?'LOC':'VOR',cx-half-fs*0.5,yc);
+    if(n.ricevuto){
+      const xn=cx+n.dev*half;
+      g.fillStyle='#000';g.fillRect(xn-3.5,yc-fs*0.65,7,fs*1.3);
+      g.fillStyle=VERDE;g.fillRect(xn-2.5,yc-fs*0.6,5,fs*1.2);
+      // TO = triangolo in su, FROM = in giù
+      const xt=cx+half+fs*1.2;g.beginPath();
+      if(n.daA==='TO'){g.moveTo(xt,yc-fs*0.5);g.lineTo(xt-fs*0.4,yc+fs*0.3);g.lineTo(xt+fs*0.4,yc+fs*0.3);}
+      else{g.moveTo(xt,yc+fs*0.5);g.lineTo(xt-fs*0.4,yc-fs*0.3);g.lineTo(xt+fs*0.4,yc-fs*0.3);}
+      g.closePath();g.fill();
+    }else{
+      g.fillStyle='#ef4444';g.textAlign='left';g.fillText('NO',cx+half+fs*0.6,yc);
+    }
+    // sentiero di discesa: scala verticale a sinistra del nastro della quota
+    if(ils){
+      const xg=ax-fs*0.9, hg=AH*0.22;
+      g.fillStyle='rgba(8,14,26,.55)';g.fillRect(xg-fs*0.55,cy-hg-fs*0.5,fs*1.1,2*hg+fs);
+      g.strokeStyle='#fff';g.lineWidth=1.5;
+      for(const k of [-1,-0.5,0.5,1]){g.beginPath();g.arc(xg,cy+k*hg,fs*0.17,0,Math.PI*2);g.stroke();}
+      g.fillStyle='#fff';g.fillRect(xg-fs*0.45,cy-1,fs*0.9,2);
+      if(n.gs!=null){
+        const yg=cy-n.gs*hg, r=fs*0.38;
+        g.fillStyle=VERDE;g.strokeStyle='#000';g.lineWidth=1;
+        g.beginPath();g.moveTo(xg,yg-r);g.lineTo(xg+r,yg);g.lineTo(xg,yg+r);g.lineTo(xg-r,yg);g.closePath();g.fill();g.stroke();
+      }else{g.fillStyle='#ef4444';g.font=`700 ${Math.round(fs*0.6)}px ${MONO}`;g.textAlign='center';g.fillText('GS',xg,cy-hg-fs*0.9);}
+    }
   }
 
   /* ---------- virosbandometro ----------
@@ -379,6 +429,41 @@ SIM.creaStrumenti=function(A){
   try{if(localStorage.getItem('volo-mappa-orient')==='prua')orient='prua';}catch(e){}
 
   let ultimaMappa=null;
+  // radioaiuti sulla mappa: VOR (esagono) e, per la stazione sintonizzata, la rotta CRS o il fascio ILS
+  let radioMappa=null, navMappa=null;
+  function disegnaRadioMappa(P,k,range){
+    const n=navMappa&&navMappa.staz;
+    mg.lineWidth=1.5;mg.font=`700 9px ${MONO}`;mg.textAlign='left';mg.textBaseline='middle';
+    if(n){
+      mg.strokeStyle='rgba(74,222,128,.9)';mg.fillStyle='rgba(74,222,128,.18)';
+      if(n.tipo==='VOR'){
+        const c=navMappa.crs*D2R, L=60*1852, [ax,ay]=P(n.x-Math.sin(c)*L,n.z+Math.cos(c)*L), [bx,by]=P(n.x+Math.sin(c)*L,n.z-Math.cos(c)*L);
+        mg.lineWidth=4;mg.strokeStyle='rgba(0,0,0,.55)';mg.beginPath();mg.moveTo(ax,ay);mg.lineTo(bx,by);mg.stroke();
+        mg.lineWidth=2;mg.strokeStyle='#4ade80';mg.setLineDash([8,5]);mg.beginPath();mg.moveTo(ax,ay);mg.lineTo(bx,by);mg.stroke();mg.setLineDash([]);
+        mg.lineWidth=1.5;
+      }else{
+        const te=n.te, L=10*1852, a=2.5*D2R, dx=-te.dir.x, dz=-te.dir.z;
+        const lat=(sg)=>{const c=Math.cos(a),s=Math.sin(a)*sg;return [dx*c-dz*s,dz*c+dx*s];};
+        const [l1x,l1z]=lat(1),[l2x,l2z]=lat(-1);
+        const p0=P(te.x,te.z),p1=P(te.x+l1x*L,te.z+l1z*L),p2=P(te.x+l2x*L,te.z+l2z*L),pc=P(te.x+dx*L,te.z+dz*L);
+        mg.fillStyle='rgba(74,222,128,.3)';mg.beginPath();mg.moveTo(p0[0],p0[1]);mg.lineTo(p1[0],p1[1]);mg.lineTo(p2[0],p2[1]);mg.closePath();mg.fill();mg.stroke();
+        mg.beginPath();mg.moveTo(p0[0],p0[1]);mg.lineTo(pc[0],pc[1]);mg.stroke();
+      }
+    }
+    if(range>110*1852) return;
+    for(const s of radioMappa.stazioni){
+      if(s.tipo!=='VOR') continue;
+      const [x,y]=P(s.x,s.z);
+      if(x<-20||x>MW+20||y<-20||y>MH+20) continue;
+      const on=s===n;
+      mg.strokeStyle=on?'#4ade80':'#7dd3fc';mg.fillStyle=mg.strokeStyle;
+      mg.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3;mg[i?'lineTo':'moveTo'](x+Math.cos(a)*6,y+Math.sin(a)*6);}mg.closePath();mg.stroke();
+      mg.beginPath();mg.arc(x,y,1.5,0,Math.PI*2);mg.fill();
+      if(s.dme)mg.strokeRect(x-6,y-5.2,12,10.4);
+      const t=s.id;mg.fillStyle='rgba(8,14,26,.75)';mg.fillRect(x+8,y+3,mg.measureText(t).width+4,12);
+      mg.fillStyle=on?'#4ade80':'#bae6fd';mg.fillText(t,x+10,y+9.5);
+    }
+  }
   // rotta del piano di volo: {punti:[{x,z,nome}], prossimo} (indice del punto verso cui si va)
   let rottaMappa=null;
   function disegnaMappa(s,hdg,dest,sup){
@@ -427,6 +512,7 @@ SIM.creaStrumenti=function(A){
       mg.fillStyle='rgba(8,14,26,.75)';mg.fillRect(x-2,y-7,mg.measureText(ap.codice).width+4,14);
       mg.fillStyle=ap===dest?'#ff5ad9':'#e8f1f8';mg.fillText(ap.codice,x,y);
     }
+    if(radioMappa) disegnaRadioMappa(P,k,range);
     if(rottaMappa&&rottaMappa.punti.length){
       // rotta pianificata (sottile), poi dall'aereo al prossimo punto (piena)
       const pt=rottaMappa.punti.map(p=>P(p.x,p.z)),i0=rottaMappa.prossimo;
@@ -573,6 +659,8 @@ SIM.creaStrumenti=function(A){
     onZoom(fn){alCambioZoom=fn;},
     ridisegnaMappa(){if(ultimaMappa)disegnaMappa(...ultimaMappa);},
     impostaRotta(r){rottaMappa=r;},
+    impostaRadio(r){radioMappa=r;},
+    impostaNav(n){navMappa=n;if(ultimaMappa)disegnaMappa(...ultimaMappa);},
     cambiaOrientamento(){
       orient=orient==='nord'?'prua':'nord';
       try{localStorage.setItem('volo-mappa-orient',orient);}catch(e){}
