@@ -302,6 +302,25 @@ and runway, destination, terrain colours by height, and add or correct airports.
 Peaks come out about 150–250 m lower than in reality (Monviso is ~3650 m instead of 3841),
 because the 250 m grid smooths the summits. It makes no difference for flying.
 
+### At night
+
+<table>
+  <tr>
+    <td colspan="2"><img src="istruzioni/notte/pista.jpg" alt="Turin-Caselle runway at night with edge lights, PAPI and the landing light"></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><sub>Runway 36 at Turin-Caselle at night: edge lights, PAPI, stars and the landing light</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="istruzioni/notte/torino.jpg" alt="Turin at night from the cockpit"></td>
+    <td width="50%"><img src="istruzioni/notte/tramonto.jpg" alt="Turin at sunset from the cockpit"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Turin at night: the town lights come from the real buildings</sub></td>
+    <td align="center"><sub>The same flight at sunset</sub></td>
+  </tr>
+</table>
+
 ### The monuments
 
 <table>
@@ -719,6 +738,25 @@ e pista di partenza, destinazione, colori del terreno per quota, e aggiungere o 
 
 Le vette risultano circa 150–250 m più basse del vero (il Monviso fa ~3650 m invece di 3841),
 perché la griglia di 250 m smussa le punte. Per il volo non cambia nulla.
+
+### Di notte
+
+<table>
+  <tr>
+    <td colspan="2"><img src="istruzioni/notte/pista.jpg" alt="La pista di Torino-Caselle di notte, con le luci di bordo, il PAPI e il faro di atterraggio"></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><sub>Pista 36 di Torino-Caselle di notte: luci di bordo, PAPI, stelle e faro di atterraggio</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="istruzioni/notte/torino.jpg" alt="Torino di notte dalla cabina"></td>
+    <td width="50%"><img src="istruzioni/notte/tramonto.jpg" alt="Torino al tramonto dalla cabina"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Torino di notte: le luci della città vengono dagli edifici veri</sub></td>
+    <td align="center"><sub>Lo stesso volo al tramonto</sub></td>
+  </tr>
+</table>
 
 ### I monumenti
 
