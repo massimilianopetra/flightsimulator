@@ -25,6 +25,7 @@ addEventListener('resize',ridimensiona);ridimensiona();
 const T=SIM.terreno;
 const terreno=T.creaMesh(scene,renderer);
 const mondo=SIM.creaMondo(scene,renderer);
+const monumenti=SIM.creaMonumenti?SIM.creaMonumenti(scene):null;   // solo mondo reale (js/monumenti.js)
 camera.far=Math.max(15000,scene.fog.far*1.15);camera.updateProjectionMatrix();
 const fis=SIM.creaFisica(A,T), st=fis.st;
 const strum=SIM.creaStrumenti(A);
@@ -597,7 +598,7 @@ selCarb.addEventListener('change',()=>{
 ricomincia();
 aggiornaVento(0);
 // scorciatoie per le prove: index.html#salta (salta il briefing), #vista=1 (cabina)
-SIM.debug={st,fis};  // utile dalla console del browser (F12)
+SIM.debug={st,fis,terreno,monumenti};  // utile dalla console del browser (F12)
 if(/salta/.test(location.hash)) inizia();
 if(/finale/.test(location.hash)) inizia('finale');
 {const mv=/vista=(\d)/.exec(location.hash);if(mv)vista=(+mv[1])%3;}
@@ -616,6 +617,7 @@ function ciclo(ora){
   gestisciEventi();
   aggiornaCamera(dt);
   terreno.aggiorna(camera.position.x,camera.position.z,false);
+  if(monumenti&&n%10===0)monumenti.aggiorna(camera.position,terreno.vicino());
   mondo.aggiorna(st,camera.position,vento,attivo?dt:0,vista===1);
   if(n%2===0)ultimiStrum=aggiornaStrumenti(dt*2);
   if(n%6===0){aggiornaPiano();aggiornaTesti(ultimiStrum.hdg,ultimiStrum.bug);strum.disegnaMappa(st,ultimiStrum.hdg,dest());}

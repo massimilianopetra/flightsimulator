@@ -249,6 +249,17 @@ function colore(h,slope,x,z,dettaglio){
 /* ---------- terreno lontano (solo mappe reali) ----------
    Una griglia grossa (1 km) di tutta la regione, così le montagne si vedono
    da lontano. Dove c'è il terreno vicino, dettagliato, viene "bucata". */
+// altezza del terreno lontano in un punto (stessa griglia e stessi triangoli della mesh qui sotto):
+// serve per appoggiare gli oggetti visti da lontano (es. i monumenti) senza farli galleggiare
+api.hLontano=function(x,z){
+  if(!RL) return terrainH(x,z);
+  const P=1000,x0=RL.xMin,z0=-RL.yNord;
+  const fi=(x-x0)/P,fj=(z-z0)/P,i=Math.floor(fi),j=Math.floor(fj),fx=fi-i,fz=fj-j;
+  const h=(a,b)=>naturale(x0+a*P,z0+b*P);
+  const h00=h(i,j),h11=h(i+1,j+1);
+  if(fz>fx){const h01=h(i,j+1);return h00+(h11-h01)*fx+(h01-h00)*fz-15;}
+  const h10=h(i+1,j);return h00+(h10-h00)*fx+(h11-h10)*fz-15;
+};
 api.creaLontano=function(scene){
   if(!RL) return null;
   const P=1000;
@@ -340,6 +351,8 @@ api.creaMesh=function(scene,renderer){
     b.geo.attributes.position.needsUpdate=true;b.geo.attributes.color.needsUpdate=true;
   }
   return {
+    // dove c'è il terreno dettagliato (quadrato di centro cx, cz e mezzo lato "mezzo")
+    vicino(){const a=buf[attivo];return {cx:a.cx,cz:a.cz,mezzo:TS/2-STEP*1.5};},
     // da chiamare a ogni fotogramma con la posizione dell'aereo
     aggiorna(px,pz,forza){
       const a=buf[attivo];

@@ -65,6 +65,7 @@ In the opening briefing you choose the **world**:
   There are also the lakes with their real shorelines (Maggiore, Orta, Viverone, Avigliana, Lugano,
   Como…), towns and villages with their buildings, motorways, roads, railways and rivers, and the real
   VOR radio beacons. From altitude you can see the Alps up to 70 km away.
+  The main **monuments** are there as visual landmarks: Mole Antonelliana, Superga, the Lingotto with its rooftop test track, the two Turin skyscrapers, the Palace of Venaria, Stupinigi, the Sacra di San Michele, Vicoforte, San Gaudenzio in Novara and Oropa (simplified models, marked on the map).
 - **Valle Azzurra (invented)**: the procedural world in `dati/mappa.js`, easy to edit by hand.
 
 You can open a world directly from the address: `index.html?mappa=piemonte` or `index.html?mappa=valle`.
@@ -220,6 +221,7 @@ The site needs no build step: it is made of static files.
 | `dati/piemonte-vie.js` | motorways, main and local roads, village streets, railways, rivers and large canals (generated) | no |
 | `dati/piemonte-abitati.js` | residential and industrial areas and the density of real buildings in 100 m squares (generated) | no |
 | `dati/piemonte-radio.js` | the real VORs (generated) | no |
+| `dati/piemonte-monumenti.js` | position and orientation of the monuments | yes |
 | `dati/aereo.js` | the aircraft data: weight, engine, fuel, wing, aerodynamic coefficients, landing gear | yes, to experiment |
 | `strumenti/genera-piemonte.js` | the script that downloads the real data and creates the Piedmont files | |
 | `strumenti/genera-radio.js` | the script that creates the list of real VORs | |
@@ -232,6 +234,7 @@ The site needs no build step: it is made of static files.
 | `js/mondo.js` | 3D graphics: sky, runways with markings, PAPI, hangars, trees, houses, aircraft | |
 | `js/strumenti.js` | PFD, turn coordinator, fuel and trim indicators, MFD and the map | |
 | `js/radio.js` | radio navigation: VOR, DME and ILS, the NAV1 receiver | |
+| `js/monumenti.js` | the 3D models of the monuments | |
 | `js/piano.js` | flight plan to the destination and arrival runway information | |
 | `js/audio.js` | synthesised sounds: engine, wind, stall horn | |
 | `js/main.js` | ties everything together: controls, cameras, messages, main loop | |
@@ -346,7 +349,6 @@ do not end up in the sea.
 ## Ideas for the next steps
 
 - More aircraft (a glider? a jet?): just another file like `dati/aereo.js`.
-- The monuments of Turin (Mole, Superga, Lingotto).
 - Night, with runway lights and town lights.
 - Missions: land at an airport within a time limit, multi-leg flights.
 - Look around in the cockpit with the mouse.
@@ -416,6 +418,7 @@ Nel briefing iniziale si sceglie il **mondo**:
   larghezza, erba o asfalto). Ci sono anche i laghi con il loro contorno (Maggiore, Orta,
   Viverone, Avigliana, Lugano, Como…), città e paesi con i loro edifici, autostrade, strade,
   ferrovie e fiumi, e i radiofari VOR veri. Dall'alto si vedono le Alpi fino a 70 km di distanza.
+  Ci sono anche i principali **monumenti**, utili come riferimento a vista: la Mole Antonelliana, Superga, il Lingotto con la pista sul tetto, i due grattacieli di Torino, la Reggia di Venaria, Stupinigi, la Sacra di San Michele, Vicoforte, San Gaudenzio a Novara e Oropa (modelli semplificati, segnati sulla mappa).
 - **Valle Azzurra (inventata)**: il mondo procedurale di `dati/mappa.js`, comodo da modificare a mano.
 
 Si può aprire direttamente un mondo dall'indirizzo: `index.html?mappa=piemonte` oppure `index.html?mappa=valle`.
@@ -574,6 +577,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `dati/piemonte-vie.js` | autostrade, strade statali, provinciali, comunali e vie dei paesi, ferrovie, fiumi e grandi canali (generato) | no |
 | `dati/piemonte-abitati.js` | aree residenziali e industriali e densità degli edifici veri in quadrati di 100 m (generato) | no |
 | `dati/piemonte-radio.js` | i VOR veri (generato) | no |
+| `dati/piemonte-monumenti.js` | posizione e orientamento dei monumenti | sì |
 | `dati/aereo.js` | i dati dell'aereo: peso, motore, carburante, ala, coefficienti aerodinamici, carrello | sì, per sperimentare |
 | `strumenti/genera-piemonte.js` | lo script che scarica i dati reali e crea i file del Piemonte | |
 | `strumenti/genera-radio.js` | lo script che crea l'elenco dei VOR veri | |
@@ -586,6 +590,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `js/mondo.js` | grafica 3D: cielo, piste con segnaletica, PAPI, hangar, alberi, case, aereo | |
 | `js/strumenti.js` | il PFD, virosbandometro, carburante e trim, l'MFD e la mappa | |
 | `js/radio.js` | radionavigazione: VOR, DME e ILS, il ricevitore NAV1 | |
+| `js/monumenti.js` | i modelli 3D dei monumenti | |
 | `js/piano.js` | piano di volo verso la destinazione e informazioni sulla pista di arrivo | |
 | `js/audio.js` | suoni sintetizzati: motore, vento, avvisatore di stallo | |
 | `js/main.js` | collega tutto: comandi, telecamere, messaggi, ciclo principale | |
@@ -698,7 +703,6 @@ conviene ricontrollare che gli aeroporti non finiscano in mare.
 ## Idee per i prossimi passi
 
 - Più aerei (un aliante? un jet?): basta un altro file come `dati/aereo.js`.
-- I monumenti di Torino (Mole, Superga, Lingotto).
 - Notte, con le luci di pista e delle città.
 - Missioni: atterrare in un aeroporto entro un tempo, voli con più tappe.
 - Guardarsi intorno in cabina col mouse.
