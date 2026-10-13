@@ -16,12 +16,19 @@ SIM.creaStrumenti=function(A){
   const mappa=document.getElementById('minimap');
   let mg=mappa.getContext('2d');
   let W=0,H=0,dpr=1,MW=0,MH=0,MOX=0,MOY=0;
+  // cambiare width/height di un canvas lo cancella, anche se il valore è lo stesso:
+  // si tocca solo se la misura cambia davvero (altrimenti il PFD lampeggia)
+  function dimensiona(cv,w,h){
+    const pw=Math.max(1,Math.round(w*dpr)),ph=Math.max(1,Math.round(h*dpr));
+    if(cv.width!==pw)cv.width=pw;
+    if(cv.height!==ph)cv.height=ph;
+  }
   function adatta(){
     dpr=Math.min(2,window.devicePixelRatio||1);
     const r=pfd.getBoundingClientRect();W=r.width;H=r.height;
-    pfd.width=Math.max(1,Math.round(W*dpr));pfd.height=Math.max(1,Math.round(H*dpr));
+    dimensiona(pfd,W,H);
     const r2=mappa.getBoundingClientRect();MW=r2.width;MH=r2.height;
-    mappa.width=Math.max(1,Math.round(MW*dpr));mappa.height=Math.max(1,Math.round(MH*dpr));
+    dimensiona(mappa,MW,MH);
   }
   window.addEventListener('resize',()=>{adatta();if(ultimaMappa)disegnaMappa(...ultimaMappa);});adatta();
   const V=A.velocita;
