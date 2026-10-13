@@ -184,8 +184,8 @@ function ricomincia(){
   else if(avviato) messaggioPartenza();
 }
 function messaggioPartenza(){
-  if(partenza.parcheggio)messaggio(L(`Sei al parcheggio di <b>${partenza.ap.codice}</b>: chiedi alla torre di rullare (T), poi segui la linea magenta fino al punto attesa della pista <b>${partenza.te.nome}</b>.`,
-    `You are at the parking area of <b>${partenza.ap.codice}</b>: ask the tower for taxi (T), then follow the magenta line to the holding point of runway <b>${partenza.te.nome}</b>.`),8);
+  if(partenza.parcheggio)messaggio(L(`Sei al parcheggio di <b>${partenza.ap.codice}</b>: chiedi di rullare (T), poi segui la linea gialla a terra (sulla mappa il percorso è in magenta) fino al punto attesa della pista <b>${partenza.te.nome}</b>.`,
+    `You are at the parking area of <b>${partenza.ap.codice}</b>: ask for taxi (T), then follow the yellow line on the ground (the route is magenta on the map) to the holding point of runway <b>${partenza.te.nome}</b>.`),8);
   else messaggio(partenza.te?L(`Pronto al decollo: pista <b>${partenza.te.nome}</b> di <b>${partenza.ap.codice}</b>`,`Ready for take-off: runway <b>${partenza.te.nome}</b> at <b>${partenza.ap.codice}</b>`):L('In volo!','Airborne!'),4);
 }
 
