@@ -43,6 +43,9 @@ kbd{font:700 11px var(--f-num);color:var(--cyan);border:1px solid rgba(57,215,25
 .aiuto dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0 0 6px}
 .aiuto dt{font:700 11px var(--f-num);color:var(--cyan);white-space:nowrap}
 .aiuto dd{margin:0}
+.regola{display:flex;align-items:center;gap:8px;margin-top:6px;pointer-events:auto;cursor:pointer}
+.regola #sens{flex:1;min-width:0;accent-color:var(--cyan)}
+.regola #centro{accent-color:var(--cyan);margin:0}
 
 /* navigazione */
 .destra{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:320px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
