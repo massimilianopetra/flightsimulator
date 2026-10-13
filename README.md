@@ -99,6 +99,7 @@ To work on it with VS Code the *Live Server* extension is fine too.
 | I | open or close the flight plan |
 | M (or mouse wheel over the map, or the SCALE menu) | map scale: 2, 5, 10, 20, 50, 100 NM or the whole region |
 | O (or click on the map) | map with north up or heading up |
+| T | radio: talk to the tower (then 1…4 to choose the sentence) |
 | V | NAV1 radio: next VOR or ILS in range (nearest first) |
 | L | NAV1 radio: ILS of the arrival runway |
 | , / . | VOR course (CRS) −1° / +1°, with Shift ±10° |
@@ -150,6 +151,13 @@ In the Piedmont world the VORs are the real ones (from OurAirports), for example
 The ILS stations are created by the simulator on every asphalt runway at least 1000 m long:
 **their frequencies are invented**. Stations are only received within line of sight, so the higher
 you fly the further they reach. The simulator uses true north, not magnetic north.
+
+## Radio communications
+
+The tower talks to you in **English**, with the standard ICAO phraseology, using the browser's speech synthesis.
+You do not speak: press **T**, choose the sentence (1…4) and the game says it with the pilot's voice. Clearances must be
+read back, and sometimes one of the answers is deliberately wrong: the tower corrects you. Take-off, leaving the control
+zone, arrival (visual or ILS), final, landing, vacating the runway and MAYDAY are covered. Frequencies are simulated.
 
 ## The flight plan
 
@@ -234,6 +242,7 @@ The site needs no build step: it is made of static files.
 | `js/mondo.js` | 3D graphics: sky, runways with markings, PAPI, hangars, trees, houses, aircraft | |
 | `js/strumenti.js` | PFD, turn coordinator, fuel and trim indicators, MFD and the map | |
 | `js/radio.js` | radio navigation: VOR, DME and ILS, the NAV1 receiver | |
+| `js/atc.js` | radio communications with the tower (speech synthesis, menu of answers) | |
 | `js/monumenti.js` | the 3D models of the monuments | |
 | `js/piano.js` | flight plan to the destination and arrival runway information | |
 | `js/audio.js` | synthesised sounds: engine, wind, stall horn | |
@@ -454,6 +463,7 @@ Per lavorarci con VS Code va bene anche l'estensione *Live Server*.
 | I | apre o chiude il piano di volo |
 | M (o rotellina sopra la mappa, o il menu SCALA) | scala della mappa: 2, 5, 10, 20, 50, 100 NM o tutta la regione |
 | O (o clic sulla mappa) | mappa con il nord in alto oppure con la prua in alto |
+| T | radio: parla con la torre (poi 1…4 per scegliere la frase) |
 | V | radio NAV1: prossimo VOR o ILS ricevuto (il più vicino per primo) |
 | L | radio NAV1: ILS della pista di arrivo |
 | , / . | rotta del VOR (CRS) −1° / +1°, con Maiusc ±10° |
@@ -505,6 +515,14 @@ Nel mondo Piemonte i VOR sono quelli veri (da OurAirports), per esempio TOP Tori
 Gli ILS li crea il simulatore su tutte le piste asfaltate di almeno 1000 m: **le loro frequenze sono
 inventate**. Le stazioni si ricevono solo in linea di vista, quindi più si vola alti più arrivano lontano.
 Il simulatore usa il nord geografico, non quello magnetico.
+
+## Comunicazioni radio
+
+La torre ti parla in **inglese**, con la fraseologia standard ICAO, usando la sintesi vocale del browser.
+Tu non parli: premi **T**, scegli la frase (1…4) e il gioco la pronuncia con la voce del pilota; sotto ogni frase c'è la
+traduzione italiana. Le autorizzazioni vanno ripetute, e a volte una delle risposte è volutamente sbagliata: la torre ti
+corregge. Ci sono decollo, uscita dalla zona di controllo, arrivo (a vista o ILS), finale, atterraggio, liberare la pista
+e MAYDAY. Le frequenze sono simulate.
 
 ## Il piano di volo
 
@@ -590,6 +608,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `js/mondo.js` | grafica 3D: cielo, piste con segnaletica, PAPI, hangar, alberi, case, aereo | |
 | `js/strumenti.js` | il PFD, virosbandometro, carburante e trim, l'MFD e la mappa | |
 | `js/radio.js` | radionavigazione: VOR, DME e ILS, il ricevitore NAV1 | |
+| `js/atc.js` | comunicazioni radio con la torre (sintesi vocale, menu delle risposte) | |
 | `js/monumenti.js` | i modelli 3D dei monumenti | |
 | `js/piano.js` | piano di volo verso la destinazione e informazioni sulla pista di arrivo | |
 | `js/audio.js` | suoni sintetizzati: motore, vento, avvisatore di stallo | |

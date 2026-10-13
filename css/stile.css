@@ -41,7 +41,23 @@ kbd{font:700 11px var(--f-num);color:var(--cyan);border:1px solid rgba(57,215,25
 .testa .freccia{font-size:15px;line-height:1;transition:transform .15s}
 .chiuso .testa .freccia{transform:rotate(-90deg)}
 .aiuto .corpo{margin-top:6px}
-.aiuto.chiuso .corpo,.nav.chiuso #minimap,.piano.chiuso .corpo{display:none}
+.aiuto.chiuso .corpo,.nav.chiuso #minimap,.piano.chiuso .corpo,.radiopan.chiuso .corpo{display:none}
+/* radio */
+.radiopan{font-size:12px;line-height:1.35}
+.radiocom{flex:1;text-align:right;font:700 10px var(--f-num);color:#4ade80;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.radiopan.chiama .testa{animation:lampeggio 1s steps(2) infinite}
+.radioavviso{margin-top:6px;color:#1b1000;background:var(--amber);border-radius:4px;padding:4px 7px;font-weight:700}
+.radiolog{max-height:150px;overflow-y:auto;margin-top:6px;pointer-events:auto;scrollbar-width:thin}
+.radiolog:empty{display:none}
+.rl{display:grid;grid-template-columns:2.6em 1fr;gap:6px;margin:3px 0}
+.rl b{font:700 10px var(--f-num);padding-top:1px}
+.rl.atc b{color:#4ade80}.rl.pilota b{color:var(--cyan)}
+.rl i,.radiomenu i{display:block;color:var(--dim);font-style:italic}
+.radiomenu{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:4px;pointer-events:auto}
+.radiomenu button{display:flex;gap:6px;align-items:flex-start;width:100%;text-align:left;text-transform:none;letter-spacing:0;
+  font:400 12px/1.35 var(--f-ui);padding:6px 7px}
+.radiomenu kbd{flex:none}
+.radiomenu .nota,.radiomenu .vuoto{color:var(--dim);font-size:11px}
 .aiuto dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0 0 6px}
 .aiuto dt{font:700 11px var(--f-num);color:var(--cyan);white-space:nowrap}
 .aiuto dd{margin:0}

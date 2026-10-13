@@ -87,6 +87,9 @@ const dest=()=>T.aeroporti[destIdx]||null;
 const radio=SIM.creaRadio(T);strum.impostaRadio(radio);
 const nav={staz:null,crs:0};
 const piano=SIM.creaPiano(T,A,met,radio);
+// comunicazioni radio con la torre (js/atc.js)
+const atc=SIM.creaATC({A,T,met,audio,radio});
+const ctxATC=()=>({part:partenza.ap?{ap:partenza.ap,te:partenza.te}:null,arr:piano.piano?{ap:piano.piano.arr,te:piano.piano.te}:null,finale:modalita==='finale'});
 let faseMostrata=-1;
 function ricalcolaPiano(){
   const d=dest(),p=piano.calcola(partenza,d,d&&testataControvento(d));
@@ -115,6 +118,7 @@ function adattaDestra(){
   strum.adatta();strum.ridisegnaMappa();
 }
 addEventListener('resize',()=>adattaDestra());
+SIM.adattaDestra=adattaDestra;   // la usa anche la radio (js/atc.js) quando il registro cresce
 
 /* ---------- stato del gioco ---------- */
 let avviato=false, inPausa=false, vista=0, tempo=0;
@@ -134,6 +138,7 @@ function ricomincia(){
   primaCamera=true;
   $('thr').value=Math.round(st.thr*100);
   if(piano.piano){piano.piano.prossimo=0;aggiornaPiano();}
+  atc.reset(ctxATC());
   if(avviato&&modalita==='finale') messaggio(L('In finale per la pista <b>'+partenza.te.nome+'</b>: segui le luci PAPI, 65 nodi, flap 30°','On final for runway <b>'+partenza.te.nome+'</b>: follow the PAPI lights, 65 knots, flaps 30°'),6);
   else if(avviato) messaggio(partenza.te?L(`Pronto al decollo: pista <b>${partenza.te.nome}</b> di <b>${partenza.ap.codice}</b>`,`Ready for take-off: runway <b>${partenza.te.nome}</b> at <b>${partenza.ap.codice}</b>`):L('In volo!','Airborne!'),4);
 }
@@ -183,7 +188,7 @@ selScala.addEventListener('change',()=>{strum.impostaZoom(+selScala.value);selSc
 $('minimap').addEventListener('wheel',e=>{e.preventDefault();if(e.deltaY<0)strum.zoomPiu();else strum.zoomMeno();},{passive:false});
 function alternaPausa(){
   if(!avviato||st.crashed) return;
-  inPausa=!inPausa;$('pausa').hidden=!inPausa;
+  inPausa=!inPausa;$('pausa').hidden=!inPausa;atc.pausa(inPausa);
 }
 /* pannelli apribili/chiudibili (comandi e mappa); lo stato viene ricordato */
 function apriPannello(id,aperto){
@@ -216,6 +221,11 @@ addEventListener('keydown',e=>{
   if(BLOCCA.includes(e.code))e.preventDefault();
   if(e.ctrlKey||e.metaKey||e.altKey) return;      // non interferire con le scorciatoie del browser
   audio.avvia();
+  if(avviato&&!st.crashed&&atc.tasto(e)){   // radio: T e, a menu aperto, le cifre
+    e.preventDefault();
+    if(atc.menuAperto&&$('radio').classList.contains('chiuso'))apriPannello('radio',true);
+    return;
+  }
   let nome=e.code;
   if(e.key==='+'||e.key==='='||e.code==='NumpadAdd'||e.code==='PageUp') nome='PIU';
   else if(e.key==='-'||e.key==='_'||e.code==='NumpadSubtract'||e.code==='PageDown') nome='MENO';
@@ -350,6 +360,7 @@ function comandi(dt){
 /* ---------- eventi della fisica ---------- */
 function gestisciEventi(){
   for(const e of st.eventi){
+    atc.evento(e,st,ctxATC());
     if(e.tipo==='decollo'){
       const pv=T.pistaVicina(e.x,e.z,80);
       messaggio(pv?L(`Decollo da <b>${pv.pista.ap.codice}</b>: buon volo!`,`Take-off from <b>${pv.pista.ap.codice}</b>: have a good flight!`):L('Decollo!','Take-off!'),3);
@@ -618,6 +629,7 @@ function ciclo(ora){
   aggiornaCamera(dt);
   terreno.aggiorna(camera.position.x,camera.position.z,false);
   if(monumenti&&n%10===0)monumenti.aggiorna(camera.position,terreno.vicino());
+  if(attivo&&n%15===0)atc.aggiorna(st,ctxATC());
   mondo.aggiorna(st,camera.position,vento,attivo?dt:0,vista===1);
   if(n%2===0)ultimiStrum=aggiornaStrumenti(dt*2);
   if(n%6===0){aggiornaPiano();aggiornaTesti(ultimiStrum.hdg,ultimiStrum.bug);strum.disegnaMappa(st,ultimiStrum.hdg,dest());}

@@ -81,6 +81,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <li><a href="#atterraggio">Landing and PAPI</a></li>
     <li><a href="#vor">Navigating with a VOR</a></li>
     <li><a href="#ils">ILS approach</a></li>
+    <li><a href="#radio">Radio communications</a></li>
     <li><a href="#emergenze">Warnings and emergencies</a></li>
     <li><a href="#numeri">Cessna 172 numbers</a></li>
     <li><a href="#mondi">Worlds and the editable map</a></li>
@@ -136,6 +137,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <tr><td><kbd>N</kbd></td><td>Next destination</td></tr>
     <tr><td><kbd>I</kbd></td><td>Show / hide the flight plan</td></tr>
     <tr><td><kbd>M</kbd> / <kbd>O</kbd></td><td>Map scale / north up or heading up</td></tr>
+    <tr><td><kbd>T</kbd></td><td>Radio: opens the menu of sentences to say to the tower (then <kbd>1</kbd>…<kbd>4</kbd>)</td></tr>
     <tr><td><kbd>V</kbd></td><td>NAV1: tune the next VOR or ILS station in range (nearest first)</td></tr>
     <tr><td><kbd>L</kbd></td><td>NAV1: tune the ILS of the arrival runway</td></tr>
     <tr><td><kbd>,</kbd> / <kbd>.</kbd></td><td>VOR course CRS −1° / +1° (with <kbd>Shift</kbd> ±10°)</td></tr>
@@ -390,7 +392,35 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <div class="attenzione">In the simulator every asphalt runway at least 1000 m long has an ILS at both ends. Their <b>frequencies are invented</b> and do not match the real ones.</div>
 
 <!-- ================================================================ -->
-<h2 id="emergenze">14. Warnings and emergencies</h2>
+<h2 id="radio">14. Radio communications with the tower</h2>
+<p>Communications are in <b>English</b>, with the standard international (ICAO) phraseology, as in real life. The tower speaks with a synthetic browser voice; you do not have to speak: press <kbd>T</kbd>, choose the sentence with <kbd>1</kbd>…<kbd>4</kbd> and the game says it with the pilot's voice. In the <b>RADIO</b> panel (below the map) every transmission stays written.</p>
+<ul>
+  <li>Your callsign is <b>I-VOLO</b> (“India Victor Oscar Lima Oscar”). After the first call the tower uses the abbreviated one, <b>I-LO</b>.</li>
+  <li>Numbers are said digit by digit: runway 27 = “runway two seven”, QNH 1016 = “Q N H one zero one six”, and 9 is “niner”.</li>
+  <li>When the tower gives you a clearance you must <b>read it back</b>. Sometimes one of the answers is wrong, with a different runway or QNH: if you choose it, the tower corrects you. Listen carefully!</li>
+  <li>When the tower calls you, the panel flashes and an orange prompt appears. If you do not answer, after a while the tower calls again.</li>
+  <li>Nobody talks while someone else is transmitting: wait until the end, then press <kbd>T</kbd>.</li>
+</ul>
+<h3>A typical flight</h3>
+<table>
+  <thead><tr><th>When</th><th>Who</th><th>What is said</th></tr></thead>
+  <tbody>
+    <tr><td>On the runway, before leaving</td><td>You</td><td>ask to depart: “… ready for departure”</td></tr>
+    <tr><td></td><td>Tower</td><td>runway, wind, QNH and “cleared for take-off”; you read it back</td></tr>
+    <tr><td>5 NM from the airport</td><td>Tower</td><td>“leaving the control zone, frequency change approved”; you say goodbye</td></tr>
+    <tr><td>20 NM from the destination</td><td>You</td><td>call the arrival tower: position, altitude, “inbound for landing”, or request the ILS</td></tr>
+    <tr><td></td><td>Tower</td><td>straight-in approach, traffic circuit or “cleared ILS approach”, with QNH; then “report final”</td></tr>
+    <tr><td>On final</td><td>You</td><td>“final runway …”</td></tr>
+    <tr><td></td><td>Tower</td><td>wind and “cleared to land”; you read it back</td></tr>
+    <tr><td>After landing</td><td>Tower</td><td>“vacate the runway” and welcome</td></tr>
+  </tbody>
+</table>
+<p>If you take off or land without a clearance, the tower notices and tells you. If the engine stops you can declare an emergency with <b>MAYDAY</b>: the tower gives you the nearest airport, the heading and the distance.</p>
+<p>Airports with an asphalt runway at least 1000 m long have a <b>Tower</b> that gives clearances; the others have a <b>Radio</b> service that only gives information (runway in use, wind, traffic) and leaves the decision to you. The frequency is shown at the top of the panel (COM1).</p>
+<div class="attenzione">Frequencies and procedures are <b>simulated</b>: they resemble real ones but are not those of the real airports. The voice depends on the browser and the system: Windows already has English voices; if none is found, the transmissions are still written. With the AUDIO button off the radio does not speak.</div>
+
+<!-- ================================================================ -->
+<h2 id="emergenze">15. Warnings and emergencies</h2>
 <table>
   <thead><tr><th>Warning</th><th>Meaning</th><th>What to do</th></tr></thead>
   <tbody>
@@ -409,7 +439,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>You crash if you touch down faster than about 700 ft/min, end up in the water, hit the ground with a wing, the propeller or the fuselage, exceed about 183 kt, or exceed +5.7 / −2.3 g. Press <kbd>R</kbd> or <kbd>Enter</kbd> to start again.</p>
 
 <!-- ================================================================ -->
-<h2 id="numeri">15. Cessna 172 numbers</h2>
+<h2 id="numeri">16. Cessna 172 numbers</h2>
 <table>
   <thead><tr><th>Speed</th><th>Knots</th><th>Meaning</th></tr></thead>
   <tbody>
@@ -427,7 +457,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Other data: 1000 kg with pilot and fuel, 11 m wingspan, 53 US gallons of usable fuel. The flight model (6 degrees of freedom) uses the aerodynamic coefficients of the real C172: you can read and change them in <code>dati/aereo.js</code>.</p>
 
 <!-- ================================================================ -->
-<h2 id="mondi">16. Worlds and the editable map</h2>
+<h2 id="mondi">17. Worlds and the editable map</h2>
 <ul>
   <li><b>Piedmont</b>: real terrain (250 m grid), 32 airports with their real runways, lakes, towns, roads, railways, rivers, villages with buildings and the real VORs. It covers Piedmont plus parts of Lombardy, Liguria, Aosta Valley, Switzerland and France (about 219 × 287 km). The main monuments are there too, as visual landmarks: Mole Antonelliana, Superga, the Lingotto with its rooftop test track, the two Turin skyscrapers, the Palace of Venaria, Stupinigi, the Sacra di San Michele, Vicoforte, San Gaudenzio in Novara and Oropa. They are simplified models, marked on the map with a gold triangle.</li>
   <li><b>Valle Azzurra</b>: an invented world, small and simple. Everything is in the file <code>dati/mappa.js</code>, written to be edited by hand: mountains, lakes, airports and runways, towns, woods, VORs, weather and starting point. The comments in the file are in Italian.</li>
