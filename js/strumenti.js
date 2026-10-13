@@ -518,6 +518,16 @@ SIM.creaStrumenti=function(A){
           mg.fillStyle='#ffd27a';mg.fillText(m.nome,x+9,y+0.5);}
       }
     }
+    // vie di rullaggio e piazzali veri (fino a ~3 NM di scala)
+    if(SIM.reteRullaggio&&range<=6000){
+      mg.lineCap='round';mg.lineJoin='round';mg.fillStyle=mg.strokeStyle='#8b9097';
+      for(const r of SIM.reteRullaggio.tutte()){
+        const [ax,ay]=P(r.ap.x,r.ap.z);if(ax<-600||ax>MW+600||ay<-600||ay>MH+600) continue;
+        for(const a of r.piazzali){mg.beginPath();a.forEach((q,i)=>{const [x,y]=P(q.x,q.z);i?mg.lineTo(x,y):mg.moveTo(x,y);});mg.closePath();mg.fill();}
+        for(const v of r.vie){mg.lineWidth=Math.max(1.5,v.w*k);mg.beginPath();v.pts.forEach((q,i)=>{const [x,y]=P(q.x,q.z);i?mg.lineTo(x,y):mg.moveTo(x,y);});mg.stroke();}
+      }
+      mg.lineJoin='miter';
+    }
     mg.lineCap='butt';
     for(const p of T.piste){
       const [ax,ay]=P(p.testate[0].x,p.testate[0].z),[bx,by]=P(p.testate[1].x,p.testate[1].z);

@@ -73,20 +73,32 @@ SIM.creaReteRullaggio=function(T){
     const lista=[],refs=[];for(let n=a;n>=0;n=prec[n]){lista.unshift(n);if(ref[n])refs.unshift(ref[n]);}
     return {lista,refs:refs.filter((x,i)=>x!==refs[i-1])};
   }
-  // ingresso in pista per una testata: il nodo sulla pista più vicino alla testata con una via che esce di lato
+  // nodi raggiungibili dal parcheggio (i dati OSM a volte hanno tratti staccati dal resto)
+  function raggiungibili(r){
+    if(r.ragg) return r.ragg;
+    const vis=new Uint8Array(r.nodi.length),coda=[vicino(r,r.parcheggio)];vis[coda[0]]=1;
+    while(coda.length){const u=coda.pop();for(const e of r.nodi[u].adj)if(!vis[e.n]){vis[e.n]=1;coda.push(e.n);}}
+    return r.ragg=vis;
+  }
+  // ingresso in pista per una testata: il nodo sulla pista più vicino alla testata, con una via che esce di lato
+  // e che si raggiunge dal parcheggio
   function ingresso(r,te){
     const p=te.pista,loc=n=>({u:(n.x-te.x)*te.dir.x+(n.z-te.z)*te.dir.z,v:(n.x-te.x)*(-te.dir.z)+(n.z-te.z)*te.dir.x});
-    let best=null;
+    // un ingresso è un tratto di via che attraversa il bordo della pista (da dentro a fuori): vale anche per le vie
+    // che entrano in curva con tanti punti ravvicinati
+    const vis=raggiungibili(r),bordo=p.W/2+12,cand=[];
     r.nodi.forEach((n,i)=>{
-      const q=loc(n);if(Math.abs(q.v)>p.W/2+8||q.u<-60||q.u>p.L+60) return;
-      if(!n.adj.some(e=>Math.abs(loc(r.nodi[e.n]).v)>p.W/2+12)) return;
-      if(!best||q.u<best.u)best={i,u:q.u};
+      const q=loc(n);if(Math.abs(q.v)>bordo||q.u<-60||q.u>p.L+60||!vis[i]) return;
+      for(const e of n.adj)if(Math.abs(loc(r.nodi[e.n]).v)>bordo)cand.push({i,fuori:e.n,u:q.u});
     });
-    if(!best) return null;
+    if(!cand.length) return null;
+    const best=cand.reduce((a,b)=>b.u<a.u?b:a);
     // si risale la via che esce dalla pista fino alla distanza del punto attesa
     const dist=Math.max(p.W/2+45,65);
-    let cur=best.i,prec=-1,attesa=null,lato=null;
-    for(let k=0;k<12;k++){
+    let cur=best.fuori,prec=best.i,attesa=null,lato=null;
+    {const a=r.nodi[best.i],b=r.nodi[best.fuori],vb=Math.abs(loc(b).v);
+     if(vb>=dist){const va=Math.abs(loc(a).v),t=(dist-va)/Math.max(0.01,vb-va);attesa={x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t,dir:Math.atan2(a.x-b.x,a.z-b.z)};lato=best.fuori;}}
+    for(let k=0;k<30&&!attesa;k++){
       const opz=r.nodi[cur].adj.filter(e=>e.n!==prec).map(e=>({e,v:Math.abs(loc(r.nodi[e.n]).v)})).sort((a,b)=>b.v-a.v);
       if(!opz.length) break;
       const nx=opz[0].e.n,a=r.nodi[cur],b=r.nodi[nx],va=Math.abs(loc(a).v),vb=opz[0].v;
