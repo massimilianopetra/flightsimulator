@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Istruzioni di volo</title>
+<meta name="description" content="Manuale del Simulatore di Volo: comandi, strumenti, decollo, atterraggio, navigazione VOR e ILS.">
+<link rel="icon" href="icone/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icone/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&display=swap">
+<style>
+:root{
+  --fondo:#0b1322; --carta:#111c2e; --riga:#22324a;
+  --ink:#e8f1f8; --dim:#8ea6bb; --cyan:#39d7ff; --magenta:#ff5ad9; --amber:#ffb020; --verde:#4ade80; --rosso:#ff4d3d;
+  --f-ui:"B612",system-ui,sans-serif; --f-num:"B612 Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+body{margin:0;background:var(--fondo);color:var(--ink);font:16px/1.6 var(--f-ui)}
+a{color:var(--cyan)}
+.pagina{display:grid;grid-template-columns:250px minmax(0,1fr);gap:40px;max-width:1240px;margin:0 auto;padding:32px 24px 80px}
+nav.indice{position:sticky;top:16px;align-self:start;max-height:calc(100vh - 32px);overflow:auto;font-size:14px}
+nav.indice b{display:block;font:700 11px var(--f-ui);letter-spacing:.14em;color:var(--dim);margin-bottom:8px}
+nav.indice ol{margin:0;padding-left:30px}
+nav.indice li{margin:3px 0}
+nav.indice a{color:var(--ink);text-decoration:none}
+nav.indice a:hover{color:var(--cyan)}
+header{margin-bottom:28px}
+h1{font-size:34px;line-height:1.2;margin:0 0 8px}
+h2{font-size:24px;margin:56px 0 12px;padding-top:12px;border-top:1px solid var(--riga)}
+h3{font-size:18px;margin:28px 0 8px;color:var(--cyan)}
+p,li{max-width:72ch}
+.sotto{color:var(--dim);margin:0}
+.torna{display:inline-block;margin-top:14px;padding:8px 14px;border:1px solid var(--cyan);border-radius:5px;text-decoration:none;font-weight:700}
+figure{margin:18px 0;background:var(--carta);border:1px solid var(--riga);border-radius:8px;padding:10px}
+figure img{display:block;max-width:100%;height:auto;border-radius:4px;margin:0 auto}
+figcaption{color:var(--dim);font-size:14px;margin-top:8px}
+.affianca{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
+.affianca figure{margin-top:0}
+kbd{font:700 13px var(--f-num);color:var(--cyan);border:1px solid rgba(57,215,255,.4);border-radius:3px;padding:0 5px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:15px;margin:12px 0}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--riga);vertical-align:top}
+th{font:700 12px var(--f-ui);letter-spacing:.08em;color:var(--dim)}
+td.num{font-family:var(--f-num);white-space:nowrap}
+.nota{background:rgba(57,215,255,.08);border-left:3px solid var(--cyan);padding:10px 14px;border-radius:0 6px 6px 0;margin:16px 0}
+.attenzione{background:rgba(255,176,32,.09);border-left:3px solid var(--amber);padding:10px 14px;border-radius:0 6px 6px 0;margin:16px 0}
+ol.passi>li{margin:6px 0}
+.c-mag{color:var(--magenta)}.c-ver{color:var(--verde)}.c-amb{color:var(--amber)}.c-ros{color:var(--rosso)}.c-cya{color:var(--cyan)}
+.papi{display:inline-flex;gap:4px;vertical-align:middle}
+.papi i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.papi .w{background:#fff}.papi .r{background:#ff3b30}
+footer{margin-top:60px;color:var(--dim);font-size:14px}
+@media (max-width:900px){
+  .pagina{grid-template-columns:1fr;gap:16px;padding:20px 16px 60px}
+  nav.indice{position:static;max-height:none}
+  .affianca{grid-template-columns:1fr}
+  h1{font-size:28px}
+}
+</style>
+</head>
+<body>
+<div class="pagina">
+
+<nav class="indice" aria-label="Indice">
+  <b>INDICE</b>
+  <ol>
+    <li><a href="#inizio">Per cominciare</a></li>
+    <li><a href="#comandi">Comandi</a></li>
+    <li><a href="#schermo">Lo schermo</a></li>
+    <li><a href="#pfd">Il PFD</a></li>
+    <li><a href="#pannello">Motore, virosbandometro, trim, carburante</a></li>
+    <li><a href="#mappa">Mappa e NAV1</a></li>
+    <li><a href="#piano">Piano di volo</a></li>
+    <li><a href="#cabina">La cabina G1000</a></li>
+    <li><a href="#decollo">Decollo passo passo</a></li>
+    <li><a href="#volo">In volo: assetto, trim, virate</a></li>
+    <li><a href="#atterraggio">Atterraggio e PAPI</a></li>
+    <li><a href="#vor">Navigare con il VOR</a></li>
+    <li><a href="#ils">Avvicinamento ILS</a></li>
+    <li><a href="#emergenze">Avvisi ed emergenze</a></li>
+    <li><a href="#numeri">Numeri del Cessna 172</a></li>
+    <li><a href="#mondi">Mondi e mappa modificabile</a></li>
+  </ol>
+</nav>
+
+<main>
+<header>
+  <h1>Istruzioni di volo</h1>
+  <p class="sotto">Simulatore di volo nel browser · Cessna 172 con avionica Garmin G1000</p>
+  <a class="torna" href="index.html">Apri il simulatore</a>
+</header>
+
+<!-- ================================================================ -->
+<h2 id="inizio">1. Per cominciare</h2>
+<div class="affianca">
+  <div>
+    <p>All'apertura compare il <b>briefing di volo</b>. Qui scegli:</p>
+    <ul>
+      <li><b>Mondo</b>: <i>Piemonte</i> (reale, con montagne, laghi, città, strade e 32 aeroporti veri) oppure <i>Valle Azzurra</i> (inventata, piccola, ottima per imparare).</li>
+      <li><b>Aeroporto di partenza</b> e <b>pista</b>: la pista proposta è quella più controvento.</li>
+      <li><b>Destinazione</b>: il simulatore prepara da solo il piano di volo.</li>
+      <li><b>Carburante</b>: dal pieno (circa 6 ore) a quasi vuoto (circa 15 minuti).</li>
+    </ul>
+    <p>Poi premi <b>Decolla</b> (<kbd>Invio</kbd>) per partire fermo sulla soglia della pista, oppure <b>Prova l'atterraggio</b> per trovarti già in finale, a circa 2,7 NM dalla pista.</p>
+    <div class="nota">Il simulatore è pensato per il PC con la tastiera. Funziona anche con mouse e gamepad.</div>
+  </div>
+  <figure>
+    <img src="istruzioni/briefing.png" alt="Finestra del briefing di volo con i selettori di mondo, aeroporto, pista, destinazione e carburante" loading="lazy">
+    <figcaption>Il briefing: scelte iniziali e lista dei controlli prima del decollo.</figcaption>
+  </figure>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="comandi">2. Comandi</h2>
+<h3>Tastiera</h3>
+<table>
+  <thead><tr><th>Tasto</th><th>Che cosa fa</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>W</kbd> / <kbd>S</kbd> (o frecce ↑ ↓)</td><td>Cloche avanti (picchia, il muso scende) / indietro (cabra, il muso sale)</td></tr>
+    <tr><td><kbd>A</kbd> / <kbd>D</kbd> (o frecce ← →)</td><td>Rollio a sinistra / a destra (alettoni)</td></tr>
+    <tr><td><kbd>K</kbd></td><td>Riporta la cloche al centro</td></tr>
+    <tr><td><kbd>Q</kbd> / <kbd>E</kbd></td><td>Timone a sinistra / a destra; a terra sterza il ruotino anteriore</td></tr>
+    <tr><td><kbd>+</kbd> / <kbd>−</kbd></td><td>Manetta: aumenta / diminuisci (tieni premuto)</td></tr>
+    <tr><td><kbd>1</kbd> … <kbd>9</kbd>, <kbd>0</kbd></td><td>Manetta al 10 … 90%, <kbd>0</kbd> = 100%</td></tr>
+    <tr><td><kbd>F</kbd> / <kbd>G</kbd></td><td>Flap giù / su (0°, 10°, 20°, 30°)</td></tr>
+    <tr><td><kbd>Z</kbd> / <kbd>X</kbd></td><td>Trim cabra / picchia</td></tr>
+    <tr><td><kbd>B</kbd> o <kbd>Spazio</kbd></td><td>Freni (tieni premuto)</td></tr>
+    <tr><td><kbd>C</kbd></td><td>Cambia vista: esterna, cabina, torre</td></tr>
+    <tr><td>Rotellina del mouse</td><td>Zoom in cabina</td></tr>
+    <tr><td><kbd>N</kbd></td><td>Destinazione successiva</td></tr>
+    <tr><td><kbd>I</kbd></td><td>Mostra / nasconde il piano di volo</td></tr>
+    <tr><td><kbd>M</kbd> / <kbd>O</kbd></td><td>Scala della mappa / nord oppure prua in alto</td></tr>
+    <tr><td><kbd>V</kbd></td><td>NAV1: sintonizza la stazione VOR o ILS successiva fra quelle ricevute (la più vicina per prima)</td></tr>
+    <tr><td><kbd>L</kbd></td><td>NAV1: sintonizza l'ILS della pista di arrivo</td></tr>
+    <tr><td><kbd>,</kbd> / <kbd>.</kbd></td><td>Rotta CRS del VOR −1° / +1° (con <kbd>Maiusc</kbd> ±10°)</td></tr>
+    <tr><td><kbd>H</kbd></td><td>Mostra / nasconde il riquadro dei comandi</td></tr>
+    <tr><td><kbd>P</kbd> / <kbd>R</kbd></td><td>Pausa / ricomincia</td></tr>
+  </tbody>
+</table>
+<div class="nota">Il gioco non usa mai il tasto <kbd>Ctrl</kbd>: con <kbd>Ctrl</kbd>+<kbd>W</kbd> il browser chiuderebbe la scheda nel mezzo di una picchiata.</div>
+
+<h3>Come si muove la cloche dalla tastiera</h3>
+<p>Tenendo premuto <kbd>W</kbd> o <kbd>S</kbd> la cloche si sposta poco alla volta. Quando lasci il tasto, normalmente <b>resta dove l'hai lasciata</b>, come un pilota che la tiene ferma. La posizione si vede nel quadratino <b>CLOCHE</b> del pannello in basso: il punto in basso significa cloche tirata.</p>
+<p>Nel riquadro <b>COMANDI</b> ci sono due regolazioni, che il gioco ricorda:</p>
+<ul>
+  <li><b>Sensibilità cloche</b> (1–10, di serie 5): più è bassa, più i comandi sono dolci vicino al centro e più lentamente i tasti muovono la cloche. A fondo corsa resta sempre tutta l'escursione.</li>
+  <li><b>La cloche torna al centro quando lasci i tasti</b>: l'aereo, che è stabile, torna da solo al volo in equilibrio. Per salire o scendere a lungo si usa allora il trim.</li>
+</ul>
+
+<h3>Mouse e gamepad</h3>
+<p><b>Mouse</b>: trascina sullo schermo come se fosse una cloche; il trascinamento riparte dalla posizione attuale.</p>
+<table>
+  <thead><tr><th>Gamepad</th><th>Comando</th></tr></thead>
+  <tbody>
+    <tr><td>Levetta sinistra</td><td>Cloche (rollio e beccheggio)</td></tr>
+    <tr><td>Terzo asse</td><td>Timone</td></tr>
+    <tr><td>Grilletti destro / sinistro (o quarto asse)</td><td>Manetta su / giù</td></tr>
+    <tr><td>Tasti dorsali destro / sinistro</td><td>Flap giù / su</td></tr>
+    <tr><td>A (primo tasto)</td><td>Freni</td></tr>
+    <tr><td>Y</td><td>Cambia vista</td></tr>
+    <tr><td>Start</td><td>Parti / pausa</td></tr>
+  </tbody>
+</table>
+
+<!-- ================================================================ -->
+<h2 id="schermo">3. Lo schermo</h2>
+<figure>
+  <img src="istruzioni/schermo.jpg" alt="Schermata del gioco sulla pista di Torino-Caselle con i pannelli comandi, PFD, motore, mappa e piano di volo" loading="lazy">
+  <figcaption>Sulla pista 36 di Torino-Caselle, con il VOR di Caselle sintonizzato.</figcaption>
+</figure>
+<ul>
+  <li><b>COMANDI</b> (in alto a sinistra): elenco dei tasti e regolazioni della cloche. Si chiude con <kbd>H</kbd>.</li>
+  <li><b>PFD</b> (in basso a sinistra): lo strumento principale, con velocità, assetto, quota, variometro e bussola.</li>
+  <li><b>Pannello motore e sistemi</b> (in basso al centro): giri, flap, trim, accelerazione g, virosbandometro, carburante, cloche, manetta e pulsanti.</li>
+  <li><b>MAPPA</b> (in alto a destra): mappa mobile, destinazione, distanza, rotta, vento e radio NAV1.</li>
+  <li><b>PIANO DI VOLO</b> (sotto la mappa): le fasi del volo e la pista di arrivo.</li>
+</ul>
+<p>Al centro in alto compaiono i <b>messaggi</b> (decollo, atterraggio, radio…) e gli <b>avvisi</b> lampeggianti (stallo, pull up…).</p>
+
+<!-- ================================================================ -->
+<h2 id="pfd">4. Il PFD (Primary Flight Display)</h2>
+<figure>
+  <img src="istruzioni/pfd-ils.png" alt="PFD in finale con ILS sintonizzato: nastro della velocità, orizzonte, quota, variometro, ago del localizzatore e rombo del sentiero di discesa" loading="lazy">
+  <figcaption>In finale per la pista 27 di Valle Azzurra con l'ILS sintonizzato.</figcaption>
+</figure>
+<h3>Orizzonte artificiale (al centro)</h3>
+<p>Il simbolo arancione dell'aereo resta fermo, mentre cielo e terra si muovono. Le righe orizzontali sono i <b>gradi di beccheggio</b> (10°, 20°…). L'arco in alto con le tacche è la <b>scala di inclinazione</b> (10°, 20°, 30°, 45°, 60°). Il rettangolino arancione sotto il triangolo è l'<b>indicatore di sbandamento</b>: se si sposta di lato, la virata non è coordinata; correggi col timone dalla parte in cui si è spostato.</p>
+<h3>Nastro della velocità (a sinistra)</h3>
+<p>Mostra la velocità rispetto all'aria (IAS) in nodi. Le fasce colorate:</p>
+<ul>
+  <li><b>bianca</b> (40–85 kt): velocità in cui si possono usare i flap;</li>
+  <li><b class="c-ver">verde</b> (48–129 kt): velocità normale;</li>
+  <li><b class="c-amb">gialla</b> (129–163 kt): solo con aria calma;</li>
+  <li><b class="c-ros">rossa</b> (oltre 163 kt): da non superare mai.</li>
+</ul>
+<p>Sotto c'è la <b>GS</b>, la velocità rispetto al suolo, che cambia col vento.</p>
+<h3>Nastro della quota e variometro (a destra)</h3>
+<p>Quota in piedi sul livello del mare. Quando il terreno è vicino compare in marrone, con la riga arancione. <b>RA</b> (radioaltimetro) è l'altezza sopra il terreno, in giallo sotto i 1000 ft. Il <b>variometro</b> a destra mostra quanto sali o scendi, in migliaia di ft/min.</p>
+<h3>Bussola (in basso)</h3>
+<p>Al centro c'è la prua. Il triangolino <span class="c-mag">magenta</span> indica la direzione del prossimo punto del piano di volo. La <span class="c-mag">barretta magenta</span> che parte dal centro è il <b>vettore di virata</b>: dice dove sarà la prua fra 6 secondi. Le due tacche bianche corrispondono alla virata standard (3°/s).</p>
+<h3>Radionavigazione NAV1 (in verde)</h3>
+<p>Quando la radio NAV1 è sintonizzata compaiono:</p>
+<ul>
+  <li>in alto a sinistra un riquadro con il tipo (VOR o LOC), la sigla, la frequenza, la rotta <b>CRS</b> e la distanza <b>DME</b> in miglia;</li>
+  <li>in basso la <b>scala di deviazione</b> (CDI) con l'ago verde: l'ago mostra <b>da che parte è la rotta</b>, quindi si vola verso l'ago. Il triangolo a destra punta in su per <b>TO</b> (verso la stazione) e in giù per <b>FROM</b> (dalla stazione). <span class="c-ros">NO</span> significa nessun segnale;</li>
+  <li>solo con l'ILS, una <b>scala verticale</b> accanto alla quota con il rombo verde del <b>sentiero di discesa</b>.</li>
+</ul>
+<figure>
+  <img src="istruzioni/pfd-vor.png" alt="PFD con il VOR VAZ sintonizzato: riquadro NAV1 e scala di deviazione con il triangolo TO" loading="lazy">
+  <figcaption>Lo stesso PFD con un VOR: la scala del sentiero di discesa non c'è.</figcaption>
+</figure>
+
+<!-- ================================================================ -->
+<h2 id="pannello">5. Motore, virosbandometro, trim, carburante</h2>
+<div class="affianca">
+  <div>
+    <ul>
+      <li><b>RPM</b>: giri del motore (2100–2700 in volo).</li>
+      <li><b>FLAP</b>: posizione dei flap in gradi.</li>
+      <li><b>TRIM</b>: posizione del trim (+ = cabra, − = picchia).</li>
+      <li><b>G</b>: accelerazione che senti: 1,0 in volo livellato, di più in virata o in richiamata.</li>
+    </ul>
+    <h3>Virosbandometro</h3>
+    <p>L'aeroplanino si inclina in base a <b>quanto velocemente cambia la prua</b>. Quando l'ala tocca la tacca <b>L</b> o <b>R</b> stai facendo una virata standard: 3° al secondo, cioè un giro completo in 2 minuti. A 90–100 kt servono circa 15° di inclinazione.</p>
+    <p>La <b>pallina</b> nel tubo indica la coordinazione. Se scappa da un lato, “pesta la pallina”: un po' di timone (<kbd>Q</kbd> o <kbd>E</kbd>) dalla stessa parte.</p>
+    <h3>Trim</h3>
+    <p>Il trim toglie la fatica di tenere la cloche. La lancetta azzurra va in basso (<b>CAB</b>) per cabrare e in alto (<b>PIC</b>) per picchiare; la fascia verde è la posizione per il decollo.</p>
+    <h3>Carburante</h3>
+    <p>Mostra i galloni rimasti (1 gallone = 3,8 litri), il consumo in gal/h e l'<b>autonomia</b> al consumo attuale. Il motore consuma circa 1,5 gal/h al minimo, 8,5 in crociera e 11,5 a tutta manetta. Il numero diventa giallo sotto i 10 galloni e rosso sotto i 5.</p>
+  </div>
+  <figure>
+    <img src="istruzioni/pannello.png" alt="Pannello motore con giri, flap, trim, g, virosbandometro, indicatore del trim, carburante, cloche, manetta e pulsanti" loading="lazy">
+    <figcaption>Il pannello in basso. I pulsanti servono anche col mouse o sul telefono.</figcaption>
+  </figure>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="mappa">6. Mappa e radio NAV1</h2>
+<div class="affianca">
+  <figure>
+    <img src="istruzioni/mappa.png" alt="Mappa mobile su Torino con strade, aeroporti, VOR e rotta magenta" loading="lazy">
+    <figcaption>La mappa: l'aereo è la freccia arancione al centro.</figcaption>
+  </figure>
+  <div>
+    <ul>
+      <li>Clic sulla mappa (o <kbd>O</kbd>): <b>nord in alto</b> oppure <b>prua in alto</b>.</li>
+      <li>Rotellina sulla mappa, menu <b>SCALA</b> o <kbd>M</kbd>: da 2 a 100 NM o tutta la regione.</li>
+      <li>Linea <span class="c-mag">magenta</span>: la rotta del piano di volo; quella piena va dall'aereo al prossimo punto.</li>
+      <li>Esagoni <span class="c-cya">azzurri</span>: le stazioni <b>VOR</b>; con il quadrato intorno hanno anche il <b>DME</b>, che misura la distanza.</li>
+      <li>Linea <span class="c-ver">verde tratteggiata</span>: la rotta CRS del VOR sintonizzato. Il <span class="c-ver">ventaglio verde</span> davanti a una pista è il fascio del localizzatore ILS sintonizzato.</li>
+    </ul>
+    <p>Sotto la mappa ci sono:</p>
+    <ul>
+      <li><b>DEST</b>: la destinazione (si cambia anche con <kbd>N</kbd>);</li>
+      <li><b>DIST</b> e <b>ROTTA</b>: distanza e direzione del prossimo punto;</li>
+      <li><b>VENTO</b>: da dove soffia, e quanti nodi;</li>
+      <li><b>NAV1</b>: menu per scegliere la stazione;</li>
+      <li><b>CRS</b> e <b>DME</b>: la rotta selezionata e la distanza dalla stazione.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="piano">7. Piano di volo</h2>
+<div class="affianca">
+  <div>
+    <p>Il simulatore calcola da solo il volo fino alla destinazione:</p>
+    <table>
+      <tbody>
+        <tr><td class="num">DEC</td><td>decollo, poi salita a 74 kt</td></tr>
+        <tr><td class="num">SAL</td><td>salita fino alla quota di crociera</td></tr>
+        <tr><td class="num">CRO</td><td>crociera a 100 kt sulla rotta indicata</td></tr>
+        <tr><td class="num">DIS</td><td>discesa a 500 ft/min</td></tr>
+        <tr><td class="num">F27…</td><td>punto di finale, 5 NM prima della pista</td></tr>
+        <tr><td class="num">ATT</td><td>atterraggio a 65 kt con flap 30°</td></tr>
+      </tbody>
+    </table>
+    <p>La <b>quota di crociera</b> segue la regola dei voli a vista: 1000 ft sopra il terreno più alto lungo la rotta; verso est (rotte 000–179°) a migliaia dispari + 500 ft, verso ovest a migliaia pari + 500 ft.</p>
+    <p>Sotto ci sono i dati della <b>pista di arrivo</b>: lunghezza, fondo, quota del campo, altezza del circuito, vento rispetto alla pista. Se c'è, compaiono anche la frequenza dell'<b>ILS</b> (sintonizzalo con <kbd>L</kbd>) e il <b>VOR</b> più vicino alla destinazione. L'ultima riga cambia durante il volo e dice cosa fare adesso.</p>
+  </div>
+  <figure>
+    <img src="istruzioni/piano.png" alt="Riquadro del piano di volo da Torino-Caselle a Cuneo-Levaldigi con fasi, pista di arrivo, ILS e VOR" loading="lazy">
+    <figcaption>Da Torino-Caselle (LIMF) a Cuneo-Levaldigi (LIMZ).</figcaption>
+  </figure>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="cabina">8. La cabina G1000</h2>
+<figure>
+  <img src="istruzioni/cabina.jpg" alt="Vista dalla cabina: parabrezza, schermi PFD e MFD del G1000, cloche e strumenti di riserva" loading="lazy">
+  <figcaption>In cabina (<kbd>C</kbd>), in finale con l'ILS. La rotellina del mouse fa lo zoom.</figcaption>
+</figure>
+<ul>
+  <li><b>Schermo sinistro (PFD)</b>: lo stesso PFD descritto sopra.</li>
+  <li><b>Schermo destro (MFD)</b>: in alto GS, DTK (rotta voluta), TRK (rotta effettiva), DIS (distanza) ed ETE (tempo rimasto). A sinistra la colonna motore: giri, flusso carburante (FFLOW), olio, i due serbatoi (FUEL L e R) e il trim (ELEV TRIM). A destra la mappa.</li>
+  <li><b>Strumenti di riserva</b>, sotto gli schermi: anemometro, orizzonte, altimetro e virosbandometro, come sugli aerei senza schermi.</li>
+  <li>Le <b>cloche</b>, la manetta, la leva dei flap e la ruota del trim si muovono con i comandi.</li>
+</ul>
+<p>La terza vista, <b>torre</b>, guarda l'aereo dalla torre di controllo più vicina e lo segue con lo zoom: è perfetta per rivedere un atterraggio.</p>
+
+<!-- ================================================================ -->
+<h2 id="decollo">9. Decollo passo passo</h2>
+<ol class="passi">
+  <li>Flap a <b>10°</b>: premi una volta <kbd>F</kbd>.</li>
+  <li>Manetta al <b>100%</b>: <kbd>0</kbd> (oppure tieni premuto <kbd>+</kbd>).</li>
+  <li>Resta sulla linea centrale con piccoli colpi di timone, <kbd>Q</kbd> / <kbd>E</kbd>.</li>
+  <li>A <b>55 nodi</b> tira dolcemente (<kbd>S</kbd>) finché il muso sale di circa 8–10°: l'aereo si stacca da solo. La corsa è di circa 240 m.</li>
+  <li>Mantieni circa <b>74 nodi</b> (miglior salita, circa 570 ft/min). Se la velocità cala, abbassa un po' il muso.</li>
+  <li>Sopra i 500 ft retrai i flap (<kbd>G</kbd>) e usa il trim (<kbd>Z</kbd>/<kbd>X</kbd>) per non dover tenere la cloche.</li>
+  <li>Segui il triangolino magenta sulla bussola verso la destinazione.</li>
+</ol>
+
+<!-- ================================================================ -->
+<h2 id="volo">10. In volo: assetto, trim, virate</h2>
+<p><b>Assetto + potenza = prestazioni.</b> Il muso decide la velocità, la manetta decide se sali o scendi. Per stare livellato a 100 kt servono circa il 65% di manetta e il muso sull'orizzonte.</p>
+<ul>
+  <li><b>Piccole correzioni</b>: tocchi brevi dei tasti, poi aspetta qualche secondo che l'aereo risponda. Il Cessna è stabile: se è ben trimmato, vola quasi da solo.</li>
+  <li><b>Trim</b>: quando l'aereo vola come vuoi tu, premi <kbd>Z</kbd> o <kbd>X</kbd> finché non serve più tenere la cloche, poi centrala con <kbd>K</kbd>.</li>
+  <li><b>Virata</b>: inclina di 15–30° con <kbd>A</kbd>/<kbd>D</kbd>, riporta gli alettoni quasi al centro e tira appena un po' per non perdere quota. Per uscire inclina dalla parte opposta. Una virata a 30° si sente: circa 1,15 g.</li>
+  <li><b>Stallo</b>: sotto circa 48 kt senza flap (40 kt con flap 30°) l'ala smette di portare. Suona il corno e compare <b>STALLO</b>. Abbassa subito il muso e dai motore.</li>
+</ul>
+
+<!-- ================================================================ -->
+<h2 id="atterraggio">11. Atterraggio e PAPI</h2>
+<ol class="passi">
+  <li>Arriva al punto di finale (5 NM) alla quota indicata nel piano, allineato con la pista.</li>
+  <li>Velocità <b>65 nodi</b>, flap 30° (<kbd>F</kbd> tre volte, sotto gli 85 kt).</li>
+  <li>Scendi di circa 500 ft/min seguendo le luci <b>PAPI</b>, le quattro luci a sinistra della pista:
+    <ul>
+      <li><span class="papi"><i class="w"></i><i class="w"></i><i class="r"></i><i class="r"></i></span> due bianche e due rosse = <b>pendenza giusta</b> (3°);</li>
+      <li><span class="papi"><i class="w"></i><i class="w"></i><i class="w"></i><i class="r"></i></span> o tutte bianche = sei <b>troppo alto</b>;</li>
+      <li><span class="papi"><i class="w"></i><i class="r"></i><i class="r"></i><i class="r"></i></span> o tutte rosse = sei <b>troppo basso</b>: dai motore!</li>
+    </ul>
+  </li>
+  <li>A pochi metri dal suolo togli tutto il motore e <b>richiama</b> piano: tira la cloche per tenere il muso un po' su e lascia che l'aereo si appoggi sulle ruote principali.</li>
+  <li>A terra frena con <kbd>B</kbd> o <kbd>Spazio</kbd>.</li>
+</ol>
+<p>Il gioco giudica il contatto in base alla velocità verticale:</p>
+<table>
+  <thead><tr><th>Velocità verticale al contatto</th><th>Giudizio</th></tr></thead>
+  <tbody>
+    <tr><td class="num">meno di 120 ft/min</td><td>Burro! Atterraggio perfetto</td></tr>
+    <tr><td class="num">120–250 ft/min</td><td>Ottimo atterraggio</td></tr>
+    <tr><td class="num">250–450 ft/min</td><td>Buon atterraggio</td></tr>
+    <tr><td class="num">450–700 ft/min</td><td>Atterraggio duro</td></tr>
+    <tr><td class="num">oltre circa 700 ft/min</td><td class="c-ros">Carrello distrutto</td></tr>
+  </tbody>
+</table>
+<p>Il messaggio dice anche a quanti metri dalla soglia e dalla linea centrale hai toccato. Il punto ideale è a circa 300 m dalla soglia.</p>
+
+<!-- ================================================================ -->
+<h2 id="vor">12. Navigare con il VOR</h2>
+<p>Il <b>VOR</b> è una stazione radio a terra che trasmette in tutte le direzioni. Il ricevitore di bordo capisce su quale <b>radiale</b> ti trovi, cioè in che direzione sei visto dalla stazione: sul radiale 090 sei a est della stazione. Se la stazione ha il <b>DME</b>, sai anche a quante miglia sei.</p>
+<ol class="passi">
+  <li><b>Sintonizza</b>: premi <kbd>V</kbd> (più volte per passare alle altre stazioni ricevute) oppure scegli dal menu <b>NAV1</b>. La rotta CRS viene impostata dritta verso la stazione.</li>
+  <li><b>Scegli la rotta</b> con <kbd>,</kbd> e <kbd>.</kbd> (con <kbd>Maiusc</kbd> di 10° in 10°).</li>
+  <li><b>Leggi l'ago</b>: se è a destra, la rotta è alla tua destra. Gira di 20–30° verso l'ago per intercettarla, poi quando l'ago si centra metti la prua sulla rotta CRS.</li>
+  <li><b>TO / FROM</b>: con TO la rotta ti porta verso la stazione, con FROM te ne allontana. Quando sorvoli la stazione passa da TO a FROM.</li>
+  <li>Col vento al traverso, tieni la prua qualche grado verso il vento per restare sulla rotta.</li>
+</ol>
+<div class="nota"><b>Esercizio:</b> da Torino-Caselle sintonizza <b>TOP 114.50</b> e vola verso la stazione (TO). Dopo averla sorvolata imposta <b>CRS 204</b> e segui il radiale 204 (FROM): ti porta a Cuneo-Levaldigi, circa 25 NM più avanti, dove puoi passare all'ILS della pista 03 con <kbd>L</kbd>.</div>
+<p>La radio si riceve solo entro una certa distanza, e più sei in alto più lontano arriva (il segnale viaggia in linea retta, come la luce). Se compare <b>FUORI PORTATA</b>, sali di quota o avvicinati.</p>
+<p>Nel mondo Piemonte i VOR sono quelli <b>veri</b>, per esempio TOP Torino 114.50, CSL Caselle 116.75, VOG Voghera 115.50, SRN Saronno 113.70 e BLA Biella 116.10. Una differenza dalla realtà: il simulatore usa i gradi riferiti al nord geografico, mentre i VOR veri usano il nord magnetico, che in Piemonte è circa 3° più a est.</p>
+
+<!-- ================================================================ -->
+<h2 id="ils">13. Avvicinamento ILS</h2>
+<p>L'<b>ILS</b> guida fino alla pista con due fasci radio:</p>
+<ul>
+  <li>il <b>localizzatore</b> (LOC) dice se sei a destra o a sinistra dell'asse pista. È molto più preciso del VOR: l'ago va a fondo scala quando sei 2,5° fuori asse;</li>
+  <li>il <b>sentiero di discesa</b> (glide slope) dice se sei sopra o sotto la pendenza di 3°. Fondo scala: 0,7°.</li>
+</ul>
+<ol class="passi">
+  <li>Premi <kbd>L</kbd> per sintonizzare l'ILS della pista di arrivo; la frequenza è anche nel piano di volo.</li>
+  <li>Avvicinati al prolungamento della pista con un angolo di 30° circa, a 2000–2500 ft sopra il campo, verso il punto di finale.</li>
+  <li>Quando l'ago <b>LOC</b> si muove verso il centro, vira sulla rotta della pista (CRS). Da qui correzioni piccole, di pochi gradi.</li>
+  <li>Quando il <b>rombo</b> del sentiero scende verso il centro, metti flap e motore per scendere di circa 400–500 ft/min a 65 kt.</li>
+  <li>Rombo <b>sopra</b> il centro = sei basso, scendi meno. Rombo <b>sotto</b> il centro = sei alto, scendi di più.</li>
+  <li>Sulla soglia sarai a circa 50 ft: guarda fuori, richiama e atterra.</li>
+</ol>
+<div class="attenzione">Gli ILS del simulatore si trovano su tutte le piste asfaltate lunghe almeno 1000 m, su entrambe le testate. Le loro <b>frequenze sono inventate</b> e non corrispondono a quelle vere.</div>
+
+<!-- ================================================================ -->
+<h2 id="emergenze">14. Avvisi ed emergenze</h2>
+<table>
+  <thead><tr><th>Avviso</th><th>Cosa significa</th><th>Cosa fare</th></tr></thead>
+  <tbody>
+    <tr><td class="c-ros"><b>PULL UP</b></td><td>Stai per toccare il terreno scendendo</td><td>Tira e dai tutto motore</td></tr>
+    <tr><td class="c-ros"><b>STALLO</b></td><td>Ala vicina allo stallo (suona il corno)</td><td>Muso giù, motore</td></tr>
+    <tr><td class="c-ros"><b>VELOCITÀ ECCESSIVA</b></td><td>Oltre 163 kt</td><td>Togli motore, muso su piano</td></tr>
+    <tr><td class="c-amb"><b>VELOCITÀ FLAP</b></td><td>Flap estesi oltre 85 kt</td><td>Rallenta o ritira i flap</td></tr>
+    <tr><td class="c-amb"><b>SOVRACCARICO</b></td><td>Accelerazione oltre 3,8 g</td><td>Manovre più dolci</td></tr>
+    <tr><td class="c-amb"><b>CARBURANTE BASSO</b></td><td>Meno di 5 galloni</td><td>Atterra al più presto</td></tr>
+    <tr><td class="c-amb"><b>MOTORE SPENTO</b></td><td>Carburante finito</td><td>Plana a 65 kt verso un campo</td></tr>
+  </tbody>
+</table>
+<h3>Motore spento</h3>
+<p>Senza carburante il motore si ferma e l'elica gira solo per il vento. Tieni subito <b>65 nodi</b>, la velocità di miglior planata: scendendo di circa 800 ft/min il Cessna percorre circa 2,5 km (1,4 NM) per ogni 1000 ft di quota. Cerca una pista o un campo controvento e atterra con i flap solo quando sei sicuro di arrivarci.</p>
+<h3>Incidenti</h3>
+<p>Si ha un incidente toccando terra a più di circa 700 ft/min, finendo in acqua, toccando il suolo con un'ala, l'elica o la fusoliera, superando circa 183 kt oppure i limiti di +5,7 / −2,3 g. Premi <kbd>R</kbd> o <kbd>Invio</kbd> per ricominciare.</p>
+
+<!-- ================================================================ -->
+<h2 id="numeri">15. Numeri del Cessna 172</h2>
+<table>
+  <thead><tr><th>Velocità</th><th>Nodi</th><th>Significato</th></tr></thead>
+  <tbody>
+    <tr><td>Vso</td><td class="num">40</td><td>stallo con flap 30°</td></tr>
+    <tr><td>Vs1</td><td class="num">48</td><td>stallo senza flap</td></tr>
+    <tr><td>Vr</td><td class="num">55</td><td>rotazione (alzare il muso in decollo)</td></tr>
+    <tr><td>Avvicinamento</td><td class="num">65</td><td>finale con flap 30°; anche miglior planata</td></tr>
+    <tr><td>Vy</td><td class="num">74</td><td>miglior salita</td></tr>
+    <tr><td>Vfe</td><td class="num">85</td><td>massima con flap estesi</td></tr>
+    <tr><td>Crociera</td><td class="num">100–110</td><td>al 65–75% di manetta</td></tr>
+    <tr><td>Vno</td><td class="num">129</td><td>massima con aria turbolenta</td></tr>
+    <tr><td>Vne</td><td class="num">163</td><td>da non superare mai</td></tr>
+  </tbody>
+</table>
+<p>Altri dati: 1000 kg con pilota e carburante, ala di 11 m, serbatoi da 53 galloni utilizzabili. Il modello di volo (6 gradi di libertà) usa i coefficienti aerodinamici del vero C172: si possono leggere e modificare in <code>dati/aereo.js</code>.</p>
+
+<!-- ================================================================ -->
+<h2 id="mondi">16. Mondi e mappa modificabile</h2>
+<ul>
+  <li><b>Piemonte</b>: il rilievo vero (griglia di 250 m), 32 aeroporti con le piste vere, laghi, città, strade, ferrovie, fiumi, paesi con gli edifici e i VOR veri. Copre il Piemonte con un po' di Lombardia, Liguria, Valle d'Aosta, Svizzera e Francia (circa 219 × 287 km).</li>
+  <li><b>Valle Azzurra</b>: un mondo inventato, piccolo e semplice. Tutto è nel file <code>dati/mappa.js</code>, scritto per essere modificato a mano: montagne, laghi, aeroporti e piste, città, boschi, VOR, meteo e punto di partenza.</li>
+</ul>
+<p>Scorciatoie da aggiungere all'indirizzo della pagina: <code>?mappa=valle</code> o <code>?mappa=piemonte</code> scelgono il mondo; <code>#salta</code> salta il briefing, <code>#finale</code> parte in finale, <code>#vista=1</code> parte dalla cabina.</p>
+
+<footer>
+  <p>Dati reali: aeroporti e VOR © OurAirports (pubblico dominio) · laghi, città, aree urbane, strade, ferrovie e fiumi © OpenStreetMap contributors (ODbL) · rilievo Mapzen Terrain Tiles (SRTM). Gli ILS e le loro frequenze sono simulati.</p>
+  <p>Software libero con licenza GPL-3.0-or-later. Questo simulatore è un gioco: non usarlo per la navigazione reale.</p>
+  <a class="torna" href="index.html">Apri il simulatore</a>
+</footer>
+</main>
+</div>
+</body>
+</html>

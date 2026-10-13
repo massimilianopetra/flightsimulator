@@ -43,6 +43,8 @@ kbd{font:700 11px var(--f-num);color:var(--cyan);border:1px solid rgba(57,215,25
 .aiuto dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0 0 6px}
 .aiuto dt{font:700 11px var(--f-num);color:var(--cyan);white-space:nowrap}
 .aiuto dd{margin:0}
+a.istr{display:inline-block;margin-top:8px;color:var(--cyan);font-weight:700;pointer-events:auto}
+.azioni a.istr{margin-top:0;align-self:center}
 .regola{display:flex;align-items:center;gap:8px;margin-top:6px;pointer-events:auto;cursor:pointer}
 .regola #sens{flex:1;min-width:0;accent-color:var(--cyan)}
 .regola #centro{accent-color:var(--cyan);margin:0}
