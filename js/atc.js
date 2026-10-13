@@ -233,10 +233,10 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
     const poi=tw?frase(', at holding point contact ',tw.parla,' ',freqF(tw.freq)):'', poiRb=tw?frase(', ',freqF(tw.freq)):'';
     const poiIt=tw?`, al punto attesa contattate ${tw.nome} su ${tw.freq}`:'', poiRbIt=tw?`, ${tw.freq}`:'';
     const dopo=()=>{fase='rullaggio';
-      if(tw){staz=tw;avvisa(L(`Segui la linea magenta fino al punto attesa, poi sintonizza ${tw.nome} ${tw.freq} (U o menu COM1) e chiama (T)`,
-        `Follow the magenta line to the holding point, then tune ${tw.nome} ${tw.freq} (U or the COM1 menu) and call (T)`));}
-      else avvisa(L('Segui la linea magenta fino al punto attesa (linea gialla), poi chiama la torre (T)',
-        'Follow the magenta line to the holding point (yellow line), then call the tower (T)'));};
+      if(tw){staz=tw;avvisa(L(`Segui la linea gialla a terra fino al punto attesa, poi sintonizza ${tw.nome} ${tw.freq} (U o menu COM1) e chiama (T)`,
+        `Follow the yellow line on the ground to the holding point, then tune ${tw.nome} ${tw.freq} (U or the COM1 menu) and call (T)`));}
+      else avvisa(L('Segui la linea gialla a terra fino al punto attesa, poi chiama la torre (T)',
+        'Follow the yellow line on the ground to the holding point, then call the tower (T)'));};
     return {f,it,fai:()=>{
       pilotaDice(f,it);attendi(1200);
       const altra=te.pista.testate.find(t=>t!==te), sbPista=!!altra&&Math.random()<0.5;
