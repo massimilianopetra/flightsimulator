@@ -133,8 +133,10 @@ The landing gear survives touchdowns below 600–700 ft/min.
 The **Practise landing** button in the briefing puts you straight on final approach to your destination.
 
 **Taxiing**: choose *Start: from the parking area* in the briefing. You start on the apron; ask for taxi (T), follow the
-yellow lines and the magenta route to the holding point, then call the tower: you enter the runway, backtrack to the
-threshold, turn around and take off. Keep below 15 knots on the ground.
+yellow lines and the magenta route to the holding point, then call the tower: you line up and take off (or, if the
+taxiway joins the runway half way, you backtrack to the threshold and turn around). Keep below 15 knots on the ground.
+At 18 Italian airports of the Piedmont world (Caselle, Malpensa, Linate, Cuneo, Aosta, Genoa…) aprons and taxiways
+are the real ones from OpenStreetMap, and the clearance names them (“taxi to holding point runway 36 via L, G”).
 
 **Taking off again**: after landing, once you have stopped (on the apron if you started from the parking area), that airport
 becomes the departure of the next flight: the flight plan is recalculated and the radio is ready for a new clearance.
@@ -244,10 +246,12 @@ The site needs no build step: it is made of static files.
 | `dati/piemonte-vie.js` | motorways, main and local roads, village streets, railways, rivers and large canals (generated) | no |
 | `dati/piemonte-abitati.js` | residential and industrial areas and the density of real buildings in 100 m squares (generated) | no |
 | `dati/piemonte-radio.js` | the real VORs and airport radio frequencies (generated) | no |
+| `dati/piemonte-rullaggio.js` | the real taxiways and aprons of 18 airports (generated) | no |
 | `dati/piemonte-monumenti.js` | position and orientation of the monuments | yes |
 | `dati/aereo.js` | the aircraft data: weight, engine, fuel, wing, aerodynamic coefficients, landing gear | yes, to experiment |
 | `strumenti/genera-piemonte.js` | the script that downloads the real data and creates the Piedmont files | |
 | `strumenti/genera-radio.js` | the script that creates the list of real VORs and airport frequencies | |
+| `strumenti/genera-rullaggio.js` | the script that extracts the taxiways and aprons from OpenStreetMap | |
 | `strumenti/leggi-pbf.js` | a small reader for OpenStreetMap `.osm.pbf` files, used by the generator | |
 | `js/lingua.js` | Italian / English: language choice and translation of the page | |
 | `js/terreno.js` | computes the terrain height and builds the mesh that follows the aircraft | |
@@ -258,6 +262,7 @@ The site needs no build step: it is made of static files.
 | `js/notte.js` | time of day: sky and light colours, runway, town and landing lights, stars | |
 | `js/strumenti.js` | PFD, turn coordinator, fuel and trim indicators, MFD and the map | |
 | `js/radio.js` | radio navigation: VOR, DME and ILS, the NAV1 receiver | |
+| `js/rullaggio.js` | taxiways: network, shortest route from the apron to the holding point, drawing | |
 | `js/atc.js` | radio communications with the tower (speech synthesis, menu of answers) | |
 | `js/monumenti.js` | the 3D models of the monuments | |
 | `js/piano.js` | flight plan to the destination and arrival runway information | |
@@ -307,7 +312,7 @@ and runway, destination, terrain colours by height, and add or correct airports.
 **Data sources** (to be credited if the project is shown or published):
 - airports, runways, VORs and radio frequencies: [OurAirports](https://ourairports.com/data/), public domain;
 - lakes and towns: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, ODbL licence;
-- roads, railways and rivers: © OpenStreetMap contributors (ODbL), from the north-west extract by [Geofabrik](https://download.geofabrik.de/europe/italy.html);
+- roads, railways, rivers and taxiways: © OpenStreetMap contributors (ODbL), from the north-west extract by [Geofabrik](https://download.geofabrik.de/europe/italy.html);
 - terrain heights: [Mapzen Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (SRTM, GMTED and others).
 
 Peaks come out about 150–250 m lower than in reality (Monviso is ~3650 m instead of 3841),
@@ -581,8 +586,10 @@ Sotto 600–700 ft/min di discesa al contatto il carrello resiste.
 Il pulsante **Prova l'atterraggio** del briefing ti mette già in finale sulla destinazione.
 
 **Rullaggio**: nel briefing scegli *Partenza: dal parcheggio*. Parti dal piazzale; chiedi di rullare (T), segui le linee
-gialle e la rotta magenta fino al punto attesa, poi chiama la torre: entri in pista, la risali fino alla testata, ti giri
-e decolli. A terra resta sotto i 15 nodi.
+gialle e la rotta magenta fino al punto attesa, poi chiama la torre: ti allinei e decolli (oppure, se la via entra a metà
+pista, la risali fino alla testata e ti giri). A terra resta sotto i 15 nodi.
+In 18 aeroporti italiani del mondo Piemonte (Caselle, Malpensa, Linate, Cuneo, Aosta, Genova…) piazzali e vie di
+rullaggio sono quelli veri di OpenStreetMap, e l'autorizzazione li nomina (“taxi to holding point runway 36 via L, G”).
 
 **Ripartire**: dopo l'atterraggio, quando sei fermo (sul piazzale, se eri partito dal parcheggio), quell'aeroporto diventa la
 partenza del volo successivo: il piano di volo viene ricalcolato e la radio è pronta per una nuova autorizzazione.
@@ -693,10 +700,12 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `dati/piemonte-vie.js` | autostrade, strade statali, provinciali, comunali e vie dei paesi, ferrovie, fiumi e grandi canali (generato) | no |
 | `dati/piemonte-abitati.js` | aree residenziali e industriali e densità degli edifici veri in quadrati di 100 m (generato) | no |
 | `dati/piemonte-radio.js` | i VOR veri e le frequenze radio degli aeroporti (generato) | no |
+| `dati/piemonte-rullaggio.js` | le vie di rullaggio e i piazzali veri di 18 aeroporti (generato) | no |
 | `dati/piemonte-monumenti.js` | posizione e orientamento dei monumenti | sì |
 | `dati/aereo.js` | i dati dell'aereo: peso, motore, carburante, ala, coefficienti aerodinamici, carrello | sì, per sperimentare |
 | `strumenti/genera-piemonte.js` | lo script che scarica i dati reali e crea i file del Piemonte | |
 | `strumenti/genera-radio.js` | lo script che crea l'elenco dei VOR veri e delle frequenze degli aeroporti | |
+| `strumenti/genera-rullaggio.js` | lo script che estrae vie di rullaggio e piazzali da OpenStreetMap | |
 | `strumenti/leggi-pbf.js` | piccolo lettore dei file `.osm.pbf` di OpenStreetMap, usato dal generatore | |
 | `js/lingua.js` | italiano / inglese: scelta della lingua e traduzione della pagina | |
 | `js/terreno.js` | calcola l'altezza del terreno e costruisce la mesh che segue l'aereo | |
@@ -707,6 +716,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `js/notte.js` | ora del volo: colori di cielo e luce, luci di piste e città, faro di atterraggio, stelle | |
 | `js/strumenti.js` | il PFD, virosbandometro, carburante e trim, l'MFD e la mappa | |
 | `js/radio.js` | radionavigazione: VOR, DME e ILS, il ricevitore NAV1 | |
+| `js/rullaggio.js` | vie di rullaggio: rete, percorso più breve dal piazzale al punto attesa, disegno | |
 | `js/atc.js` | comunicazioni radio con la torre (sintesi vocale, menu delle risposte) | |
 | `js/monumenti.js` | i modelli 3D dei monumenti | |
 | `js/piano.js` | piano di volo verso la destinazione e informazioni sulla pista di arrivo | |
@@ -754,7 +764,7 @@ e pista di partenza, destinazione, colori del terreno per quota, e aggiungere o 
 **Fonti dei dati** (da citare se il progetto viene mostrato o pubblicato):
 - aeroporti, piste, VOR e frequenze radio: [OurAirports](https://ourairports.com/data/), pubblico dominio;
 - laghi e città: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, licenza ODbL;
-- strade, ferrovie e fiumi: © OpenStreetMap contributors (ODbL), dall'estratto del Nord-Ovest di [Geofabrik](https://download.geofabrik.de/europe/italy.html);
+- strade, ferrovie, fiumi e vie di rullaggio: © OpenStreetMap contributors (ODbL), dall'estratto del Nord-Ovest di [Geofabrik](https://download.geofabrik.de/europe/italy.html);
 - quote del terreno: [Mapzen Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (SRTM, GMTED e altri).
 
 Le vette risultano circa 150–250 m più basse del vero (il Monviso fa ~3650 m invece di 3841),

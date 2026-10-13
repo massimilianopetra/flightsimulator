@@ -339,12 +339,16 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 </ol>
 
 <h3>Partire dal parcheggio: il rullaggio</h3>
-<p>Se nel briefing scegli <b>Partenza: dal parcheggio</b>, sei fermo sul piazzale accanto alla pista principale, con il motore al minimo. Sul terreno ci sono le <b>linee gialle</b>: la linea di guida, il centro del raccordo e il <b>punto attesa</b> (due linee piene e due tratteggiate) prima della pista. Segui la <b>linea gialla</b> a terra; sulla mappa (scala 0,5 NM) lo stesso percorso è disegnato in <span class="c-mag">magenta</span>.</p>
+<p>Se nel briefing scegli <b>Partenza: dal parcheggio</b>, sei fermo sul piazzale con il motore al minimo. Nel mondo Piemonte, in 18 aeroporti italiani (Caselle, Malpensa, Linate, Cuneo, Aosta, Bresso, Genova…), piazzali e vie di rullaggio sono quelli <b>veri</b>, presi da OpenStreetMap con i loro nomi (A, B, L, G…); negli altri aeroporti c'è un piazzale semplice accanto alla pista principale. Sul terreno ci sono le <b>linee gialle</b>: la linea di guida, il centro del raccordo e il <b>punto attesa</b> (due linee piene e due tratteggiate) prima della pista. Segui la <b>linea gialla</b> a terra; sulla mappa (scala 0,5 NM) lo stesso percorso è disegnato in <span class="c-mag">magenta</span>.</p>
+<figure>
+  <img src="istruzioni/rullaggio.jpg" alt="Il Cessna sul piazzale di Torino-Caselle, con le vie di rullaggio vere e le loro linee gialle verso la pista" loading="lazy">
+  <figcaption>Sul piazzale di Torino-Caselle: le vie di rullaggio vere, con la linea gialla al centro.</figcaption>
+</figure>
 <ol class="passi">
-  <li>Chiedi di rullare alla torre: <kbd>T</kbd>, “request taxi”. La torre risponde “taxi to holding point runway …” con il QNH: ripetilo.</li>
+  <li>Chiedi di rullare alla torre: <kbd>T</kbd>, “request taxi”. La torre (o il Ground) risponde “taxi to holding point runway … via L, G” con le vie da seguire e il QNH: ripetilo.</li>
   <li>Rulla piano (sotto i 15 nodi, altrimenti compare <b>RULLA PIÙ PIANO</b>): un filo di manetta, sterza con <kbd>Q</kbd>/<kbd>E</kbd>, frena con <kbd>B</kbd>.</li>
   <li>Fermati al <b>punto attesa</b>, prima della pista, e chiama: “holding point runway …, ready for departure”.</li>
-  <li>La torre risponde “enter and <b>backtrack</b> runway …, line up, cleared for take-off”: entri in pista e la risali fino alla testata (il raccordo arriva a metà pista), ti giri e decolli.</li>
+  <li>Se una via arriva alla testata la torre risponde “<b>line up</b> runway …, cleared for take-off”: entri in pista, ti allinei e decolli. Se invece la via entra a metà pista risponde “enter and <b>backtrack</b> runway …, line up, cleared for take-off”: entri in pista, la risali fino alla testata, ti giri e decolli.</li>
 </ol>
 <p>Dopo l'atterraggio la torre ti dice di liberare la pista e di rullare al piazzale: quando sei fermo sul piazzale il volo è concluso e puoi preparare il successivo. Di notte raccordo e piazzale hanno le luci blu.</p>
 <!-- ================================================================ -->
@@ -451,8 +455,8 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   <thead><tr><th>Quando</th><th>Chi</th><th>Cosa si dice</th></tr></thead>
   <tbody>
     <tr><td>Al parcheggio (se parti da lì)</td><td>Tu</td><td>chiedi di rullare a Terra (“Ground”) o alla torre: “… at the apron, request taxi”</td></tr>
-    <tr><td></td><td>Terra</td><td>“taxi to holding point runway …”, QNH e, se c'è il Ground, “at holding point contact … Tower” con la frequenza; tu ripeti</td></tr>
-    <tr><td>Al punto attesa</td><td>Tu</td><td>sulla frequenza della torre: “holding point runway …, ready for departure”; la torre risponde “enter and backtrack…, cleared for take-off”</td></tr>
+    <tr><td></td><td>Terra</td><td>“taxi to holding point runway … via …”, QNH e, se c'è il Ground, “at holding point contact … Tower” con la frequenza; tu ripeti</td></tr>
+    <tr><td>Al punto attesa</td><td>Tu</td><td>sulla frequenza della torre: “holding point runway …, ready for departure”; la torre risponde “line up…” (o “enter and backtrack…” se la via entra a metà pista), “cleared for take-off”</td></tr>
     <tr><td>Sulla pista, prima di partire (partenza in pista)</td><td>Tu</td><td>chiedi di partire: “… ready for departure”</td></tr>
     <tr><td></td><td>Torre</td><td>pista, vento, QNH e “cleared for take-off” (autorizzato al decollo); tu ripeti</td></tr>
     <tr><td>A 5 NM dall'aeroporto</td><td>Torre</td><td>“leaving the control zone, frequency change approved” (stai lasciando la zona di controllo); tu saluti</td></tr>
@@ -531,7 +535,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Scorciatoie da aggiungere all'indirizzo della pagina: <code>?lang=it</code> o <code>?lang=en</code> scelgono la lingua; <code>?mappa=valle</code> o <code>?mappa=piemonte</code> scelgono il mondo; <code>#salta</code> salta il briefing, <code>#finale</code> parte in finale, <code>#vista=1</code> parte dalla cabina.</p>
 
 <footer>
-  <p>Dati reali: aeroporti e VOR © OurAirports (pubblico dominio) · laghi, città, aree urbane, strade, ferrovie e fiumi © OpenStreetMap contributors (ODbL) · rilievo Mapzen Terrain Tiles (SRTM). Gli ILS e le loro frequenze sono simulati.</p>
+  <p>Dati reali: aeroporti e VOR © OurAirports (pubblico dominio) · laghi, città, aree urbane, strade, ferrovie, fiumi e vie di rullaggio © OpenStreetMap contributors (ODbL) · rilievo Mapzen Terrain Tiles (SRTM). Gli ILS e le loro frequenze sono simulati.</p>
   <p><b>Simulatore di Volo</b> · © 2026 Massimiliano Petra · <a href="https://github.com/massimilianopetra/flightsimulator">github.com/massimilianopetra/flightsimulator</a></p>
   <p>Software libero con licenza GPL-3.0-or-later. Questo simulatore è un gioco: non usarlo per la navigazione reale.</p>
   <a class="torna" href="index.html?lang=it">Apri il simulatore</a>

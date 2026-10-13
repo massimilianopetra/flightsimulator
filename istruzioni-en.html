@@ -339,12 +339,16 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 </ol>
 
 <h3>Starting from the parking area: taxiing</h3>
-<p>If you choose <b>Start: from the parking area</b> in the briefing, you are stopped on the apron next to the main runway, with the engine idling. On the ground there are <b>yellow lines</b>: the lead-in line, the taxiway centre line and the <b>holding point</b> (two solid and two dashed lines) before the runway. Follow the <b>yellow line</b> on the ground; on the map (0.5 NM scale) the same route is drawn in <span class="c-mag">magenta</span>.</p>
+<p>If you choose <b>Start: from the parking area</b> in the briefing, you are stopped on the apron with the engine idling. In the Piedmont world, at 18 Italian airports (Caselle, Malpensa, Linate, Cuneo, Aosta, Bresso, Genoa…), aprons and taxiways are the <b>real</b> ones, taken from OpenStreetMap with their names (A, B, L, G…); at the other airports there is a simple apron next to the main runway. On the ground there are <b>yellow lines</b>: the lead-in line, the taxiway centre line and the <b>holding point</b> (two solid and two dashed lines) before the runway. Follow the <b>yellow line</b> on the ground; on the map (0.5 NM scale) the same route is drawn in <span class="c-mag">magenta</span>.</p>
+<figure>
+  <img src="istruzioni/en/rullaggio.jpg" alt="The Cessna on the apron at Turin-Caselle, with the real taxiways and their yellow lines leading to the runway" loading="lazy">
+  <figcaption>On the apron at Turin-Caselle: the real taxiways, with the yellow centre line.</figcaption>
+</figure>
 <ol class="passi">
-  <li>Ask the tower for taxi: <kbd>T</kbd>, “request taxi”. The tower answers “taxi to holding point runway …” with the QNH: read it back.</li>
+  <li>Ask the tower for taxi: <kbd>T</kbd>, “request taxi”. The tower (or Ground) answers “taxi to holding point runway … via L, G” with the taxiways to follow and the QNH: read it back.</li>
   <li>Taxi slowly (below 15 knots, otherwise <b>TAXI SLOWER</b> appears): a little throttle, steer with <kbd>Q</kbd>/<kbd>E</kbd>, brake with <kbd>B</kbd>.</li>
   <li>Stop at the <b>holding point</b>, before the runway, and call: “holding point runway …, ready for departure”.</li>
-  <li>The tower answers “enter and <b>backtrack</b> runway …, line up, cleared for take-off”: enter the runway and taxi back along it to the threshold (the taxiway joins the runway half way), turn around and take off.</li>
+  <li>If a taxiway reaches the threshold the tower answers “<b>line up</b> runway …, cleared for take-off”: enter the runway, line up and take off. If the taxiway joins the runway half way it answers “enter and <b>backtrack</b> runway …, line up, cleared for take-off”: enter the runway, taxi back along it to the threshold, turn around and take off.</li>
 </ol>
 <p>After landing the tower tells you to vacate the runway and taxi to the apron: once you have stopped on the apron the flight is over and you can prepare the next one. At night the taxiway and the apron have blue lights.</p>
 <!-- ================================================================ -->
@@ -451,8 +455,8 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   <thead><tr><th>When</th><th>Who</th><th>What is said</th></tr></thead>
   <tbody>
     <tr><td>At the parking area (if you start there)</td><td>You</td><td>ask Ground (or the tower) for taxi: “… at the apron, request taxi”</td></tr>
-    <tr><td></td><td>Ground</td><td>“taxi to holding point runway …”, QNH and, where there is a Ground, “at holding point contact … Tower” with the frequency; you read it back</td></tr>
-    <tr><td>At the holding point</td><td>You</td><td>on the tower frequency: “holding point runway …, ready for departure”; the tower answers “enter and backtrack…, cleared for take-off”</td></tr>
+    <tr><td></td><td>Ground</td><td>“taxi to holding point runway … via …”, QNH and, where there is a Ground, “at holding point contact … Tower” with the frequency; you read it back</td></tr>
+    <tr><td>At the holding point</td><td>You</td><td>on the tower frequency: “holding point runway …, ready for departure”; the tower answers “line up…” (or “enter and backtrack…” if the taxiway joins half way), “cleared for take-off”</td></tr>
     <tr><td>On the runway, before leaving (runway start)</td><td>You</td><td>ask to depart: “… ready for departure”</td></tr>
     <tr><td></td><td>Tower</td><td>runway, wind, QNH and “cleared for take-off”; you read it back</td></tr>
     <tr><td>5 NM from the airport</td><td>Tower</td><td>“leaving the control zone, frequency change approved”; you say goodbye</td></tr>
@@ -531,7 +535,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Shortcuts to add to the page address: <code>?lang=en</code> or <code>?lang=it</code> choose the language; <code>?mappa=valle</code> or <code>?mappa=piemonte</code> choose the world; <code>#salta</code> skips the briefing, <code>#finale</code> starts on final, <code>#vista=1</code> starts in the cockpit.</p>
 
 <footer>
-  <p>Real data: airports and VORs © OurAirports (public domain) · lakes, towns, urban areas, roads, railways and rivers © OpenStreetMap contributors (ODbL) · terrain Mapzen Terrain Tiles (SRTM). ILS stations and their frequencies are simulated.</p>
+  <p>Real data: airports and VORs © OurAirports (public domain) · lakes, towns, urban areas, roads, railways, rivers and taxiways © OpenStreetMap contributors (ODbL) · terrain Mapzen Terrain Tiles (SRTM). ILS stations and their frequencies are simulated.</p>
   <p><b>Flight Simulator · Simulatore di Volo</b> · © 2026 Massimiliano Petra · <a href="https://github.com/massimilianopetra/flightsimulator">github.com/massimilianopetra/flightsimulator</a></p>
   <p>Free software under the GPL-3.0-or-later licence. This simulator is a game: do not use it for real navigation.</p>
   <a class="torna" href="index.html?lang=en">Open the simulator</a>
