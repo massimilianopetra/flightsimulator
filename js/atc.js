@@ -149,6 +149,8 @@ SIM.creaATC=function({A,T,met,audio,radio}){
     ctx=c;att=null;ripetuto=false;chiamato=false;uscitaFatta=false;arrivoAvvisato=false;emergenza=false;maydayFatto=false;benvenuto=false;ultimoATC=null;
     if(c.finale&&c.fin){staz=stazioni.get(c.fin.ap);fase='arrivo';
       avvisa(L(`In finale: chiama ${staz.nome} per l'atterraggio (T)`,`On final: call ${staz.nome} for landing (T)`));}
+    else if(c.part&&c.parcheggio){staz=stazioni.get(c.part.ap);fase='parcheggio';
+      avvisa(L(`Chiedi a ${staz.nome} di rullare (T)`,`Ask ${staz.nome} for taxi (T)`));}
     else if(c.part){staz=stazioni.get(c.part.ap);fase='pronto';
       avvisa(L(`Chiedi l'autorizzazione al decollo a ${staz.nome} (T)`,`Ask ${staz.nome} for take-off clearance (T)`));}
     else{staz=null;fase='rotta';avvisa('');}
@@ -196,7 +198,9 @@ SIM.creaATC=function({A,T,met,audio,radio}){
       op.push(...att.map(o=>({f:o.f,it:o.it,verso:staz,fai:()=>{avvisa('');pilotaDice(o.f,o.it);o.fai();}})));
     }else if(emergenza&&!maydayFatto){
       op.push(mayday());
-    }else if(fase==='pronto'&&staz&&st.aTerra){
+    }else if(fase==='parcheggio'&&staz&&st.aTerra){
+      op.push(Object.assign(richiestaRullaggio(),{verso:staz}));
+    }else if((fase==='pronto'||fase==='rullaggio')&&staz&&st.aTerra){
       op.push(Object.assign(richiestaDecollo(),{verso:staz}));
     }else if(fase==='arrivo'&&staz){
       op.push(Object.assign(chiamataFinale(),{verso:staz}));
@@ -208,7 +212,56 @@ SIM.creaATC=function({A,T,met,audio,radio}){
     if(ultimoATC&&staz)op.push(Object.assign(ripeti(),{verso:staz}));
     return op.slice(0,5);
   }
+  // al parcheggio: richiesta di rullaggio fino al punto attesa
+  function richiestaRullaggio(){
+    const te=ctx.part.te,dest=ctx.arr&&ctx.arr.ap!==ctx.part.ap?ctx.arr.ap:null;
+    const f=frase(nomeStaz(),', ',CS,', Cessna ',{d:'172',s:'one seven two'},' at the apron',
+      dest?', VFR to '+dest.nome.replace(/-/g,' '):', VFR local flight',', request taxi');
+    const it=`${staz.nome}, ${REG}, Cessna 172 al piazzale, VFR ${dest?'per '+dest.nome:'locale'}, chiediamo di rullare.`;
+    const dopo=()=>{fase='rullaggio';avvisa(L('Segui la linea magenta fino al punto attesa (linea gialla), poi chiama la torre (T)',
+      'Follow the magenta line to the holding point (yellow line), then call the tower (T)'));};
+    return {f,it,fai:()=>{
+      pilotaDice(f,it);attendi(1200);
+      const altra=te.pista.testate.find(t=>t!==te), sbPista=!!altra&&Math.random()<0.5;
+      if(staz.torre){
+        atcDice(frase(CSB,', taxi to holding point ',pistaF(te),', ',qnhF()),`${CSB.d}, rullate al punto attesa pista ${te.nome}, QNH ${QNH}.`,
+          readback(frase('Taxi to holding point ',pistaF(te),', ',qnhF(),', ',CSB),`Rulliamo al punto attesa pista ${te.nome}, QNH ${QNH}, ${CSB.d}.`,
+            sbPista?frase('Taxi to holding point ',pistaF(altra),', ',qnhF(),', ',CSB):frase('Taxi to holding point ',pistaF(te),', ',qnhF(QNH+10),', ',CSB),
+            sbPista?`Rulliamo al punto attesa pista ${altra.nome}, QNH ${QNH}, ${CSB.d}.`:`Rulliamo al punto attesa pista ${te.nome}, QNH ${QNH+10}, ${CSB.d}.`,
+            frase(CSB,', negative, holding point ',pistaF(te),', ',qnhF()),`${CSB.d}, negativo, punto attesa pista ${te.nome}, QNH ${QNH}.`,dopo));
+      }else{
+        atcDice(frase(CSB,', ',nomeStaz(),', ',pistaF(te),' in use, ',ventoF(),', ',qnhF(),', no reported traffic'),
+          `${CSB.d}, ${staz.nome}, pista in uso ${te.nome}, ${ventoIt()}, QNH ${QNH}, nessun traffico segnalato.`,
+          readback(frase(pistaF(te),', ',qnhF(),', taxiing to holding point, ',CSB),`Pista ${te.nome}, QNH ${QNH}, rulliamo al punto attesa, ${CSB.d}.`,null,null,null,null,dopo));
+      }
+    }};
+  }
+  // al punto attesa (dopo il rullaggio): si entra in pista, la si risale fino alla testata (backtrack) e si decolla
+  function decolloDaAttesa(){
+    const te=ctx.part.te;
+    const f=frase(CSB,', holding point ',pistaF(te),', ready for departure');
+    const it=`${CSB.d}, al punto attesa pista ${te.nome}, pronti per la partenza.`;
+    return {f,it,fai:()=>{
+      pilotaDice(f,it);attendi(1100);
+      const a=ctx.attesa, lontano=a&&Math.hypot(a.x-st.pos.x,a.z-st.pos.z)>80;
+      if(staz.torre&&lontano){atcDice(frase(CSB,', negative, report at holding point ',pistaF(te)),`${CSB.d}, negativo, riportate al punto attesa pista ${te.nome}.`);return;}
+      const altra=te.pista.testate.find(t=>t!==te);
+      if(staz.torre){
+        atcDice(frase(CSB,', enter and backtrack ',pistaF(te),', line up, ',ventoF(),', cleared for take-off'),
+          `${CSB.d}, entrate e risalite la pista ${te.nome}, allineatevi, ${ventoIt()}, autorizzati al decollo.`,
+          readback(frase('Backtrack and line up ',pistaF(te),', cleared for take-off, ',CSB),`Risaliamo e ci allineiamo pista ${te.nome}, autorizzati al decollo, ${CSB.d}.`,
+            altra?frase('Backtrack and line up ',pistaF(altra),', cleared for take-off, ',CSB):null,altra?`Risaliamo e ci allineiamo pista ${altra.nome}, autorizzati al decollo, ${CSB.d}.`:null,
+            frase(CSB,', negative, ',pistaF(te),', I say again, backtrack ',pistaF(te),', cleared for take-off'),`${CSB.d}, negativo, pista ${te.nome}, ripeto, risalite la pista ${te.nome}, autorizzati al decollo.`,
+            ()=>{fase='autorizzato';avvisa(L(`Risali la pista fino alla testata ${te.nome}, girati e decolla`,`Backtrack to the runway ${te.nome} threshold, turn around and take off`));}));
+      }else{
+        atcDice(frase(CSB,', ',pistaF(te),' in use, ',ventoF(),', no reported traffic, report airborne'),
+          `${CSB.d}, pista in uso ${te.nome}, ${ventoIt()}, nessun traffico segnalato, riportate in volo.`,
+          readback(frase('Backtracking ',pistaF(te),', wilco, ',CSB),`Risaliamo la pista ${te.nome}, eseguiremo, ${CSB.d}.`,null,null,null,null,()=>{fase='autorizzato';}));
+      }
+    }};
+  }
   function richiestaDecollo(){
+    if(ctx.parcheggio) return decolloDaAttesa();
     const te=ctx.part.te,dest=ctx.arr&&ctx.arr.ap!==ctx.part.ap?ctx.arr.ap:null;
     const f=frase(nomeStaz(),', ',CS,', Cessna ',{d:'172',s:'one seven two'},' at the holding point ',pistaF(te),
       dest?', VFR to '+dest.nome.replace(/-/g,' '):', VFR local flight',', ready for departure');
@@ -402,8 +455,8 @@ SIM.creaATC=function({A,T,met,audio,radio}){
         benvenuto=true;
         if(staz){
           const citta=staz.ap.nome.replace(/-.*$/,'');
-          atcDice(frase(CSB,', vacate the runway at the next taxiway, welcome to ',citta),`${CSB.d}, liberate la pista al prossimo raccordo, benvenuti a ${citta}.`,
-            readback(frase('Vacating the runway, ',CSB),`Liberiamo la pista, ${CSB.d}.`,null,null,null,null,()=>{}));
+          atcDice(frase(CSB,', vacate the runway at the next taxiway, taxi to the apron, welcome to ',citta),`${CSB.d}, liberate la pista al prossimo raccordo, rullate al piazzale, benvenuti a ${citta}.`,
+            readback(frase('Vacating the runway, taxiing to the apron, ',CSB),`Liberiamo la pista, rulliamo al piazzale, ${CSB.d}.`,null,null,null,null,()=>{}));
         }
       }
     },
@@ -412,12 +465,12 @@ SIM.creaATC=function({A,T,met,audio,radio}){
       if(e.tipo==='incidente'){zitto();chiudiMenu();avvisa('');return;}
       if(e.tipo==='senzaCarburante'){emergenza=true;avvisa(L('Motore spento: dichiara emergenza (T)','Engine out: declare an emergency (T)'));return;}
       if(e.tipo==='decollo'){
-        if(staz&&staz.torre&&fase==='pronto'){
+        if(staz&&staz.torre&&(fase==='pronto'||fase==='parcheggio'||fase==='rullaggio')){
           atcDice(frase(CSB,', ',nomeStaz(),', you are airborne without take-off clearance, report leaving the control zone'),
             `${CSB.d}, ${staz.nome}, siete decollati senza autorizzazione, riportate quando lasciate la zona di controllo.`,
             readback(frase('Wilco, ',CSB),`Eseguiremo, ${CSB.d}.`,null,null,null,null,()=>{}));
         }
-        if(fase==='pronto'||fase==='autorizzato')fase='partenza';
+        if(fase==='pronto'||fase==='parcheggio'||fase==='rullaggio'||fase==='autorizzato')fase='partenza';
         avvisa('');
       }
       if(e.tipo==='atterraggio'){
