@@ -34,6 +34,8 @@ h2{font-size:24px;margin:56px 0 12px;padding-top:12px;border-top:1px solid var(-
 h3{font-size:18px;margin:28px 0 8px;color:var(--cyan)}
 p,li{max-width:72ch}
 .sotto{color:var(--dim);margin:0}
+.galleria{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin:18px 0}
+.galleria figure{margin:0}
 .lingua{display:inline-block;margin:14px 0 0 14px;font-weight:700}
 .torna{display:inline-block;margin-top:14px;padding:8px 14px;border:1px solid var(--cyan);border-radius:5px;text-decoration:none;font-weight:700}
 figure{margin:18px 0;background:var(--carta);border:1px solid var(--riga);border-radius:8px;padding:10px}
@@ -466,6 +468,21 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   <li><b>Piedmont</b>: real terrain (250 m grid), 32 airports with their real runways, lakes, towns, roads, railways, rivers, villages with buildings and the real VORs. It covers Piedmont plus parts of Lombardy, Liguria, Aosta Valley, Switzerland and France (about 219 × 287 km). The main monuments are there too, as visual landmarks: Mole Antonelliana, Superga, the Lingotto with its rooftop test track, the two Turin skyscrapers, the Palace of Venaria, Stupinigi, the Sacra di San Michele, Vicoforte, San Gaudenzio in Novara and Oropa. They are simplified models, marked on the map with a gold triangle.</li>
   <li><b>Valle Azzurra</b>: an invented world, small and simple. Everything is in the file <code>dati/mappa.js</code>, written to be edited by hand: mountains, lakes, airports and runways, towns, woods, VORs, weather and starting point. The comments in the file are in Italian.</li>
 </ul>
+<h3>The monuments</h3>
+<p>Seen from the cockpit, as they appear in the game.</p>
+<div class="galleria">
+  <figure><img src="istruzioni/monumenti/mole.jpg" alt="Mole Antonelliana" loading="lazy"><figcaption><b>Mole Antonelliana</b> · Turin</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/superga.jpg" alt="Superga Basilica" loading="lazy"><figcaption><b>Superga Basilica</b> · on the Turin hill</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/lingotto.jpg" alt="Lingotto" loading="lazy"><figcaption><b>Lingotto</b> · with the rooftop track and the Bubble</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/regione.jpg" alt="Piedmont Region Tower" loading="lazy"><figcaption><b>Piedmont Region Tower</b> · 209 m</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/intesa.jpg" alt="Intesa Sanpaolo Tower" loading="lazy"><figcaption><b>Intesa Sanpaolo Tower</b> · 166 m</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/venaria.jpg" alt="Palace of Venaria" loading="lazy"><figcaption><b>Palace of Venaria</b> · simplified model</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/stupinigi.jpg" alt="Stupinigi Hunting Lodge" loading="lazy"><figcaption><b>Stupinigi Hunting Lodge</b> · with the stag on the dome</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/sacra.jpg" alt="Sacra di San Michele Abbey" loading="lazy"><figcaption><b>Sacra di San Michele Abbey</b> · on Mount Pirchiriano</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/vicoforte.jpg" alt="Sanctuary of Vicoforte" loading="lazy"><figcaption><b>Sanctuary of Vicoforte</b> · the great elliptical dome</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/gaudenzio.jpg" alt="Basilica of San Gaudenzio" loading="lazy"><figcaption><b>Basilica of San Gaudenzio</b> · Novara, 121 m</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/oropa.jpg" alt="Sanctuary of Oropa" loading="lazy"><figcaption><b>Sanctuary of Oropa</b> · Biella</figcaption></figure>
+</div>
 <p>Shortcuts to add to the page address: <code>?lang=en</code> or <code>?lang=it</code> choose the language; <code>?mappa=valle</code> or <code>?mappa=piemonte</code> choose the world; <code>#salta</code> skips the briefing, <code>#finale</code> starts on final, <code>#vista=1</code> starts in the cockpit.</p>
 
 <footer>

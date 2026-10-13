@@ -34,6 +34,8 @@ h2{font-size:24px;margin:56px 0 12px;padding-top:12px;border-top:1px solid var(-
 h3{font-size:18px;margin:28px 0 8px;color:var(--cyan)}
 p,li{max-width:72ch}
 .sotto{color:var(--dim);margin:0}
+.galleria{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin:18px 0}
+.galleria figure{margin:0}
 .lingua{display:inline-block;margin:14px 0 0 14px;font-weight:700}
 .torna{display:inline-block;margin-top:14px;padding:8px 14px;border:1px solid var(--cyan);border-radius:5px;text-decoration:none;font-weight:700}
 figure{margin:18px 0;background:var(--carta);border:1px solid var(--riga);border-radius:8px;padding:10px}
@@ -466,6 +468,21 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   <li><b>Piemonte</b>: il rilievo vero (griglia di 250 m), 32 aeroporti con le piste vere, laghi, città, strade, ferrovie, fiumi, paesi con gli edifici e i VOR veri. Copre il Piemonte con un po' di Lombardia, Liguria, Valle d'Aosta, Svizzera e Francia (circa 219 × 287 km). Ci sono anche i principali monumenti, come riferimenti a vista: la Mole Antonelliana, Superga, il Lingotto con la pista sul tetto, i due grattacieli di Torino, la Reggia di Venaria, Stupinigi, la Sacra di San Michele, Vicoforte, San Gaudenzio a Novara e Oropa. Sono modelli semplificati e sulla mappa sono segnati con un triangolo dorato.</li>
   <li><b>Valle Azzurra</b>: un mondo inventato, piccolo e semplice. Tutto è nel file <code>dati/mappa.js</code>, scritto per essere modificato a mano: montagne, laghi, aeroporti e piste, città, boschi, VOR, meteo e punto di partenza.</li>
 </ul>
+<h3>I monumenti</h3>
+<p>Visti dalla cabina, come appaiono nel gioco.</p>
+<div class="galleria">
+  <figure><img src="istruzioni/monumenti/mole.jpg" alt="Mole Antonelliana" loading="lazy"><figcaption><b>Mole Antonelliana</b> · Torino</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/superga.jpg" alt="Basilica di Superga" loading="lazy"><figcaption><b>Basilica di Superga</b> · sulla collina di Torino</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/lingotto.jpg" alt="Lingotto" loading="lazy"><figcaption><b>Lingotto</b> · con la pista sul tetto e la Bolla</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/regione.jpg" alt="Grattacielo della Regione" loading="lazy"><figcaption><b>Grattacielo della Regione</b> · 209 m</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/intesa.jpg" alt="Grattacielo Intesa Sanpaolo" loading="lazy"><figcaption><b>Grattacielo Intesa Sanpaolo</b> · 166 m</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/venaria.jpg" alt="Reggia di Venaria" loading="lazy"><figcaption><b>Reggia di Venaria</b> · modello semplificato</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/stupinigi.jpg" alt="Palazzina di Stupinigi" loading="lazy"><figcaption><b>Palazzina di Stupinigi</b> · con il cervo sulla cupola</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/sacra.jpg" alt="Sacra di San Michele" loading="lazy"><figcaption><b>Sacra di San Michele</b> · sul Pirchiriano</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/vicoforte.jpg" alt="Santuario di Vicoforte" loading="lazy"><figcaption><b>Santuario di Vicoforte</b> · la grande cupola ellittica</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/gaudenzio.jpg" alt="Basilica di San Gaudenzio" loading="lazy"><figcaption><b>Basilica di San Gaudenzio</b> · Novara, 121 m</figcaption></figure>
+  <figure><img src="istruzioni/monumenti/oropa.jpg" alt="Santuario di Oropa" loading="lazy"><figcaption><b>Santuario di Oropa</b> · Biella</figcaption></figure>
+</div>
 <p>Scorciatoie da aggiungere all'indirizzo della pagina: <code>?lang=it</code> o <code>?lang=en</code> scelgono la lingua; <code>?mappa=valle</code> o <code>?mappa=piemonte</code> scelgono il mondo; <code>#salta</code> salta il briefing, <code>#finale</code> parte in finale, <code>#vista=1</code> parte dalla cabina.</p>
 
 <footer>
