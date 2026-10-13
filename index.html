@@ -86,6 +86,7 @@
         <div class="row"><span class="lbl">TRIM</span><span id="trim" class="val">0</span></div>
         <div class="row"><span class="lbl">G</span><span id="gload" class="val">1.0</span></div>
       </div>
+      <canvas id="aux" class="aux" aria-label="Virosbandometro, trim e carburante"></canvas>
       <div class="riga-cloche">
         <div class="cloche-ind" title="Posizione della cloche: in basso = tirata (cabra)"><i id="puntoCloche"></i></div>
         <span class="lbl">CLOCHE</span>
@@ -130,6 +131,14 @@
         <label>Aeroporto di partenza <select id="selAeroporto"></select></label>
         <label>Pista <select id="selPista"></select></label>
         <label>Destinazione <select id="selDestBrief"></select></label>
+        <label>Carburante
+          <select id="selCarb">
+            <option value="53">Pieno: 53 gal (circa 6 ore)</option>
+            <option value="26.5">Metà: 26,5 gal (circa 3 ore)</option>
+            <option value="8">Riserva: 8 gal (circa 55 minuti)</option>
+            <option value="2">Quasi vuoto: 2 gal (circa 15 minuti)</option>
+          </select>
+        </label>
       </div>
       <p id="briefTesto"></p>
       <p id="crediti" class="crediti" hidden>Dati reali: aeroporti © OurAirports (pubblico dominio) · laghi, città, aree urbane, strade, ferrovie e fiumi © OpenStreetMap contributors (ODbL) · rilievo Mapzen Terrain Tiles (SRTM).</p>
