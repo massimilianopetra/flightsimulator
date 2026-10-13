@@ -72,7 +72,7 @@ You can open a world directly from the address: `index.html?mappa=piemonte` or `
 
 In the briefing you also choose the **departure airport** (with its real code, e.g. LIMF Turin-Caselle,
 LIMZ Cuneo-Levaldigi, LIMC Milan-Malpensa), the **runway** (the one most into the wind is suggested),
-the **destination** and the **fuel** on board. The destination can be changed in flight from the map panel.
+the **destination**, the **time of day** (day, sunset or night: at night runways, towns and the landing light are lit) and the **fuel** on board. The destination can be changed in flight from the map panel.
 
 ## How to start
 
@@ -94,6 +94,7 @@ To work on it with VS Code the *Live Server* extension is fine too.
 | Z / X | trim nose up / nose down |
 | B or Space | brakes (hold) |
 | C | view: outside, cockpit, tower |
+| right mouse button (hold and drag) | look around in the cockpit, orbit the aircraft outside |
 | mouse wheel | cockpit zoom (to read the screens) |
 | N | next destination |
 | I | open or close the flight plan |
@@ -243,6 +244,7 @@ The site needs no build step: it is made of static files.
 | `js/fisica.js` | the flight physics (forces, moments, landing gear, stall, ground effect, fuel) | |
 | `js/cabina.js` | the 3D G1000-style cockpit: PFD and MFD screens, standby instruments, yokes, throttle | |
 | `js/mondo.js` | 3D graphics: sky, runways with markings, PAPI, hangars, trees, houses, aircraft | |
+| `js/notte.js` | time of day: sky and light colours, runway, town and landing lights, stars | |
 | `js/strumenti.js` | PFD, turn coordinator, fuel and trim indicators, MFD and the map | |
 | `js/radio.js` | radio navigation: VOR, DME and ILS, the NAV1 receiver | |
 | `js/atc.js` | radio communications with the tower (speech synthesis, menu of answers) | |
@@ -412,9 +414,7 @@ do not end up in the sea.
 ## Ideas for the next steps
 
 - More aircraft (a glider? a jet?): just another file like `dati/aereo.js`.
-- Night, with runway lights and town lights.
 - Missions: land at an airport within a time limit, multi-leg flights.
-- Look around in the cockpit with the mouse.
 
 ## Licence
 
@@ -488,7 +488,7 @@ Si può aprire direttamente un mondo dall'indirizzo: `index.html?mappa=piemonte`
 
 Nel briefing si scelgono anche l'**aeroporto di partenza** (con la sigla vera, es. LIMF Torino-Caselle,
 LIMZ Cuneo-Levaldigi, LIMC Milano-Malpensa), la **pista** (viene proposta quella più controvento),
-la **destinazione** e il **carburante** a bordo. La destinazione si può cambiare in volo dal menu nel
+la **destinazione**, l'**ora del volo** (giorno, tramonto o notte: di notte si accendono piste, città e faro di atterraggio) e il **carburante** a bordo. La destinazione si può cambiare in volo dal menu nel
 pannello della mappa.
 
 ## Come si avvia
@@ -512,6 +512,7 @@ Per lavorarci con VS Code va bene anche l'estensione *Live Server*.
 | Z / X | trim cabra / picchia |
 | B o Spazio | freni (tieni premuto) |
 | C | vista: esterna, cabina, torre |
+| tasto destro del mouse (tieni premuto e trascina) | guardarsi intorno in cabina, girare attorno all'aereo fuori |
 | rotellina del mouse | zoom in cabina (per leggere gli schermi) |
 | N | prossima destinazione |
 | I | apre o chiude il piano di volo |
@@ -663,6 +664,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `js/fisica.js` | la fisica del volo (forze, momenti, carrello, stallo, effetto suolo, carburante) | |
 | `js/cabina.js` | la cabina 3D in stile G1000: schermi PFD e MFD, strumenti di riserva, cloche, manetta | |
 | `js/mondo.js` | grafica 3D: cielo, piste con segnaletica, PAPI, hangar, alberi, case, aereo | |
+| `js/notte.js` | ora del volo: colori di cielo e luce, luci di piste e città, faro di atterraggio, stelle | |
 | `js/strumenti.js` | il PFD, virosbandometro, carburante e trim, l'MFD e la mappa | |
 | `js/radio.js` | radionavigazione: VOR, DME e ILS, il ricevitore NAV1 | |
 | `js/atc.js` | comunicazioni radio con la torre (sintesi vocale, menu delle risposte) | |
@@ -830,9 +832,7 @@ conviene ricontrollare che gli aeroporti non finiscano in mare.
 ## Idee per i prossimi passi
 
 - Più aerei (un aliante? un jet?): basta un altro file come `dati/aereo.js`.
-- Notte, con le luci di pista e delle città.
 - Missioni: atterrare in un aeroporto entro un tempo, voli con più tappe.
-- Guardarsi intorno in cabina col mouse.
 
 ## Licenza
 

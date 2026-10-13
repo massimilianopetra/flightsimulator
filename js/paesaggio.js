@@ -153,6 +153,7 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
   /* densità degli edifici veri (ABITATI.densita): frazione coperta in quadrati di 100 m */
   const DS=AB.densita||null;let DEN=null;
   if(DS){
+    SIM.densitaEdifici=()=>({DS,DEN});
     const bin=atob(DS.dati);DEN=new Uint8Array(DS.larghezza*DS.altezza);
     for(let i=0,o=0;i<bin.length&&o<DEN.length;i++){
       const v=bin.charCodeAt(i);
