@@ -353,6 +353,8 @@ SIM.creaATC=function({A,T,met,audio,radio}){
     reset,
     stazioneDi:ap=>stazioni.get(ap)||null,
     get menuAperto(){return !!menu;},
+    // nessuna trasmissione in corso e nessuna risposta attesa (o attesa da più di 40 s)
+    get libero(){return !parlando&&(!att||Date.now()-attTimer>40000);},
     // tasti: T apre/chiude il menu; con il menu aperto le cifre scelgono (e non muovono la manetta)
     tasto(e){
       if(e.code==='KeyT'&&!e.repeat){if(menu)chiudiMenu();else apriMenu();return true;}
