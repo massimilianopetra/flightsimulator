@@ -254,6 +254,24 @@ const fineTrascina=e=>{if(trascina&&e.pointerId===trascina.id){trascina=null;sti
 function centraCloche(){cloche.x=cloche.y=0;}
 canvas.addEventListener('pointerup',fineTrascina);canvas.addEventListener('pointercancel',fineTrascina);
 
+/* sensibilità della cloche (1…10): velocità con cui i tasti la spostano e curva "esponenziale"
+   (piccoli spostamenti vicino al centro danno poco effetto, a fondo corsa resta tutta l'escursione).
+   Su richiesta la cloche torna al centro quando non la tocchi, come quella vera rilasciata. */
+const opz={sens:5,centro:false};
+try{const s=+localStorage.getItem('volo-sens');if(s>=1&&s<=10)opz.sens=s;opz.centro=localStorage.getItem('volo-centro')==='1';}catch(e){}
+function curva(v){const e=clamp(0.9-0.08*opz.sens,0.1,0.82);return v*(1-e+e*v*v);}
+function aggiornaOpzioni(){
+  $('sens').value=String(opz.sens);$('sensv').textContent=String(opz.sens);$('centro').checked=opz.centro;
+  $('briefCloche').innerHTML=opz.centro
+    ?'Quando lasci i tasti la cloche <b>torna al centro</b>: per salire o scendere a lungo usa il trim (<kbd>Z</kbd>/<kbd>X</kbd>).'
+    :'La cloche <b>resta dove la lasci</b>: correggi con <kbd>W</kbd>/<kbd>S</kbd> o centrala con <kbd>K</kbd>.';
+  try{localStorage.setItem('volo-sens',String(opz.sens));localStorage.setItem('volo-centro',opz.centro?'1':'0');}catch(e){}
+}
+$('sens').addEventListener('input',()=>{opz.sens=+$('sens').value;aggiornaOpzioni();});
+$('sens').addEventListener('change',()=>$('sens').blur());
+$('centro').addEventListener('change',()=>{opz.centro=$('centro').checked;aggiornaOpzioni();$('centro').blur();});
+aggiornaOpzioni();
+
 // pulsanti a schermo
 $('thr').addEventListener('input',()=>{st.thr=$('thr').value/100;});
 for(const b of document.querySelectorAll('[data-azione]')){
@@ -295,13 +313,18 @@ function leggiGamepad(dt){
 
 function comandi(dt){
   const rampa=(cur,t,dt)=>cur+clamp(t-cur,-(t===0?4:1.8)*dt,(t===0?4:1.8)*dt);
-  // tasti: spostano la cloche finché li tieni premuti, poi resta ferma
-  const VEL=0.8;
-  cloche.y=clamp(cloche.y+(k('KeyS','ArrowDown')-k('KeyW','ArrowUp'))*VEL*dt,-1,1);
-  cloche.x=clamp(cloche.x+(k('KeyD','ArrowRight')-k('KeyA','ArrowLeft'))*VEL*dt,-1,1);
+  // tasti: spostano la cloche finché li tieni premuti, poi resta ferma (o torna al centro, se scelto)
+  const VEL=0.1*opz.sens;
+  const ty=k('KeyS','ArrowDown')-k('KeyW','ArrowUp'), tx=k('KeyD','ArrowRight')-k('KeyA','ArrowLeft');
+  cloche.y=clamp(cloche.y+ty*VEL*dt,-1,1);
+  cloche.x=clamp(cloche.x+tx*VEL*dt,-1,1);
+  if(opz.centro&&!trascina){
+    if(!ty)cloche.y-=clamp(cloche.y,-1.5*dt,1.5*dt);
+    if(!tx)cloche.x-=clamp(cloche.x,-1.5*dt,1.5*dt);
+  }
   kb.rud=rampa(kb.rud,(k('KeyE')||tieni.rudD?1:0)-(k('KeyQ')||tieni.rudS?1:0),dt);
-  inp.elev=clamp(cloche.y+pad.elev,-1,1);
-  inp.ail=clamp(cloche.x+pad.ail,-1,1);
+  inp.elev=curva(clamp(cloche.y+pad.elev,-1,1));
+  inp.ail=curva(clamp(cloche.x+pad.ail,-1,1));
   puntoCloche.style.transform=`translate(${inp.ail*17}px,${inp.elev*17}px)`;
   inp.rud=clamp(kb.rud+pad.rud,-1,1);
   const dThr=(k('PIU')-k('MENO'))*0.5*dt;
