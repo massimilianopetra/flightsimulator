@@ -113,8 +113,25 @@ SIM.creaATC=function({A,T,met,audio,radio}){
     if(SIM.adattaDestra)SIM.adattaDestra();
   }
   function intestazione(){
-    const el=$('radioCom');if(!el) return;
-    el.textContent=staz?`COM1 ${staz.freq} · ${staz.nome}`:'COM1 —';
+    const el=$('radioCom');if(el)el.textContent=com?`COM1 ${com.freq} · ${com.nome}`:'COM1 —';
+    const sel=$('selCom');if(sel)sel.value=com?String(elencoCom.indexOf(com)):'-1';
+  }
+  /* ---------- sintonia della radio COM1 ----------
+     manuale: il giocatore sceglie la frequenza (menu COM1 o tasto U) e la torre risponde solo se è quella giusta;
+     automatica: il gioco sintonizza da solo la stazione giusta quando serve (si può comunque cambiare a mano) */
+  const elencoCom=[...stazioni.values()].sort((a,b)=>a.nome.localeCompare(b.nome));
+  let com=null, auto=false;
+  try{auto=localStorage.getItem('volo-com-auto')==='1';}catch(e){}
+  function sintonizza(s){com=s;intestazione();}
+  // la stazione s ci sente? (in automatico la sintonizza)
+  function sulCanale(s){
+    if(!s) return false;
+    if(auto&&com!==s)sintonizza(s);
+    return com===s;
+  }
+  function nessunaRisposta(s){
+    avvisa(L(`Nessuna risposta: COM1 è su ${com?com.freq:'—'}, ${s.nome} è su ${s.freq} (tasto U o menu COM1)`,
+             `No answer: COM1 is on ${com?com.freq:'—'}, ${s.nome} is on ${s.freq} (U key or COM1 menu)`));
   }
   let avviso='';
   function avvisa(t){
@@ -135,10 +152,11 @@ SIM.creaATC=function({A,T,met,audio,radio}){
     else if(c.part){staz=stazioni.get(c.part.ap);fase='pronto';
       avvisa(L(`Chiedi l'autorizzazione al decollo a ${staz.nome} (T)`,`Ask ${staz.nome} for take-off clearance (T)`));}
     else{staz=null;fase='rotta';avvisa('');}
-    intestazione();
+    com=staz;intestazione();
   }
   // la torre parla e aspetta una risposta tra quelle date
-  function atcDice(f,it,risposte){
+  function atcDice(f,it,risposte,forza){
+    if(!forza&&!sulCanale(staz)) return;
     ultimoATC={f,it,risposte};
     trasmetti('atc',f,it,()=>{if(risposte){att=risposte;attTimer=Date.now();ripetuto=false;avvisa(L('Rispondi alla torre (T)','Reply to ATC (T)'));}});
   }
@@ -175,19 +193,19 @@ SIM.creaATC=function({A,T,met,audio,radio}){
   function opzioni(){
     const op=[];
     if(att){
-      op.push(...att.map(o=>({f:o.f,it:o.it,fai:()=>{avvisa('');pilotaDice(o.f,o.it);o.fai();}})));
+      op.push(...att.map(o=>({f:o.f,it:o.it,verso:staz,fai:()=>{avvisa('');pilotaDice(o.f,o.it);o.fai();}})));
     }else if(emergenza&&!maydayFatto){
       op.push(mayday());
     }else if(fase==='pronto'&&staz&&st.aTerra){
-      op.push(richiestaDecollo());
+      op.push(Object.assign(richiestaDecollo(),{verso:staz}));
     }else if(fase==='arrivo'&&staz){
-      op.push(chiamataFinale());
+      op.push(Object.assign(chiamataFinale(),{verso:staz}));
     }else if(fase==='rotta'&&ctx.arr){
       const s2=stazioni.get(ctx.arr.ap),d=Math.hypot(ctx.arr.ap.x-st.pos.x,ctx.arr.ap.z-st.pos.z);
-      if(d<30*NM){op.push(chiamataArrivo(false));if(s2.torre&&radio.ilsDi(ctx.arr.te))op.push(chiamataArrivo(true));}
+      if(d<30*NM){op.push(Object.assign(chiamataArrivo(false),{verso:s2}));if(s2.torre&&radio.ilsDi(ctx.arr.te))op.push(Object.assign(chiamataArrivo(true),{verso:s2}));}
     }
-    if(staz)op.push(provaRadio());
-    if(ultimoATC)op.push(ripeti());
+    if(com)op.push(Object.assign(provaRadio(),{verso:com}));
+    if(ultimoATC&&staz)op.push(Object.assign(ripeti(),{verso:staz}));
     return op.slice(0,5);
   }
   function richiestaDecollo(){
@@ -219,7 +237,7 @@ SIM.creaATC=function({A,T,met,audio,radio}){
     const f=frase(s2.parla,', ',CS,', Cessna ',{d:'172',s:'one seven two'},', ',pos.f,', ',q,', inbound for landing',ils?', request ILS approach '+'':'',ils?pistaF(te):'');
     const it=`${s2.nome}, ${REG}, Cessna 172, ${pos.it}, ${Math.round(st.pos.y*FT/100)*100} piedi, in arrivo per l'atterraggio${ils?`, chiediamo avvicinamento ILS pista ${te.nome}`:''}.`;
     return {f,it,etichettaIt:ils?L('(arrivo con avvicinamento ILS)','(arrival with ILS approach)'):L('(arrivo a vista)','(visual arrival)'),fai:()=>{
-      staz=s2;intestazione();pilotaDice(f,it);attendi(1300);
+      staz=s2;pilotaDice(f,it);attendi(1300);
       const r=rispettoPista(te),allineato=r.avanti>0&&Math.abs(r.ang)<30;
       let ist,istIt,rb,rbIt;
       if(!s2.torre){
@@ -270,16 +288,17 @@ SIM.creaATC=function({A,T,met,audio,radio}){
     return {f,it,fai:()=>{
       maydayFatto=true;avvisa('');pilotaDice(f,it);attendi(1300);
       const s2=stazioni.get(v.ap),b=tre(Math.atan2(v.ap.x-st.pos.x,-(v.ap.z-st.pos.z))*R2D),nm=Math.max(1,Math.round(v.d/NM));
-      staz=s2;intestazione();
+      staz=s2;if(auto)sintonizza(s2);
       atcDice(frase(CSB,', ',s2.parla,', roger Mayday, nearest airport ',v.ap.nome.replace(/-/g,' '),', heading ',{d:b,s:cifre(b)},', ',{d:nm+' miles',s:cifre(nm)+' miles'},', ',ventoF(),', ',qnhF(),', you are cleared to land any runway'),
         `${CSB.d}, ${s2.nome}, ricevuto Mayday, aeroporto più vicino ${v.ap.nome}, prua ${b}, ${nm} miglia, ${ventoIt()}, QNH ${QNH}, autorizzati ad atterrare su qualsiasi pista.`,
-        readback(frase('Heading ',{d:b,s:cifre(b)},', ',qnhF(),', ',CSB),`Prua ${b}, QNH ${QNH}, ${CSB.d}.`,null,null,null,null,()=>{fase='finale';}));
+        readback(frase('Heading ',{d:b,s:cifre(b)},', ',qnhF(),', ',CSB),`Prua ${b}, QNH ${QNH}, ${CSB.d}.`,null,null,null,null,()=>{fase='finale';}),true);
     }};
   }
   function provaRadio(){
-    const f=frase(nomeStaz(),', ',CSB,', radio check');
-    const it=`${staz.nome}, ${CSB.d}, prova radio.`;
-    return {f,it,fai:()=>{pilotaDice(f,it);attendi(1000);atcDice(frase(CSB,', ',nomeStaz(),', reading you five'),`${CSB.d}, ${staz.nome}, vi ricevo forte e chiaro (5).`);}};
+    const c=com,f=frase(c.parla,', ',CSB,', radio check');
+    const it=`${c.nome}, ${CSB.d}, prova radio.`;
+    return {f,it,fai:()=>{pilotaDice(f,it);attendi(1000);
+      trasmetti('atc',frase(CSB,', ',c.parla,', reading you five'),`${CSB.d}, ${c.nome}, vi ricevo forte e chiaro (5).`);}};
   }
   function ripeti(){
     const f=frase(nomeStaz(),', ',CSB,', say again');
@@ -310,15 +329,34 @@ SIM.creaATC=function({A,T,met,audio,radio}){
     if(!menu||!menu[i]) return;
     const o=menu[i];chiudiMenu();
     if(parlando&&coda.length>2) return;
+    if(o.verso&&!sulCanale(o.verso)){pilotaDice(o.f,o.it);nessunaRisposta(o.verso);return;}
     o.fai();
   }
 
+  // tasto U: le stazioni più vicine, una dopo l'altra
+  function prossimaCom(){
+    if(!st) return;
+    const vic=[...stazioni.values()].sort((a,b)=>Math.hypot(a.ap.x-st.pos.x,a.ap.z-st.pos.z)-Math.hypot(b.ap.x-st.pos.x,b.ap.z-st.pos.z)).slice(0,6);
+    sintonizza(vic[(vic.indexOf(com)+1)%vic.length]);
+    if(audio.attivo)audio.fruscio(0.1);
+  }
+  // pannello: menu COM1 e casella della sintonia automatica
+  const sel=$('selCom');
+  if(sel){
+    sel.innerHTML=`<option value="-1">— ${L('spenta','off')} —</option>`+elencoCom.map((s,i)=>`<option value="${i}">${s.freq} ${esc(s.nome)}</option>`).join('');
+    sel.addEventListener('change',()=>{const i=+sel.value;sintonizza(i>=0?elencoCom[i]:null);sel.blur();});
+  }
+  const ca=$('comAuto');
+  if(ca){ca.checked=auto;ca.addEventListener('change',()=>{auto=ca.checked;try{localStorage.setItem('volo-com-auto',auto?'1':'0');}catch(e){}ca.blur();});}
+
   return {
     reset,
+    stazioneDi:ap=>stazioni.get(ap)||null,
     get menuAperto(){return !!menu;},
     // tasti: T apre/chiude il menu; con il menu aperto le cifre scelgono (e non muovono la manetta)
     tasto(e){
       if(e.code==='KeyT'&&!e.repeat){if(menu)chiudiMenu();else apriMenu();return true;}
+      if(e.code==='KeyU'&&!e.repeat&&!menu){prossimaCom();return true;}
       if(!menu) return false;
       if(e.code==='Escape'){chiudiMenu();return true;}
       const c=/^(Digit|Numpad)([0-9])$/.exec(e.code);
@@ -339,8 +377,14 @@ SIM.creaATC=function({A,T,met,audio,radio}){
         const d=Math.hypot(ctx.part.ap.x-s.pos.x,ctx.part.ap.z-s.pos.z);
         if(d>5*NM&&!parlando&&!att){
           uscitaFatta=true;
-          if(staz.torre)atcDice(frase(CSB,', leaving the control zone, frequency change approved, good flight'),`${CSB.d}, state lasciando la zona di controllo, cambio frequenza approvato, buon volo.`,
-            readback(frase('Frequency change approved, good day, ',CSB),`Cambio frequenza approvato, buona giornata, ${CSB.d}.`,null,null,null,null,()=>{fase='rotta';staz=null;intestazione();}));
+          const s2=ctx.arr&&ctx.arr.ap!==ctx.part.ap?stazioni.get(ctx.arr.ap):null;
+          const poi=s2?frase(', for arrival contact ',s2.parla,' on ',freqF(s2.freq)):frase('');
+          const poiIt=s2?`, per l'arrivo contattate ${s2.nome} su ${s2.freq}`:'';
+          if(staz.torre)atcDice(frase(CSB,', leaving the control zone, frequency change approved',poi,', good flight'),`${CSB.d}, state lasciando la zona di controllo, cambio frequenza approvato${poiIt}, buon volo.`,
+            readback(frase('Frequency change approved',s2?frase(', ',freqF(s2.freq)):frase(''),', good day, ',CSB),`Cambio frequenza approvato${s2?', '+s2.freq:''}, buona giornata, ${CSB.d}.`,
+              s2?frase('Frequency change approved, ',freqF((+s2.freq+0.1).toFixed(3)),', good day, ',CSB):null,s2?`Cambio frequenza approvato, ${(+s2.freq+0.1).toFixed(3)}, buona giornata, ${CSB.d}.`:null,
+              s2?frase(CSB,', negative, ',s2.parla,' on ',freqF(s2.freq)):null,s2?`${CSB.d}, negativo, ${s2.nome} su ${s2.freq}.`:null,
+              ()=>{fase='rotta';staz=null;}));
           else{fase='rotta';staz=null;intestazione();}
         }
       }
@@ -348,7 +392,8 @@ SIM.creaATC=function({A,T,met,audio,radio}){
       if(fase==='rotta'&&ctx.arr&&!arrivoAvvisato){
         const d=Math.hypot(ctx.arr.ap.x-s.pos.x,ctx.arr.ap.z-s.pos.z);
         if(d<20*NM&&!s.aTerra){arrivoAvvisato=true;const s2=stazioni.get(ctx.arr.ap);
-          avvisa(L(`Chiama ${s2.nome} per l'arrivo (T) · ${s2.freq}`,`Call ${s2.nome} for arrival (T) · ${s2.freq}`));}
+          avvisa(auto?L(`Chiama ${s2.nome} per l'arrivo (T) · ${s2.freq}`,`Call ${s2.nome} for arrival (T) · ${s2.freq}`)
+            :L(`Sintonizza ${s2.freq} (${s2.nome}) con U o il menu COM1, poi chiama (T)`,`Tune ${s2.freq} (${s2.nome}) with U or the COM1 menu, then call (T)`));}
       }
       // dopo l'atterraggio, a bassa velocità: liberare la pista
       if(fase==='atterrato'&&!benvenuto&&s.aTerra&&s.gs<12&&!parlando){
@@ -381,7 +426,7 @@ SIM.creaATC=function({A,T,met,audio,radio}){
             readback(frase('Wilco, ',CSB),`Eseguiremo, ${CSB.d}.`,null,null,null,null,()=>{}));
           benvenuto=true;
         }
-        if(!staz||v.ap!==staz.ap){staz=stazioni.get(v.ap);intestazione();}
+        if(!staz||v.ap!==staz.ap)staz=stazioni.get(v.ap);
         fase='atterrato';avvisa('');
       }
     },

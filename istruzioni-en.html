@@ -138,6 +138,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <tr><td><kbd>I</kbd></td><td>Show / hide the flight plan</td></tr>
     <tr><td><kbd>M</kbd> / <kbd>O</kbd></td><td>Map scale / north up or heading up</td></tr>
     <tr><td><kbd>T</kbd></td><td>Radio: opens the menu of sentences to say to the tower (then <kbd>1</kbd>…<kbd>4</kbd>)</td></tr>
+    <tr><td><kbd>U</kbd></td><td>Radio COM1: tune the next nearest station</td></tr>
     <tr><td><kbd>V</kbd></td><td>NAV1: tune the next VOR or ILS station in range (nearest first)</td></tr>
     <tr><td><kbd>L</kbd></td><td>NAV1: tune the ILS of the arrival runway</td></tr>
     <tr><td><kbd>,</kbd> / <kbd>.</kbd></td><td>VOR course CRS −1° / +1° (with <kbd>Shift</kbd> ±10°)</td></tr>
@@ -415,6 +416,9 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <tr><td>After landing</td><td>Tower</td><td>“vacate the runway” and welcome</td></tr>
   </tbody>
 </table>
+<h3>Tuning the radio (COM1)</h3>
+<p>Every airport has its own frequency, shown in the flight plan (<b>COM</b> line: departure and arrival) and in the <b>COM1</b> menu of the RADIO panel. Before calling a station you must tune its frequency: from the COM1 menu or with the <kbd>U</kbd> key, which steps through the nearest stations. If you call on the wrong frequency <b>nobody answers</b>, as in real life, and the panel tells you which frequency you need. When you leave the control zone the tower also gives you the frequency of the arrival station: read it back and then set it.</p>
+<p>If you do not want to think about frequencies, tick <b>Automatic tuning</b>: the game sets the right frequency when you call (you can still change it by hand). A MAYDAY is always answered, whatever the frequency, because in real life there is an emergency frequency (121.5) that is always monitored.</p>
 <p>If you take off or land without a clearance, the tower notices and tells you. If the engine stops you can declare an emergency with <b>MAYDAY</b>: the tower gives you the nearest airport, the heading and the distance.</p>
 <p>Airports with an asphalt runway at least 1000 m long have a <b>Tower</b> that gives clearances; the others have a <b>Radio</b> service that only gives information (runway in use, wind, traffic) and leaves the decision to you. The frequency is shown at the top of the panel (COM1).</p>
 <div class="attenzione">Frequencies and procedures are <b>simulated</b>: they resemble real ones but are not those of the real airports. The voice depends on the browser and the system: Windows already has English voices; if none is found, the transmissions are still written. With the AUDIO button off the radio does not speak.</div>

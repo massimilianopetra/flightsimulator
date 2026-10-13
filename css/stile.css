@@ -44,10 +44,12 @@ kbd{font:700 11px var(--f-num);color:var(--cyan);border:1px solid rgba(57,215,25
 .aiuto.chiuso .corpo,.nav.chiuso #minimap,.piano.chiuso .corpo,.radiopan.chiuso .corpo{display:none}
 /* radio */
 .radiopan{font-size:12px;line-height:1.35}
+.riga-com{margin-top:6px}
+.selcom{pointer-events:auto;color:#4ade80;font-size:13px;padding:3px 4px;flex:1;min-width:0}
 .radiocom{flex:1;text-align:right;font:700 10px var(--f-num);color:#4ade80;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .radiopan.chiama .testa{animation:lampeggio 1s steps(2) infinite}
 .radioavviso{margin-top:6px;color:#1b1000;background:var(--amber);border-radius:4px;padding:4px 7px;font-weight:700}
-.radiolog{max-height:150px;overflow-y:auto;margin-top:6px;pointer-events:auto;scrollbar-width:thin}
+.radiolog{max-height:110px;overflow-y:auto;margin-top:6px;pointer-events:auto;scrollbar-width:thin}
 .radiolog:empty{display:none}
 .rl{display:grid;grid-template-columns:2.6em 1fr;gap:6px;margin:3px 0}
 .rl b{font:700 10px var(--f-num);padding-top:1px}
