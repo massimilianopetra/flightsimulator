@@ -160,7 +160,9 @@ you fly the further they reach. The simulator uses true north, not magnetic nort
 The tower talks to you in **English**, with the standard ICAO phraseology, using the browser's speech synthesis.
 You do not speak: press **T**, choose the sentence (1…4) and the game says it with the pilot's voice. Clearances must be
 read back, and sometimes one of the answers is deliberately wrong: the tower corrects you. Take-off, leaving the control
-zone, arrival (visual or ILS), final, landing, vacating the runway and MAYDAY are covered. Frequencies are simulated.
+zone, arrival (visual or ILS), final, landing, vacating the runway and MAYDAY are covered. In the Piedmont world the stations
+and frequencies are the real ones from OurAirports (e.g. Torino Ground 121.705, Torino Tower 118.500, Cuneo Information
+119.550); airports without data get a simulated station.
 You tune the COM1 radio yourself (COM1 menu or U key): on the wrong frequency nobody answers. Tick "Automatic tuning" to let
 the game do it.
 
@@ -233,11 +235,11 @@ The site needs no build step: it is made of static files.
 | `dati/piemonte-rilievo.js` | real terrain heights, 250 m grid (generated, do not edit by hand) | no |
 | `dati/piemonte-vie.js` | motorways, main and local roads, village streets, railways, rivers and large canals (generated) | no |
 | `dati/piemonte-abitati.js` | residential and industrial areas and the density of real buildings in 100 m squares (generated) | no |
-| `dati/piemonte-radio.js` | the real VORs (generated) | no |
+| `dati/piemonte-radio.js` | the real VORs and airport radio frequencies (generated) | no |
 | `dati/piemonte-monumenti.js` | position and orientation of the monuments | yes |
 | `dati/aereo.js` | the aircraft data: weight, engine, fuel, wing, aerodynamic coefficients, landing gear | yes, to experiment |
 | `strumenti/genera-piemonte.js` | the script that downloads the real data and creates the Piedmont files | |
-| `strumenti/genera-radio.js` | the script that creates the list of real VORs | |
+| `strumenti/genera-radio.js` | the script that creates the list of real VORs and airport frequencies | |
 | `strumenti/leggi-pbf.js` | a small reader for OpenStreetMap `.osm.pbf` files, used by the generator | |
 | `js/lingua.js` | Italian / English: language choice and translation of the page | |
 | `js/terreno.js` | computes the terrain height and builds the mesh that follows the aircraft | |
@@ -295,7 +297,7 @@ In `dati/piemonte.js` you can change without regenerating: weather and visibilit
 and runway, destination, terrain colours by height, and add or correct airports.
 
 **Data sources** (to be credited if the project is shown or published):
-- airports, runways and VORs: [OurAirports](https://ourairports.com/data/), public domain;
+- airports, runways, VORs and radio frequencies: [OurAirports](https://ourairports.com/data/), public domain;
 - lakes and towns: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, ODbL licence;
 - roads, railways and rivers: © OpenStreetMap contributors (ODbL), from the north-west extract by [Geofabrik](https://download.geofabrik.de/europe/italy.html);
 - terrain heights: [Mapzen Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (SRTM, GMTED and others).
@@ -599,7 +601,8 @@ La torre ti parla in **inglese**, con la fraseologia standard ICAO, usando la si
 Tu non parli: premi **T**, scegli la frase (1…4) e il gioco la pronuncia con la voce del pilota; sotto ogni frase c'è la
 traduzione italiana. Le autorizzazioni vanno ripetute, e a volte una delle risposte è volutamente sbagliata: la torre ti
 corregge. Ci sono decollo, uscita dalla zona di controllo, arrivo (a vista o ILS), finale, atterraggio, liberare la pista
-e MAYDAY. Le frequenze sono simulate.
+e MAYDAY. Nel mondo Piemonte stazioni e frequenze sono quelle vere, da OurAirports (per esempio Torino Ground 121.705,
+Torino Tower 118.500, Cuneo Information 119.550); gli aeroporti senza dati hanno una stazione simulata.
 La radio COM1 la sintonizzi tu (menu COM1 o tasto U): sulla frequenza sbagliata nessuno risponde. Con "Sintonia automatica"
 ci pensa il gioco.
 
@@ -673,11 +676,11 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `dati/piemonte-rilievo.js` | le quote vere del terreno, griglia di 250 m (generato, non si modifica a mano) | no |
 | `dati/piemonte-vie.js` | autostrade, strade statali, provinciali, comunali e vie dei paesi, ferrovie, fiumi e grandi canali (generato) | no |
 | `dati/piemonte-abitati.js` | aree residenziali e industriali e densità degli edifici veri in quadrati di 100 m (generato) | no |
-| `dati/piemonte-radio.js` | i VOR veri (generato) | no |
+| `dati/piemonte-radio.js` | i VOR veri e le frequenze radio degli aeroporti (generato) | no |
 | `dati/piemonte-monumenti.js` | posizione e orientamento dei monumenti | sì |
 | `dati/aereo.js` | i dati dell'aereo: peso, motore, carburante, ala, coefficienti aerodinamici, carrello | sì, per sperimentare |
 | `strumenti/genera-piemonte.js` | lo script che scarica i dati reali e crea i file del Piemonte | |
-| `strumenti/genera-radio.js` | lo script che crea l'elenco dei VOR veri | |
+| `strumenti/genera-radio.js` | lo script che crea l'elenco dei VOR veri e delle frequenze degli aeroporti | |
 | `strumenti/leggi-pbf.js` | piccolo lettore dei file `.osm.pbf` di OpenStreetMap, usato dal generatore | |
 | `js/lingua.js` | italiano / inglese: scelta della lingua e traduzione della pagina | |
 | `js/terreno.js` | calcola l'altezza del terreno e costruisce la mesh che segue l'aereo | |
@@ -733,7 +736,7 @@ In `dati/piemonte.js` si possono cambiare senza rigenerare: meteo e visibilità,
 e pista di partenza, destinazione, colori del terreno per quota, e aggiungere o correggere aeroporti.
 
 **Fonti dei dati** (da citare se il progetto viene mostrato o pubblicato):
-- aeroporti, piste e VOR: [OurAirports](https://ourairports.com/data/), pubblico dominio;
+- aeroporti, piste, VOR e frequenze radio: [OurAirports](https://ourairports.com/data/), pubblico dominio;
 - laghi e città: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, licenza ODbL;
 - strade, ferrovie e fiumi: © OpenStreetMap contributors (ODbL), dall'estratto del Nord-Ovest di [Geofabrik](https://download.geofabrik.de/europe/italy.html);
 - quote del terreno: [Mapzen Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (SRTM, GMTED e altri).

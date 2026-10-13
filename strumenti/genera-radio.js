@@ -2,9 +2,11 @@
    GENERATORE DEI RADIOAIUTI (VOR) per il mondo "Piemonte"
    ---------------------------------------------------------------------
    Uso (dalla cartella del progetto):  node strumenti/genera-radio.js
-   Fonte: OurAirports, navaids.csv (pubblico dominio). Scrive dati/piemonte-radio.js.
-   Gli ILS non sono in OurAirports: il simulatore li crea da solo sulle piste
-   asfaltate abbastanza lunghe (vedi js/radio.js).
+   Fonte: OurAirports, navaids.csv e airport-frequencies.csv (pubblico dominio).
+   Scrive dati/piemonte-radio.js: i VOR e le frequenze vere degli aeroporti
+   (torre, terra, informazioni/AFIS, radio). Gli ILS non sono in OurAirports:
+   il simulatore li crea da solo sulle piste asfaltate abbastanza lunghe
+   (vedi js/radio.js), con frequenze simulate.
    ===================================================================== */
 'use strict';
 const fs=require('fs'), path=require('path');
@@ -60,14 +62,54 @@ const bello=s=>s.toLowerCase().replace(/(^|[\s\-'/(])(\p{L})/gu,(m,a,b)=>a+b.toU
       ...(n.usageType==='TERMINAL'||n.power==='LOW'?{portata:40}:{})});
   }
   vor.sort((a,b)=>a.id.localeCompare(b.id));
+
+  /* ---- frequenze degli aeroporti del mondo Piemonte ---- */
+  global.window=global;require(path.join(RADICE,'dati','piemonte.js'));
+  const aeroporti=new Map(window.MAPPA.aeroporti.map(a=>[a.codice,a]));
+  // nome della stazione come la chiamano i piloti (dove il nome dell'aeroporto non basta)
+  const NOMINATIVO={LIMF:'Torino',LIMA:'Aeritalia',LIMC:'Malpensa',LIML:'Linate',LIMJ:'Genova',LIMN:'Cameri',LIMB:'Bresso',
+    LSZA:'Lugano',LSZL:'Locarno',LSGS:'Sion'};
+  const nomeBase=ap=>NOMINATIVO[ap.codice]||ap.nome.replace(/\s*\(.*\)/,'').split('-')[0].trim();
+  const fr=leggiCSV(await scarica('https://davidmegginson.github.io/ourairports-data/airport-frequencies.csv','airport-frequencies.csv'));
+  const com=[],scartate=[];
+  for(const r of fr){
+    const ap=aeroporti.get(r.airport_ident);if(!ap) continue;
+    const mhz=+r.frequency_mhz;
+    if(!(mhz>=118&&mhz<137)){scartate.push(r.airport_ident+' '+r.type+' '+r.frequency_mhz);continue;}   // valori sbagliati nei dati
+    const t=r.type.toUpperCase();
+    let tipo=null;
+    if(t==='TWR'||t==='TOWER') tipo='TWR';
+    else if(t==='GND') tipo='GND';
+    else if(t==='AFIS'||t==='INFO') tipo='INFO';
+    else if(t==='RDO'||t==='RADIO'||t==='CTAF') tipo='RADIO';
+    if(!tipo) continue;   // ATIS, APP, DEP, FIS…: per ora non servono
+    const gia=com.findIndex(c=>c.ap===ap.codice&&c.tipo===tipo);
+    if(gia>=0){if(com[gia].ctaf&&t!=='CTAF')com.splice(gia,1);else continue;}   // la prima di ogni tipo (meglio "Radio" di CTAF)
+    // nome: quello della descrizione se è un nome vero ("Bresso Radio", "CUNEO INFO"), altrimenti costruito
+    const d=(r.description||'').trim();
+    let nome;
+    if(/[a-z]{4,}/i.test(d.replace(/\b(TWR|GND|AFIS|INFO|RDO|ATIS|APP|Radio|Tower|Ground|Information)\b/gi,'').replace(/\[.*?\]/g,'')))
+      nome=bello(d.replace(/\[.*?\]/g,'').replace(/\bINFO\b/i,'Information').trim());
+    else nome=nomeBase(ap)+' '+{TWR:'Tower',GND:'Ground',INFO:'Information',RADIO:'Radio'}[tipo];
+    com.push({ap:ap.codice,tipo,freq:mhz.toFixed(3),nome,...(t==='CTAF'?{ctaf:true}:{})});
+  }
+  for(const c of com)delete c.ctaf;
+  com.sort((a,b)=>a.ap.localeCompare(b.ap)||a.tipo.localeCompare(b.tipo));
   const testo=`/* Radioaiuti (VOR) generati da strumenti/genera-radio.js.
    Fonte: OurAirports, navaids.csv (pubblico dominio). Frequenze in MHz, posizioni in metri
-   (x verso est, y verso nord) dal punto lat ${LAT0}, lon ${LON0}. Non modificare a mano. */
+   (x verso est, y verso nord) dal punto lat ${LAT0}, lon ${LON0}.
+   Frequenze degli aeroporti da airport-frequencies.csv (pubblico dominio). Non modificare a mano. */
 window.RADIO={vor:[
 ${vor.map(v=>'  '+JSON.stringify(v)).join(',\n')}
+],
+// frequenze vere degli aeroporti: TWR torre, GND terra, INFO informazioni (AFIS), RADIO servizio radio
+com:[
+${com.map(c=>'  '+JSON.stringify(c)).join(',\n')}
 ]};
 `;
   fs.writeFileSync(path.join(RADICE,'dati','piemonte-radio.js'),testo);
   console.log(`VOR: ${vor.length}`);
   for(const v of vor)console.log(`  ${v.id.padEnd(4)} ${v.freq.toFixed(2)}  ${v.nome}${v.dme?' (DME)':''}`);
+  console.log(`Frequenze degli aeroporti: ${com.length} (${new Set(com.map(c=>c.ap)).size} aeroporti); scartate: ${scartate.join(', ')||'nessuna'}`);
+  for(const c of com)console.log(`  ${c.ap} ${c.tipo.padEnd(5)} ${c.freq}  ${c.nome}`);
 })();

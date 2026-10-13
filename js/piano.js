@@ -23,7 +23,7 @@ const FINALE=5*NM;            // punto di finale a 5 NM dalla soglia
 const PENDENZA=3*D2R;         // sentiero di discesa di 3°
 
 SIM.creaPiano=function(T,A,met,radio){
-  let piano=null, comDi=null;   // comDi(ap) -> stazione radio (js/atc.js)
+  let piano=null, comDi=null, terraDi=null;   // comDi(ap) -> stazione radio (js/atc.js)
 
   // componenti del vento sulla pista: frontale (+) e traverso (+ = da destra)
   function ventoPista(hdg){
@@ -149,7 +149,8 @@ SIM.creaPiano=function(T,A,met,radio){
     if(!radio) return '';
     let t='';
     const sd=comDi&&p.da.ap?comDi(p.da.ap):null, sa=comDi?comDi(p.arr):null;
-    if(sa)t+=`<div><span class="lbl">COM</span>${sd&&sd!==sa?`<b>${sd.freq}</b> ${Lg('partenza','dep.')} · `:''}<b>${sa.freq}</b> ${sa.nome}</div>`;
+    const gd=terraDi&&p.da.ap?terraDi(p.da.ap):null;
+    if(sa)t+=`<div><span class="lbl">COM</span>${gd?`<b>${gd.freq}</b> ${Lg('terra','gnd')} · `:''}${sd&&sd!==sa?`<b>${sd.freq}</b> ${Lg('partenza','dep.')} · `:''}<b>${sa.freq}</b> ${sa.nome}</div>`;
     const ils=radio.ilsDi(p.te);
     if(ils) t+=`<div><span class="lbl">ILS</span><b>${ils.freq.toFixed(2)}</b> ${ils.id} · CRS ${tre(ils.crs)}° · ${Lg('tasto','key')} <b>L</b></div>`;
     let vor=null,dv=Infinity;
@@ -172,6 +173,6 @@ SIM.creaPiano=function(T,A,met,radio){
       default:return Lg(`Atterrato a ${p.arr.codice}!`,`Landed at ${p.arr.codice}!`);
     }
   }
-  return {calcola,aggiorna,bersaglio,html,testoFase,get piano(){return piano;},impostaCom(f){comDi=f;}};
+  return {calcola,aggiorna,bersaglio,html,testoFase,get piano(){return piano;},impostaCom(f,g){comDi=f;terraDi=g||null;}};
 };
 })();

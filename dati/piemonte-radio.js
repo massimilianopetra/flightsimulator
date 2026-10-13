@@ -1,6 +1,7 @@
 /* Radioaiuti (VOR) generati da strumenti/genera-radio.js.
    Fonte: OurAirports, navaids.csv (pubblico dominio). Frequenze in MHz, posizioni in metri
-   (x verso est, y verso nord) dal punto lat 45.25, lon 7.949999999999999. Non modificare a mano. */
+   (x verso est, y verso nord) dal punto lat 45.25, lon 7.949999999999999.
+   Frequenze degli aeroporti da airport-frequencies.csv (pubblico dominio). Non modificare a mano. */
 window.RADIO={vor:[
   {"id":"ALB","nome":"Albenga","freq":116.95,"dme":true,"x":13920,"y":-132888,"quota":41},
   {"id":"AZR","nome":"Nice Cote D Azur","freq":109.65,"dme":true,"x":-56864,"y":-175846,"quota":4},
@@ -21,4 +22,40 @@ window.RADIO={vor:[
   {"id":"TOP","nome":"Torino","freq":114.5,"dme":true,"x":-6923,"y":-35892,"quota":264},
   {"id":"TZO","nome":"Trezzo","freq":117.25,"dme":true,"x":122038,"y":34200,"quota":152},
   {"id":"VOG","nome":"Voghera","freq":115.5,"dme":true,"x":79960,"y":-31580,"quota":118}
+],
+// frequenze vere degli aeroporti: TWR torre, GND terra, INFO informazioni (AFIS), RADIO servizio radio
+com:[
+  {"ap":"LILA","tipo":"RADIO","freq":"126.900","nome":"Alessandria Radio"},
+  {"ap":"LILE","tipo":"INFO","freq":"123.050","nome":"Biella Information"},
+  {"ap":"LILH","tipo":"RADIO","freq":"123.000","nome":"Voghera Radio"},
+  {"ap":"LILI","tipo":"RADIO","freq":"118.855","nome":"Vercelli Radio"},
+  {"ap":"LILM","tipo":"RADIO","freq":"118.355","nome":"Casale Radio"},
+  {"ap":"LILN","tipo":"INFO","freq":"128.550","nome":"Varese Information"},
+  {"ap":"LIMA","tipo":"INFO","freq":"119.800","nome":"Aeritalia Information"},
+  {"ap":"LIMB","tipo":"RADIO","freq":"122.005","nome":"Bresso Radio"},
+  {"ap":"LIMC","tipo":"GND","freq":"121.900","nome":"Malpensa Ground"},
+  {"ap":"LIMC","tipo":"TWR","freq":"119.000","nome":"Malpensa Tower"},
+  {"ap":"LIMF","tipo":"GND","freq":"121.705","nome":"Torino Ground"},
+  {"ap":"LIMF","tipo":"TWR","freq":"118.500","nome":"Torino Tower"},
+  {"ap":"LIMG","tipo":"INFO","freq":"123.850","nome":"Albenga Information"},
+  {"ap":"LIMJ","tipo":"TWR","freq":"118.600","nome":"Genova Tower"},
+  {"ap":"LIML","tipo":"GND","freq":"121.800","nome":"Linate Ground"},
+  {"ap":"LIML","tipo":"TWR","freq":"118.100","nome":"Linate Tower"},
+  {"ap":"LIMN","tipo":"GND","freq":"121.700","nome":"Cameri Ground"},
+  {"ap":"LIMN","tipo":"TWR","freq":"122.100","nome":"Cameri Tower"},
+  {"ap":"LIMW","tipo":"INFO","freq":"119.950","nome":"Aosta Information"},
+  {"ap":"LIMZ","tipo":"INFO","freq":"119.550","nome":"Cuneo Information"},
+  {"ap":"LIVV","tipo":"RADIO","freq":"118.950","nome":"Vische Radio"},
+  {"ap":"LSGB","tipo":"INFO","freq":"122.155","nome":"Bex Information"},
+  {"ap":"LSGK","tipo":"INFO","freq":"119.425","nome":"Saanen Information"},
+  {"ap":"LSGS","tipo":"GND","freq":"121.700","nome":"Sion Ground"},
+  {"ap":"LSGS","tipo":"INFO","freq":"122.350","nome":"Sion Information"},
+  {"ap":"LSGS","tipo":"TWR","freq":"118.275","nome":"Sion Tower"},
+  {"ap":"LSPM","tipo":"INFO","freq":"118.525","nome":"Ambri Information"},
+  {"ap":"LSTS","tipo":"INFO","freq":"119.425","nome":"Sankt Stephan Information"},
+  {"ap":"LSTS","tipo":"TWR","freq":"120.050","nome":"Sankt Stephan Tower"},
+  {"ap":"LSZA","tipo":"GND","freq":"121.775","nome":"Lugano Ground"},
+  {"ap":"LSZA","tipo":"TWR","freq":"120.250","nome":"Lugano Tower"},
+  {"ap":"LSZL","tipo":"GND","freq":"121.700","nome":"Locarno Ground"},
+  {"ap":"LSZL","tipo":"TWR","freq":"134.825","nome":"Locarno Tower"}
 ]};
