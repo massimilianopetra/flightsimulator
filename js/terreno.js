@@ -152,6 +152,24 @@ for(const a of (M.aeroporti||[])){
     ];
     ap.piste.push(pi);piste.push(pi);
   }
+  // vie di rullaggio vere (dati/piemonte-rullaggio.js): la spianata della pista si allarga fino a comprendere vie e
+  // piazzali, ma solo dove il terreno naturale è già quasi in piano (entro 15 m), per non tagliare le colline vicine
+  const RU=window.RULLAGGIO&&window.RULLAGGIO[ap.codice];
+  if(RU){
+    ap.rullaggioVero=true;
+    const punti=[];
+    for(const v of RU.vie)for(let i=0;i<v.p.length;i+=2)punti.push([ap.x+v.p[i]/10,ap.z-v.p[i+1]/10]);
+    for(const a of RU.piazzali)for(let i=0;i<a.length;i+=2)punti.push([ap.x+a[i]/10,ap.z-a[i+1]/10]);
+    for(const pi of ap.piste){
+      for(const [x,z] of punti){
+        if(Math.abs(naturale(x,z)-ap.quota)>15) continue;
+        const dx=x-pi.cx,dz=z-pi.cz,u=Math.abs(dx*pi.dir.x+dz*pi.dir.z),v=Math.abs(-dx*pi.dir.z+dz*pi.dir.x);
+        if(u>pi.L/2+700||v>pi.W/2+900) continue;
+        if(v<pi.W/2+900&&u<pi.L/2+700){pi.fhl=Math.max(pi.fhl,u+40);pi.fhw=Math.max(pi.fhw,v+40);}
+      }
+      pi.raggio=Math.hypot(pi.fhl,pi.fhw)+500;
+    }
+  }
   aeroporti.push(ap);
 }
 
@@ -203,8 +221,9 @@ const api={
       if(dx>p.raggio||dx<-p.raggio||dz>p.raggio||dz<-p.raggio) continue;
       const {u,v}=locale(p,x,z);
       if(Math.abs(u)<=p.L/2&&Math.abs(v)<=p.W/2){api.tipo=p.erba?'erba':'pista';return h;}
-      if(p===p.ap.piste[0]&&Math.abs(u)<=90&&v>0&&v<145){api.tipo='piazzale';return h;}
+      if(p===p.ap.piste[0]&&!p.ap.rullaggioVero&&Math.abs(u)<=90&&v>0&&v<145){api.tipo='piazzale';return h;}
     }
+    if(SIM.reteRullaggio&&SIM.reteRullaggio.suSuperficie(x,z)){api.tipo='piazzale';return h;}   // vie e piazzali veri (js/rullaggio.js)
     api.tipo='erba';return h;
   },
   /* pista sotto (o vicino a) un punto: {pista, testata, u, v} oppure null */
