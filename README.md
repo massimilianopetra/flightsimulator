@@ -130,7 +130,7 @@ The 4 PAPI lights on the left of the runway tell you whether you are on the righ
 Just above the runway close the throttle and raise the nose slightly (flare).
 The landing gear survives touchdowns below 600–700 ft/min.
 
-The **Practise landing** button in the briefing puts you straight on final approach.
+The **Practise landing** button in the briefing puts you straight on final approach to your destination.
 
 The full manual, with pictures of every instrument, explains the PFD, the turn coordinator,
 VOR and ILS navigation and the emergencies step by step:
@@ -568,7 +568,7 @@ Le 4 luci PAPI a sinistra della pista dicono se sei sulla pendenza giusta:
 Poco sopra la pista togli motore e alza leggermente il muso (richiamata).
 Sotto 600–700 ft/min di discesa al contatto il carrello resiste.
 
-Il pulsante **Prova l'atterraggio** del briefing ti mette già in finale.
+Il pulsante **Prova l'atterraggio** del briefing ti mette già in finale sulla destinazione.
 
 Il manuale completo, con le immagini di tutti gli strumenti, spiega passo passo il PFD, il
 virosbandometro, la navigazione VOR e ILS e le emergenze:

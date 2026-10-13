@@ -78,9 +78,16 @@ function puntoPartenza(){
 }
 let partenza=puntoPartenza();
 // esercizio di atterraggio: in finale a 2,7 NM dalla pista di partenza, sul sentiero di 3°
+// dove si prova l'atterraggio: la pista di arrivo della destinazione (la più controvento, come nel piano di volo);
+// se non c'è una destinazione diversa dalla partenza, la pista di partenza
+function pistaFinale(){
+  const d=dest();
+  if(d&&d!==partenza.ap)return {ap:d,te:testataControvento(d)};
+  return partenza.te?{ap:partenza.ap,te:partenza.te}:null;
+}
 function puntoFinale(){
-  const te=partenza.te, d=5000;
-  return {x:te.x-te.dir.x*d,z:te.z-te.dir.z*d,y:partenza.ap.quota+fis.altRuote()+d*Math.tan(3*D2R),
+  const {ap,te}=pistaFinale(), d=5000;
+  return {x:te.x-te.dir.x*d,z:te.z-te.dir.z*d,y:ap.quota+fis.altRuote()+d*Math.tan(3*D2R),
     hdg:te.hdg,v:72/KT,thr:0.35,flapSel:1};
 }
 let modalita='decollo';
@@ -96,7 +103,7 @@ const piano=SIM.creaPiano(T,A,met,radio);
 // comunicazioni radio con la torre (js/atc.js)
 const atc=SIM.creaATC({A,T,met,audio,radio});
 piano.impostaCom(atc.stazioneDi);
-const ctxATC=()=>({part:partenza.ap?{ap:partenza.ap,te:partenza.te}:null,arr:piano.piano?{ap:piano.piano.arr,te:piano.piano.te}:null,finale:modalita==='finale'});
+const ctxATC=()=>({part:partenza.ap?{ap:partenza.ap,te:partenza.te}:null,arr:piano.piano?{ap:piano.piano.arr,te:piano.piano.te}:null,finale:modalita==='finale',fin:modalita==='finale'?pistaFinale():null});
 let faseMostrata=-1;
 function ricalcolaPiano(){
   const d=dest(),p=piano.calcola(partenza,d,d&&testataControvento(d));
@@ -136,7 +143,7 @@ const NOMI_VISTA=[L('ESTERNA','OUTSIDE'),L('CABINA','COCKPIT'),L('TORRE','TOWER'
 
 function ricomincia(){
   centraCloche();
-  const p=modalita==='finale'&&partenza.te?puntoFinale():partenza;
+  const p=modalita==='finale'&&pistaFinale()?puntoFinale():partenza;
   fis.reset(p);
   st.carburante=carbIniziale;
   if(p.flapSel){st.flapSel=p.flapSel;st.flap=A.flap.posizioni[p.flapSel];}
@@ -147,7 +154,7 @@ function ricomincia(){
   if(piano.piano){piano.piano.prossimo=0;aggiornaPiano();}
   atc.reset(ctxATC());
   atterratoA=null;
-  if(avviato&&modalita==='finale') messaggio(L('In finale per la pista <b>'+partenza.te.nome+'</b>: segui le luci PAPI, 65 nodi, flap 30°','On final for runway <b>'+partenza.te.nome+'</b>: follow the PAPI lights, 65 knots, flaps 30°'),6);
+  if(avviato&&modalita==='finale'){const f=pistaFinale();messaggio(L(`In finale per la pista <b>${f.te.nome}</b> di <b>${f.ap.codice}</b>: segui le luci PAPI, 65 nodi, flap 30°`,`On final for runway <b>${f.te.nome}</b> at <b>${f.ap.codice}</b>: follow the PAPI lights, 65 knots, flaps 30°`),6);}
   else if(avviato) messaggio(partenza.te?L(`Pronto al decollo: pista <b>${partenza.te.nome}</b> di <b>${partenza.ap.codice}</b>`,`Ready for take-off: runway <b>${partenza.te.nome}</b> at <b>${partenza.ap.codice}</b>`):L('In volo!','Airborne!'),4);
 }
 
@@ -349,7 +356,7 @@ for(const b of document.querySelectorAll('[data-tieni]')){
 }
 $('inizia').addEventListener('click',()=>inizia());
 $('finale').addEventListener('click',()=>inizia('finale'));
-if(!partenza.te)$('finale').hidden=true;
+if(!pistaFinale())$('finale').hidden=true;
 $('ancora').addEventListener('click',ricomincia);
 
 function leggiGamepad(dt){

@@ -147,7 +147,7 @@ SIM.creaATC=function({A,T,met,audio,radio}){
   function reset(c){
     zitto();registro.length=0;disegnaRegistro();chiudiMenu();
     ctx=c;att=null;ripetuto=false;chiamato=false;uscitaFatta=false;arrivoAvvisato=false;emergenza=false;maydayFatto=false;benvenuto=false;ultimoATC=null;
-    if(c.finale&&c.part){staz=stazioni.get(c.part.ap);fase='arrivo';
+    if(c.finale&&c.fin){staz=stazioni.get(c.fin.ap);fase='arrivo';
       avvisa(L(`In finale: chiama ${staz.nome} per l'atterraggio (T)`,`On final: call ${staz.nome} for landing (T)`));}
     else if(c.part){staz=stazioni.get(c.part.ap);fase='pronto';
       avvisa(L(`Chiedi l'autorizzazione al decollo a ${staz.nome} (T)`,`Ask ${staz.nome} for take-off clearance (T)`));}
@@ -263,7 +263,7 @@ SIM.creaATC=function({A,T,met,audio,radio}){
     }};
   }
   function chiamataFinale(){
-    const te=(ctx.finale&&ctx.part&&staz&&staz.ap===ctx.part.ap)?ctx.part.te:(ctx.arr&&staz&&staz.ap===ctx.arr.ap?ctx.arr.te:null);
+    const te=(ctx.finale&&ctx.fin&&staz&&staz.ap===ctx.fin.ap)?ctx.fin.te:(ctx.arr&&staz&&staz.ap===ctx.arr.ap?ctx.arr.te:null);
     const f=frase(CSB,', final ',te?pistaF(te):'');
     const it=`${CSB.d}, in finale${te?' pista '+te.nome:''}.`;
     return {f,it,fai:()=>{
