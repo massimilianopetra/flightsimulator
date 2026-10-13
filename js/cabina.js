@@ -59,9 +59,9 @@ SIM.creaCabina=function(){
   box(0.03,0.015,0.009,M.rosso,0,0.03,ZP+0.03);   // tasto rosso "display backup"
 
   /* ---- strumenti di riserva ---- */
-  const cvR=document.createElement('canvas');cvR.width=480;cvR.height=160;
+  const cvR=document.createElement('canvas');cvR.width=640;cvR.height=160;
   const texR=new THREE.CanvasTexture(cvR);
-  const ris=new THREE.Mesh(new THREE.PlaneGeometry(0.255,0.085),new THREE.MeshBasicMaterial({map:texR,toneMapped:false}));
+  const ris=new THREE.Mesh(new THREE.PlaneGeometry(0.34,0.085),new THREE.MeshBasicMaterial({map:texR,toneMapped:false}));
   ris.position.set(0.0,-0.075,ZP+0.003);gr.add(ris);
   const riserva={canvas:cvR,tex:texR,sup:{g:cvR.getContext('2d'),W:cvR.width,H:cvR.height}};
 

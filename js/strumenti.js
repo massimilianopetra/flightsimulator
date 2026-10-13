@@ -155,6 +155,11 @@ SIM.creaStrumenti=function(A){
       g.beginPath();g.moveTo(x,AH);g.lineTo(x,AH+(hh%10?5:10));g.stroke();
       if(hh%10===0){g.fillStyle=card[hh]?'#fbbf24':'#fff';g.fillText(card[hh]||String(hh/10|0).padStart(2,'0'),x,AH+HB*0.62);}
     }
+    if(d.virata!=null){ // vettore di tendenza: dove sarà la prua fra 6 s (le tacche bianche = virata standard, 3°/s)
+      const v=clamp(d.virata*6,-45,45)*pd;
+      g.fillStyle='#ff5ad9';g.fillRect(Math.min(cx,cx+v),AH+1,Math.abs(v),4);
+      g.fillStyle='#fff';for(const s of [-1,1])g.fillRect(cx+s*18*pd-1,AH,2,8);
+    }
     if(d.bug!=null){ // direzione verso la destinazione
       let rel=((d.bug-d.hdg+540)%360)-180;
       const x=clamp(cx+rel*pd,8,W-8);
@@ -165,6 +170,82 @@ SIM.creaStrumenti=function(A){
     g.fillStyle='#fff';g.font=`700 ${Math.round(fs*1.15)}px ${MONO}`;g.textAlign='center';
     g.fillText(String(Math.round(d.hdg)%360).padStart(3,'0')+'°',cx,AH+HB/2+1);
     g.fillStyle='#ffb020';g.beginPath();g.moveTo(cx,AH-1);g.lineTo(cx-6,AH-9);g.lineTo(cx+6,AH-9);g.closePath();g.fill();
+  }
+
+  /* ---------- virosbandometro ----------
+     l'aeroplanino si inclina col rateo di virata: sulle tacche L/R la virata è "standard"
+     (3°/s, un giro completo in 2 minuti). La pallina nel tubo mostra se la virata è coordinata:
+     se scappa da un lato, "pesta la pallina" col timone da quel lato. */
+  function virosbandometro(c,x,y,r,virata,palla){
+    c.save();
+    c.fillStyle='#0a0a0a';c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();
+    c.strokeStyle='#8a8f96';c.lineWidth=r*0.08;c.beginPath();c.arc(x,y,r*1.02,0,Math.PI*2);c.stroke();
+    const STD=20*D2R, lw=Math.max(1.5,r*0.05);
+    c.strokeStyle='#fff';c.lineWidth=lw;
+    for(const a of [0,STD])for(const s of [-1,1]){
+      c.beginPath();c.moveTo(x+s*Math.cos(a)*r*0.74,y+Math.sin(a)*r*0.74);c.lineTo(x+s*Math.cos(a)*r*0.94,y+Math.sin(a)*r*0.94);c.stroke();
+    }
+    c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.font=`700 ${Math.round(r*0.2)}px ${MONO}`;
+    c.fillText('L',x-Math.cos(STD+0.32)*r*0.72,y+Math.sin(STD+0.32)*r*0.72);
+    c.fillText('R',x+Math.cos(STD+0.32)*r*0.72,y+Math.sin(STD+0.32)*r*0.72);
+    c.font=`700 ${Math.round(r*0.15)}px ${MONO}`;c.fillStyle='#cbd5e1';
+    c.fillText('2 MIN',x,y+r*0.8);c.fillText('VIRATA',x,y-r*0.5);
+    // tubo con la pallina
+    const cy2=y-r*1.6, rt=r*2.15, a0=Math.PI/2;
+    c.lineCap='round';c.strokeStyle='#d8d2b0';c.lineWidth=r*0.2;
+    c.beginPath();c.arc(x,cy2,rt,a0-0.2,a0+0.2);c.stroke();
+    c.lineCap='butt';c.strokeStyle='#333';c.lineWidth=Math.max(1,r*0.025);
+    for(const s of [-1,1]){const a=a0+s*0.045;c.beginPath();c.moveTo(x+Math.cos(a)*(rt-r*0.11),cy2+Math.sin(a)*(rt-r*0.11));c.lineTo(x+Math.cos(a)*(rt+r*0.11),cy2+Math.sin(a)*(rt+r*0.11));c.stroke();}
+    const ab=a0-clamp(palla,-1,1)*0.17;
+    c.fillStyle='#111';c.beginPath();c.arc(x+Math.cos(ab)*rt,cy2+Math.sin(ab)*rt,r*0.075,0,Math.PI*2);c.fill();
+    // aeroplanino visto da dietro
+    c.translate(x,y-r*0.05);c.rotate(clamp((virata||0)/3,-1.6,1.6)*STD);
+    c.strokeStyle='#fff';c.fillStyle='#fff';c.lineWidth=r*0.07;c.lineCap='round';
+    c.beginPath();c.moveTo(-r*0.66,0);c.lineTo(r*0.66,0);c.stroke();
+    c.lineWidth=r*0.05;c.beginPath();c.moveTo(0,0);c.lineTo(0,-r*0.2);c.stroke();
+    c.beginPath();c.arc(0,0,r*0.09,0,Math.PI*2);c.fill();
+    c.restore();
+  }
+
+  /* ---------- pannello in basso: virosbandometro, trim e carburante ----------
+     d = {virata °/s, palla, trim -0.5..0.5, carb gal, flusso gal/h} */
+  const aux=document.getElementById('aux');
+  function disegnaAux(d){
+    if(!aux) return;
+    const rc=aux.getBoundingClientRect(),w=rc.width,h=rc.height;
+    if(!w||!h) return;
+    const pw=Math.round(w*dpr),ph=Math.round(h*dpr);
+    if(aux.width!==pw||aux.height!==ph){aux.width=pw;aux.height=ph;}
+    const c=aux.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);
+    const R=h/2-3;
+    virosbandometro(c,R+3,h/2,R,d.virata,d.palla);
+    // trim: in alto picchia, in basso cabra (come la cloche: tirata = in basso)
+    const tx=2*R+24, t0=18, t1=h-16, tm=(t0+t1)/2;
+    c.font=`700 10px ${MONO}`;c.textBaseline='middle';c.textAlign='left';c.fillStyle='#8ea6bb';
+    c.fillText('TRIM',tx-6,7);
+    c.fillStyle='#2b3445';c.fillRect(tx,t0,7,t1-t0);
+    c.fillStyle='#22c55e';c.fillRect(tx,tm-2,7,(t1-t0)*0.08);   // zona per il decollo
+    c.fillStyle='#e8eef4';c.fillRect(tx-3,tm-1,13,2);
+    c.fillStyle='#8ea6bb';c.font=`700 9px ${MONO}`;c.fillText('PIC',tx+12,t0+3);c.fillText('CAB',tx+12,t1-3);
+    const yt=tm+clamp(d.trim/0.5,-1,1)*(t1-t0)/2;
+    c.fillStyle='#39d7ff';c.beginPath();c.moveTo(tx+8,yt);c.lineTo(tx+15,yt-5);c.lineTo(tx+15,yt+5);c.closePath();c.fill();
+    const tr=Math.round(d.trim*200);
+    c.font=`700 11px ${MONO}`;c.fillText((tr>0?'+':'')+tr,tx+17,clamp(yt,t0+12,t1-12));
+    // carburante
+    const fx=tx+50, fw=w-fx-2, cap=A.carburante.capacita, carb=d.carb;
+    const col=carb<5?'#ef4444':carb<10?'#fbbf24':'#e8eef4';
+    c.fillStyle='#8ea6bb';c.font=`700 10px ${MONO}`;c.fillText('CARBURANTE',fx,7);
+    c.fillStyle=col;c.font=`700 18px ${MONO}`;c.fillText(carb.toFixed(1),fx,27);
+    const wn=c.measureText(carb.toFixed(1)).width;
+    c.font=`700 10px ${MONO}`;c.fillText('gal',fx+wn+4,29);
+    c.fillStyle='#2b3445';c.fillRect(fx,40,fw,6);
+    c.fillStyle=carb<5?'#ef4444':'#22c55e';c.fillRect(fx,40,fw*clamp(carb/cap,0,1),6);
+    c.fillStyle='#e8eef4';c.font=`700 11px ${MONO}`;
+    c.fillText(d.flusso.toFixed(1)+' gal/h',fx,58);
+    const aut=d.flusso>0?carb/d.flusso:0;
+    c.fillStyle='#8ea6bb';c.font=`700 10px ${MONO}`;c.fillText('AUTONOMIA',fx,74);
+    c.fillStyle=col;c.font=`700 11px ${MONO}`;
+    c.fillText(d.flusso>0?Math.floor(aut)+'h '+String(Math.floor((aut%1)*60)).padStart(2,'0')+'m':'MOTORE SPENTO',fx,88);
   }
 
   /* ---------- minimappa ---------- */
@@ -428,12 +509,15 @@ SIM.creaStrumenti=function(A){
       c.fillStyle='#fff';c.beginPath();const px=bx+bw*clamp(val,0,1);c.moveTo(px,by-2);c.lineTo(px-5,by-9);c.lineTo(px+5,by-9);c.closePath();c.fill();
       y+=fs*2.2;
     };
-    const ff=d.s.crashed?0:1.5+d.thr*9.5;
+    const ff=d.s.crashed?0:d.s.flusso, acceso=d.s.carburante>0;
     barraStr('FFLOW GPH',ff/14,ff.toFixed(1),0.1,0.85);
-    barraStr('OIL PRES',d.s.rpm>500?0.45+d.s.rpm/9000:0,d.s.rpm>500?String(Math.round(50+d.s.rpm/90)):'0',0.3,0.8);
+    barraStr('OIL PRES',acceso&&d.s.rpm>500?0.45+d.s.rpm/9000:0,acceso&&d.s.rpm>500?String(Math.round(50+d.s.rpm/90)):'0',0.3,0.8);
     barraStr('OIL TEMP',0.55,'185',0.25,0.85);
-    barraStr('FUEL L',0.85,'24',0.15,1);
-    barraStr('FUEL R',0.85,'24',0.15,1);
+    const meta=A.carburante.capacita/2, serb=d.s.carburante/2;   // due serbatoi, selettore su "BOTH"
+    barraStr('FUEL L GAL',serb/meta,serb.toFixed(1),0.15,1);
+    barraStr('FUEL R GAL',serb/meta,serb.toFixed(1),0.15,1);
+    const tr=Math.round(d.s.trim*200);
+    barraStr('ELEV TRIM',0.5+d.s.trim,(tr>0?'CAB ':tr<0?'PIC ':'')+Math.abs(tr),0.47,0.6);
     c.textAlign='left';c.fillStyle='#e8eef4';c.font=`700 ${Math.round(fs*0.8)}px ${MONO}`;
     c.fillText('VOLTS',8,y);c.textAlign='right';c.fillText('28.0',eis-8,y);
     // mappa
@@ -445,7 +529,7 @@ SIM.creaStrumenti=function(A){
     const c=sup.g,Wr=sup.W,Hr=sup.H,r=Hr*0.44;
     c.setTransform(1,0,0,1,0,0);
     c.fillStyle='#202327';c.fillRect(0,0,Wr,Hr);
-    const centri=[Wr*0.18,Wr*0.5,Wr*0.82];
+    const centri=[Wr*0.125,Wr*0.375,Wr*0.625,Wr*0.875];
     const quadrante=(x)=>{c.fillStyle='#0a0a0a';c.beginPath();c.arc(x,Hr/2,r,0,Math.PI*2);c.fill();
       c.strokeStyle='#8a8f96';c.lineWidth=r*0.08;c.beginPath();c.arc(x,Hr/2,r*1.02,0,Math.PI*2);c.stroke();};
     const tacche=(x,n,dal,al,lung,cb)=>{for(let i=0;i<=n;i++){const a=dal+(al-dal)*i/n;c.strokeStyle='#fff';c.lineWidth=2;
@@ -476,10 +560,11 @@ SIM.creaStrumenti=function(A){
     const alt=Math.max(0,d.alt);
     lancetta(x,-Math.PI/2+(alt%1000)/1000*Math.PI*2,0.85,3);
     lancetta(x,-Math.PI/2+(alt%10000)/10000*Math.PI*2,0.5,5);
+    virosbandometro(c,centri[3],Hr/2,r,d.virata,d.palla);
   }
 
   return {
-    disegnaPFD, disegnaMappa, disegnaMFD, disegnaRiserva, adatta,
+    disegnaPFD, disegnaMappa, disegnaMFD, disegnaRiserva, disegnaAux, adatta,
     cambiaZoom(){impostaZoom((zoom+1)%scale.length);},
     zoomPiu(){impostaZoom(zoom-1);},     // più dettaglio
     zoomMeno(){impostaZoom(zoom+1);},    // più zona visibile

@@ -26,7 +26,7 @@ SIM.creaFisica=function(A,terra){
 
   const st={
     pos:new V3(), vel:new V3(), q:new THREE.Quaternion(), w:new V3(),
-    thr:0, rpm:A.motore.giriMin, flap:0, flapSel:0, trim:0, freno:0, sterzo:0,
+    thr:0, rpm:A.motore.giriMin, carburante:A.carburante.capacita, flusso:0, flap:0, flapSel:0, trim:0, freno:0, sterzo:0,
     comandi:{elev:0,ail:0,rud:0},
     alpha:0, beta:0, ias:0, tas:0, gs:0, vs:0, agl:0, g:1, palla:0,
     stallo:0, avvisoStallo:false, aTerra:false, suolo:'erba',
@@ -52,6 +52,7 @@ SIM.creaFisica=function(A,terra){
     st.vel.set(0,0,-1).applyQuaternion(st.q).multiplyScalar(p.v||0);
     st.w.set(0,0,0);
     st.thr=p.thr||0; st.rpm=p.v?2300:A.motore.giriMin;
+    st.carburante=p.carburante!=null?p.carburante:A.carburante.capacita; st.flusso=0;
     st.flapSel=0; st.flap=0; st.trim=p.v?0.0:0; st.freno=0; st.sterzo=0;
     st.crashed=false; st.motivo=''; st.eventi.length=0;
     st.tempoAria=p.v?10:0; st.tempoTerra=0;
@@ -106,11 +107,19 @@ SIM.creaFisica=function(A,terra){
 
     /* ---- motore ed elica ---- */
     // giri: da fermo a tutta manetta ~2350, salgono con la velocità (elica a passo fisso)
+    // senza carburante il motore si spegne: l'elica gira solo per il vento ("mulinello") e non spinge
+    const acceso=st.carburante>0;
     const uP=Math.max(0,u);
-    const giriT=Math.max(A.motore.giriMin+(A.motore.giriMax-A.motore.giriMin)*Math.pow(st.thr,0.8)*(0.82+0.18*Math.min(1,uP/60)),
-                         A.motore.giriMin+uP*12);
+    const giriT=acceso?Math.max(A.motore.giriMin+(A.motore.giriMax-A.motore.giriMin)*Math.pow(st.thr,0.8)*(0.82+0.18*Math.min(1,uP/60)),
+                         A.motore.giriMin+uP*12):uP*12;
     st.rpm+=(giriT-st.rpm)*Math.min(1,dt*2.5);
-    const T=(0.03+0.97*st.thr)*A.motore.spintaStatica*Math.max(0,1-Math.max(0,u)/A.motore.velocitaMaxElica)*(rho/1.225);
+    const T=acceso?(0.03+0.97*st.thr)*A.motore.spintaStatica*Math.max(0,1-Math.max(0,u)/A.motore.velocitaMaxElica)*(rho/1.225):0;
+    const cb2=A.carburante;
+    st.flusso=acceso?cb2.consumoMin+(cb2.consumoMax-cb2.consumoMin)*st.thr:0;
+    if(acceso){
+      st.carburante=Math.max(0,st.carburante-st.flusso*dt/3600);
+      if(st.carburante===0) st.eventi.push({tipo:'senzaCarburante'});
+    }
 
     /* ---- forze in assi corpo ---- */
     Fb.set(0,0,0);

@@ -113,12 +113,16 @@ addEventListener('resize',()=>adattaDestra());
 
 /* ---------- stato del gioco ---------- */
 let avviato=false, inPausa=false, vista=0, tempo=0;
+// carburante alla partenza (galloni), scelto nel briefing e ricordato
+let carbIniziale=A.carburante.capacita;
+try{const c=parseFloat(localStorage.getItem('volo-carburante'));if(c>0&&c<=A.carburante.capacita)carbIniziale=c;}catch(e){}
 const NOMI_VISTA=['ESTERNA','CABINA','TORRE'];
 
 function ricomincia(){
   centraCloche();
   const p=modalita==='finale'&&partenza.te?puntoFinale():partenza;
   fis.reset(p);
+  st.carburante=carbIniziale;
   if(p.flapSel){st.flapSel=p.flapSel;st.flap=A.flap.posizioni[p.flapSel];}
   $('crash').hidden=true;
   terreno.aggiorna(st.pos.x,st.pos.z,true);
@@ -353,6 +357,8 @@ function gestisciEventi(){
         if(pv.pista.ap===dest()) txt+='<br><b>Destinazione raggiunta!</b>';
       }else txt+=`<br>Fuori pista${e.suolo==='erba'?', sull\'erba':''}`;
       messaggio(txt,8);
+    }else if(e.tipo==='senzaCarburante'){
+      messaggio('<b>Motore spento: carburante esaurito!</b><br>Tieni circa 65 nodi (miglior planata) e cerca un campo o una pista vicina.',10);
     }else if(e.tipo==='incidente'){
       audio.colpo(1);mostraIncidente(e.motivo);
     }
@@ -402,10 +408,15 @@ function aggiornaCamera(dt){
 }
 
 /* ---------- strumenti e testi ---------- */
-let vsFiltrata=0;
+let vsFiltrata=0, virataFiltrata=0;
+const wMondo=new THREE.Vector3();
 function aggiornaStrumenti(dt){
   assi();
   vsFiltrata+=(st.vs*FPM-vsFiltrata)*Math.min(1,dt*4);
+  // rateo di virata (°/s, positivo a destra); come nel virosbandometro vero, sente anche un po' il rollio
+  wMondo.copy(st.w).applyQuaternion(st.q);
+  const virata=-wMondo.y*R2D+0.15*(-st.w.z*R2D);
+  virataFiltrata+=(virata-virataFiltrata)*Math.min(1,dt*3);
   const d=dest();
   const hdg=((Math.atan2(fwd.x,-fwd.z)*R2D)+360)%360;
   let bug=null;
@@ -416,6 +427,7 @@ function aggiornaStrumenti(dt){
     bank:Math.atan2(-dx.y,su.y),
     ias:st.ias*KT, alt:st.pos.y*FT, agl:Math.max(0,st.agl)*FT,
     vs:vsFiltrata, hdg, palla:st.palla, bug, gs:st.gs*KT,
+    virata:st.aTerra?0:virataFiltrata, trim:st.trim, carb:st.carburante, flusso:st.crashed?0:st.flusso,
   };
   if(vista===1){
     // in cabina: gli strumenti vengono disegnati sugli schermi del pannello
@@ -426,7 +438,7 @@ function aggiornaStrumenti(dt){
       const trk=((Math.atan2(st.vel.x,-st.vel.z)*R2D)+360)%360;
       strum.disegnaMFD(cab.mfd.sup,{s:st,hdg,dest:d,gs:st.gs*KT,trk,thr:st.thr});cab.mfd.tex.needsUpdate=true;
     }
-  }else strum.disegnaPFD(dati);
+  }else{strum.disegnaPFD(dati);strum.disegnaAux(dati);}
   return {hdg,bug};
 }
 const el={};
@@ -459,6 +471,8 @@ function aggiornaTesti(hdg,bug){
     else if(st.ias*KT>A.velocita.vne){w='VELOCITÀ ECCESSIVA';rosso=true;}
     else if(st.flap>1&&st.ias*KT>A.velocita.vfe+5)w='VELOCITÀ FLAP';
     else if(st.g>3.8||st.g<-1.5)w='SOVRACCARICO';
+    else if(st.carburante<=0)w='MOTORE SPENTO';
+    else if(st.carburante<5)w='CARBURANTE BASSO';
   }
   el.avviso.hidden=!w;
   if(w){scrivi(el.avviso,w);el.avviso.classList.toggle('rosso',rosso);}
@@ -504,6 +518,14 @@ selPista.addEventListener('change',()=>{scegliPartenza();selPista.blur();});
 selDB.addEventListener('change',()=>{impostaDest(+selDB.value);selDB.blur();});
 selD.addEventListener('change',()=>{impostaDest(+selD.value);messaggio(`Destinazione: <b>${dest().codice}</b> ${dest().nome}`,2.5);selD.blur();});
 impostaDest(destIdx);
+const selCarb=$('selCarb');
+if(![...selCarb.options].some(o=>+o.value===carbIniziale))carbIniziale=A.carburante.capacita;
+selCarb.value=String(carbIniziale);
+selCarb.addEventListener('change',()=>{
+  carbIniziale=+selCarb.value;st.carburante=carbIniziale;
+  try{localStorage.setItem('volo-carburante',String(carbIniziale));}catch(e){}
+  selCarb.blur();
+});
 
 /* ---------- ciclo principale ---------- */
 ricomincia();

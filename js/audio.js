@@ -44,7 +44,7 @@ SIM.creaAudio=function(){
     n.o1.frequency.setTargetAtTime(f,t,0.05);
     n.o2.frequency.setTargetAtTime(f/2,t,0.05);
     n.lp.frequency.setTargetAtTime(180+s.rpm*0.35,t,0.1);
-    n.gMot.gain.setTargetAtTime(on?0.10+0.16*(s.rpm/2700):0,t,0.08);
+    n.gMot.gain.setTargetAtTime(on&&s.carburante>0?0.10+0.16*(s.rpm/2700):0,t,0.08);
     const v=s.ias/60;
     n.gVento.gain.setTargetAtTime(on?Math.min(0.22,v*v*0.12):0,t,0.2);
     n.bp.frequency.setTargetAtTime(500+s.ias*12,t,0.2);
