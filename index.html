@@ -34,7 +34,8 @@
       <dt>Z / X</dt><dd data-en="trim nose up / nose down">trim cabra / picchia</dd>
       <dt data-en="B or Space">B o Spazio</dt><dd data-en="brakes (hold)">freni (tieni premuto)</dd>
       <dt>C</dt><dd data-en="view: outside, cockpit, tower">vista: esterna, cabina, torre</dd>
-      <dt data-en="Mouse wheel">Rotellina</dt><dd data-en="cockpit zoom">zoom in cabina</dd>
+      <dt data-en="Right mouse">Tasto destro</dt><dd data-en="hold and drag: look around (cockpit) or around the aircraft (outside)">tieni premuto e trascina: guardati intorno (cabina) o gira attorno all'aereo (fuori)</dd>
+      <dt>Rotellina</dt><dd data-en="cockpit zoom">zoom in cabina</dd>
       <dt>N</dt><dd data-en="next destination">prossima destinazione</dd>
       <dt>I</dt><dd data-en="flight plan and arrival runway">piano di volo e pista di arrivo</dd>
       <dt>T</dt><dd data-en="radio: talk to the tower (then 1…4 to choose the sentence)">radio: parla con la torre (poi 1…4 per scegliere la frase)</dd>
@@ -158,6 +159,13 @@
         <label><span data-en="Departure airport">Aeroporto di partenza</span> <select id="selAeroporto"></select></label>
         <label><span data-en="Runway">Pista</span> <select id="selPista"></select></label>
         <label><span data-en="Destination">Destinazione</span> <select id="selDestBrief"></select></label>
+        <label><span data-en="Time of day">Ora del volo</span>
+          <select id="selOra">
+            <option value="giorno" data-en="Day">Giorno</option>
+            <option value="tramonto" data-en="Sunset">Tramonto</option>
+            <option value="notte" data-en="Night">Notte</option>
+          </select>
+        </label>
         <label><span data-en="Fuel">Carburante</span>
           <select id="selCarb">
             <option value="53" data-en="Full: 53 gal (about 6 hours)">Pieno: 53 gal (circa 6 ore)</option>
@@ -214,6 +222,7 @@
 <script src="js/fisica.js"></script>
 <script src="js/cabina.js"></script>
 <script src="js/mondo.js"></script>
+<script src="js/notte.js"></script>
 <script src="js/strumenti.js"></script>
 <script src="js/radio.js"></script>
 <script src="js/piano.js"></script>

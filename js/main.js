@@ -26,6 +26,11 @@ const T=SIM.terreno;
 const terreno=T.creaMesh(scene,renderer);
 const mondo=SIM.creaMondo(scene,renderer);
 const monumenti=SIM.creaMonumenti?SIM.creaMonumenti(scene):null;   // solo mondo reale (js/monumenti.js)
+// ora del volo: giorno, tramonto, notte (js/notte.js), scelta nel briefing e ricordata
+const notte=SIM.creaNotte(scene,mondo,T);
+let oraVolo='giorno';
+try{const o=localStorage.getItem('volo-ora');if(o==='tramonto'||o==='notte')oraVolo=o;}catch(e){}
+notte.imposta(oraVolo);
 camera.far=Math.max(15000,scene.fog.far*1.15);camera.updateProjectionMatrix();
 const fis=SIM.creaFisica(A,T), st=fis.st;
 const strum=SIM.creaStrumenti(A);
@@ -171,7 +176,7 @@ function flap(d){
   const nuovo=clamp(st.flapSel+d,0,n-1);
   if(nuovo!==st.flapSel){st.flapSel=nuovo;messaggio(L(`Flap <b>${A.flap.posizioni[nuovo]}°</b>`,`Flaps <b>${A.flap.posizioni[nuovo]}°</b>`),1.5);}
 }
-function cambiaVista(){vista=(vista+1)%3;primaCamera=true;}
+function cambiaVista(){vista=(vista+1)%3;primaCamera=true;sg.yaw=sg.pitch=0;}
 function prossimaDest(){
   if(!T.aeroporti.length) return;
   impostaDest((destIdx+1)%T.aeroporti.length);
@@ -261,21 +266,39 @@ addEventListener('blur',()=>{tasti.clear();for(const q in tieni)tieni[q]=false;}
 let trascina=null;
 const stickEl=$('stick'),knob=$('knob'),RAGGIO=75;
 // il trascinamento riparte dalla posizione attuale della cloche, e al rilascio la cloche resta lì
+/* tasto destro del mouse: guardarsi intorno (in cabina gira la testa, fuori ruota la telecamera
+   attorno all'aereo); lasciando il tasto la vista torna dritta */
+const sg={yaw:0,pitch:0};let sguardo=null;
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
 canvas.addEventListener('pointerdown',e=>{
   audio.avvia();
+  if(e.button===2){
+    sguardo={id:e.pointerId,x:e.clientX,y:e.clientY,yaw0:sg.yaw,pitch0:sg.pitch};
+    try{canvas.setPointerCapture(e.pointerId);}catch(_){}
+    e.preventDefault();return;
+  }
+  if(e.pointerType==='mouse'&&e.button!==0) return;
   trascina={id:e.pointerId,x:e.clientX,y:e.clientY,x0:cloche.x,y0:cloche.y};
   try{canvas.setPointerCapture(e.pointerId);}catch(_){}
   stickEl.style.left=(e.clientX-cloche.x*RAGGIO)+'px';stickEl.style.top=(e.clientY-cloche.y*RAGGIO)+'px';stickEl.hidden=false;
   knob.style.transform=`translate(${cloche.x*RAGGIO}px,${cloche.y*RAGGIO}px)`;
 });
 canvas.addEventListener('pointermove',e=>{
+  if(sguardo&&e.pointerId===sguardo.id){
+    sg.yaw=clamp(sguardo.yaw0-(e.clientX-sguardo.x)*0.005,-2.7,2.7);
+    sg.pitch=clamp(sguardo.pitch0-(e.clientY-sguardo.y)*0.005,-1.0,1.2);
+    return;
+  }
   if(!trascina||e.pointerId!==trascina.id) return;
   cloche.x=clamp(trascina.x0+(e.clientX-trascina.x)/RAGGIO,-1,1);
   cloche.y=clamp(trascina.y0+(e.clientY-trascina.y)/RAGGIO,-1,1);
   knob.style.transform=`translate(${cloche.x*RAGGIO}px,${cloche.y*RAGGIO}px)`;
 });
 const puntoCloche=$('puntoCloche');
-const fineTrascina=e=>{if(trascina&&e.pointerId===trascina.id){trascina=null;stickEl.hidden=true;}};
+const fineTrascina=e=>{
+  if(sguardo&&e.pointerId===sguardo.id){sguardo=null;return;}
+  if(trascina&&e.pointerId===trascina.id){trascina=null;stickEl.hidden=true;}
+};
 function centraCloche(){cloche.x=cloche.y=0;}
 canvas.addEventListener('pointerup',fineTrascina);canvas.addEventListener('pointercancel',fineTrascina);
 
@@ -410,12 +433,15 @@ function torreVicina(){
   return best;
 }
 function impostaFov(f){if(Math.abs(camera.fov-f)>0.01){camera.fov=f;camera.updateProjectionMatrix();}}
+const qYaw=new THREE.Quaternion(),qPitch=new THREE.Quaternion(),asseX=new THREE.Vector3(1,0,0);
 function aggiornaCamera(dt){
   assi();
+  if(!sguardo){const r=Math.exp(-dt*3);sg.yaw*=r;sg.pitch*=r;if(Math.abs(sg.yaw)<0.002)sg.yaw=0;if(Math.abs(sg.pitch)<0.002)sg.pitch=0;}
   if(vista===1){
     const cab=mondo.aereo.cabina;
     camera.position.copy(cab.occhio).applyQuaternion(st.q).add(st.pos);
-    camera.quaternion.copy(st.q).multiply(sguardoGiu);   // sguardo un po' verso il basso, sul pannello
+    qYaw.setFromAxisAngle(Y,sg.yaw);qPitch.setFromAxisAngle(asseX,sg.pitch);
+    camera.quaternion.copy(st.q).multiply(qYaw).multiply(qPitch).multiply(sguardoGiu);   // testa girata, poi sguardo un po' in basso
     impostaFov(fovCabina);
   }else if(vista===2&&mondo.torri.length){
     const t=torreVicina();
@@ -424,12 +450,16 @@ function aggiornaCamera(dt){
     impostaFov(clamp(2*Math.atan(22/Math.max(d,1))*R2D,2,60));
   }else{
     const orizz=Math.hypot(fwd.x,fwd.z)>0.2;
-    bersaglio.copy(st.pos).addScaledVector(fwd,-18).addScaledVector(Y,orizz?4.5:0).addScaledVector(su,orizz?0:4.5);
+    const giro=Math.abs(sg.yaw)>0.01||Math.abs(sg.pitch)>0.01;
+    if(giro&&orizz){ // tasto destro: la telecamera gira attorno all'aereo
+      const az=Math.atan2(fwd.x,-fwd.z)+Math.PI-sg.yaw, el=clamp(0.24+sg.pitch,-0.05,1.4);
+      bersaglio.set(st.pos.x+Math.sin(az)*Math.cos(el)*18,st.pos.y+Math.sin(el)*18,st.pos.z-Math.cos(az)*Math.cos(el)*18);
+    }else bersaglio.copy(st.pos).addScaledVector(fwd,-18).addScaledVector(Y,orizz?4.5:0).addScaledVector(su,orizz?0:4.5);
     const gCam=T.suolo(bersaglio.x,bersaglio.z)+2;
     if(bersaglio.y<gCam)bersaglio.y=gCam;
     if(primaCamera)camera.position.copy(bersaglio);
     else camera.position.lerp(bersaglio,1-Math.exp(-dt*(st.crashed?0.5:4)));
-    guarda.copy(st.pos).addScaledVector(fwd,6).addScaledVector(Y,-2.5);
+    if(giro&&orizz)guarda.copy(st.pos);else guarda.copy(st.pos).addScaledVector(fwd,6).addScaledVector(Y,-2.5);
     camera.up.set(0,1,0);camera.lookAt(guarda);
     impostaFov(60);
   }
@@ -619,6 +649,9 @@ function cambiaCrs(d){
 }
 selNav.addEventListener('change',()=>{const i=+selNav.value;sintonizza(i>=0?radio.stazioni[i]:null);selNav.blur();});
 sintonizza(null,true);
+const selOra=$('selOra');
+selOra.value=oraVolo;
+selOra.addEventListener('change',()=>{oraVolo=selOra.value;notte.imposta(oraVolo);try{localStorage.setItem('volo-ora',oraVolo);}catch(e){}selOra.blur();});
 const selCarb=$('selCarb');
 if(![...selCarb.options].some(o=>+o.value===carbIniziale))carbIniziale=A.carburante.capacita;
 selCarb.value=String(carbIniziale);
@@ -632,7 +665,7 @@ selCarb.addEventListener('change',()=>{
 ricomincia();
 aggiornaVento(0);
 // scorciatoie per le prove: index.html#salta (salta il briefing), #vista=1 (cabina)
-SIM.debug={st,fis,terreno,monumenti};  // utile dalla console del browser (F12)
+SIM.debug={st,fis,terreno,monumenti,scene};  // utile dalla console del browser (F12)
 if(/salta/.test(location.hash)) inizia();
 if(/finale/.test(location.hash)) inizia('finale');
 {const mv=/vista=(\d)/.exec(location.hash);if(mv)vista=(+mv[1])%3;}
@@ -657,6 +690,7 @@ function ciclo(ora){
     if(atterratoA&&st.aTerra&&st.gs<1.5&&!st.crashed&&atc.libero){const ap=atterratoA;atterratoA=null;nuovaPartenza(ap);}
   }
   mondo.aggiorna(st,camera.position,vento,attivo?dt:0,vista===1);
+  notte.aggiorna(camera.position);
   if(n%2===0)ultimiStrum=aggiornaStrumenti(dt*2);
   if(n%6===0){aggiornaPiano();aggiornaTesti(ultimiStrum.hdg,ultimiStrum.bug);strum.disegnaMappa(st,ultimiStrum.hdg,dest());}
   audio.aggiorna(st,!attivo);

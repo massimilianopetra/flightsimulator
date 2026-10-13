@@ -28,7 +28,7 @@ SIM.creaMondo=function(scene,renderer){
   cielo.renderOrder=-10;cielo.frustumCulled=false;
   scene.add(cielo);
 
-  scene.add(new THREE.HemisphereLight(0xdfeaf5,0x4f5a3c,0.72));
+  const emi=new THREE.HemisphereLight(0xdfeaf5,0x4f5a3c,0.72);scene.add(emi);
   const sole=new THREE.DirectionalLight(0xfff2dc,0.78);
   sole.position.set(-0.5,1,0.35);scene.add(sole);
 
@@ -255,6 +255,8 @@ SIM.creaMondo=function(scene,renderer){
   const vista={};
   return {
     meteo:met, torri, aereo,
+    // per js/notte.js: cielo, luci e materiali che cambiano con l'ora del giorno
+    luci:{cielo,emi,sole,matNuvola,matVetro,ORIZZ,ZENIT},
     // aggiorna le parti animate. s = stato fisica, cam = posizione camera, vento = vettore
     aggiorna(s,cam,vento,dt,vistaCabina){
       cielo.position.copy(cam);
@@ -336,12 +338,13 @@ SIM.creaMondo=function(scene,renderer){
     const luce=(c,x,y,z)=>add(new THREE.SphereGeometry(0.07,8,6),new THREE.MeshBasicMaterial({color:c}),x,y,z);
     luce(0xff2020,-5.52,0.88,-0.6);luce(0x20ff40,5.52,0.88,-0.6);luce(0xffffff,0,1.85,4.3);
     const strobo=luce(0xffffff,0,1.86,3.4);
+    const luciNav=[...gr.children.slice(-4)];   // per js/notte.js (più grandi di notte)
     // interno della cabina (js/cabina.js), visibile solo dalla vista in cabina
     const cab=SIM.creaCabina();gr.add(cab.gruppo);
     const cabina=cab.gruppo;
 
     let tempo=0;
-    return {gruppo:gr, cabina:cab,
+    return {gruppo:gr, cabina:cab, luciNav,
       aggiorna(s,dt,inCabina){
         tempo+=dt;
         gr.position.copy(s.pos);gr.quaternion.copy(s.q);
