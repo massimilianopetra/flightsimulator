@@ -79,6 +79,7 @@ function puntoFinale(){
     hdg:te.hdg,v:72/KT,thr:0.35,flapSel:1};
 }
 let modalita='decollo';
+let atterratoA=null;   // aeroporto dove si è appena atterrati: fermi lì, diventa la nuova partenza
 let destIdx=T.aeroporti.findIndex(a=>a.codice===M.destinazione);
 if(destIdx<0)destIdx=Math.max(0,T.aeroporti.findIndex(a=>a!==partenza.ap));
 const dest=()=>T.aeroporti[destIdx]||null;
@@ -140,6 +141,7 @@ function ricomincia(){
   $('thr').value=Math.round(st.thr*100);
   if(piano.piano){piano.piano.prossimo=0;aggiornaPiano();}
   atc.reset(ctxATC());
+  atterratoA=null;
   if(avviato&&modalita==='finale') messaggio(L('In finale per la pista <b>'+partenza.te.nome+'</b>: segui le luci PAPI, 65 nodi, flap 30°','On final for runway <b>'+partenza.te.nome+'</b>: follow the PAPI lights, 65 knots, flaps 30°'),6);
   else if(avviato) messaggio(partenza.te?L(`Pronto al decollo: pista <b>${partenza.te.nome}</b> di <b>${partenza.ap.codice}</b>`,`Ready for take-off: runway <b>${partenza.te.nome}</b> at <b>${partenza.ap.codice}</b>`):L('In volo!','Airborne!'),4);
 }
@@ -363,6 +365,7 @@ function gestisciEventi(){
   for(const e of st.eventi){
     atc.evento(e,st,ctxATC());
     if(e.tipo==='decollo'){
+      atterratoA=null;
       const pv=T.pistaVicina(e.x,e.z,80);
       messaggio(pv?L(`Decollo da <b>${pv.pista.ap.codice}</b>: buon volo!`,`Take-off from <b>${pv.pista.ap.codice}</b>: have a good flight!`):L('Decollo!','Take-off!'),3);
     }else if(e.tipo==='atterraggio'){
@@ -370,6 +373,8 @@ function gestisciEventi(){
       audio.colpo(clamp(fpm/700,0,1));
       const giudizio=fpm<120?L('Burro! Atterraggio perfetto','Butter! Perfect landing'):fpm<250?L('Ottimo atterraggio','Great landing'):fpm<450?L('Buon atterraggio','Good landing'):L('Atterraggio duro','Hard landing');
       const pv=e.suolo==='pista'?T.pistaVicina(e.x,e.z,0):null;
+      const pa=T.pistaVicina(e.x,e.z,30);   // anche le piste in erba
+      atterratoA=pa?pa.pista.ap:null;
       let txt=`<b>${giudizio}</b> — ${Math.round(fpm)} ft/min`;
       if(pv){
         assi();
@@ -534,6 +539,23 @@ selLingua.addEventListener('change',()=>SIM.cambiaLingua(selLingua.value));
 const opzioniAeroporti=sel=>{sel.innerHTML=T.aeroporti.map((a,i)=>`<option value="${i}">${a.codice} – ${a.nome}</option>`).join('');};
 for(const sel of [selAp,selDB,selD])opzioniAeroporti(sel);
 function impostaDest(i){destIdx=i;selDB.value=selD.value=String(i);aggiornaBriefing();}
+/* fermi dopo un atterraggio: l'aeroporto diventa la partenza del volo successivo (si continua lo stesso volo:
+   carburante e posizione restano; R da qui in poi riparte da questo aeroporto) */
+function nuovaPartenza(ap){
+  const te=testataControvento(ap);
+  partenza=partenzaDa(ap,te);modalita='decollo';
+  selAp.value=String(T.aeroporti.indexOf(ap));riempiPiste(ap,te);
+  if(dest()===ap){ // arrivati a destinazione: si propone l'aeroporto più vicino come prossima tappa
+    let best=-1,bd=Infinity;
+    T.aeroporti.forEach((a,i)=>{if(a===ap)return;const d=Math.hypot(a.x-ap.x,a.z-ap.z);if(d<bd){bd=d;best=i;}});
+    if(best>=0)destIdx=best;
+  }
+  impostaDest(destIdx);
+  atc.reset(ctxATC());
+  const d=dest();
+  messaggio(L(`Sei fermo a <b>${ap.codice}</b>. Prossima destinazione: <b>${d?d.codice:'—'}</b> (cambiala con N o il menu DEST).<br>Rulla fino alla pista <b>${te.nome}</b> e chiedi il decollo alla torre (T).`,
+              `You are stopped at <b>${ap.codice}</b>. Next destination: <b>${d?d.codice:'—'}</b> (change it with N or the DEST menu).<br>Taxi to runway <b>${te.nome}</b> and ask the tower for take-off clearance (T).`),10);
+}
 function riempiPiste(ap,scelta){
   const opz=[];
   ap.piste.forEach((pi,i)=>pi.testate.forEach((t,j)=>opz.push(`<option value="${i}|${j}">${t.nome} (${pi.L} m${pi.erba?L(', erba',', grass'):''})</option>`)));
@@ -630,7 +652,10 @@ function ciclo(ora){
   aggiornaCamera(dt);
   terreno.aggiorna(camera.position.x,camera.position.z,false);
   if(monumenti&&n%10===0)monumenti.aggiorna(camera.position,terreno.vicino());
-  if(attivo&&n%15===0)atc.aggiorna(st,ctxATC());
+  if(attivo&&n%15===0){
+    atc.aggiorna(st,ctxATC());
+    if(atterratoA&&st.aTerra&&st.gs<1.5&&!st.crashed&&atc.libero){const ap=atterratoA;atterratoA=null;nuovaPartenza(ap);}
+  }
   mondo.aggiorna(st,camera.position,vento,attivo?dt:0,vista===1);
   if(n%2===0)ultimiStrum=aggiornaStrumenti(dt*2);
   if(n%6===0){aggiornaPiano();aggiornaTesti(ultimiStrum.hdg,ultimiStrum.bug);strum.disegnaMappa(st,ultimiStrum.hdg,dest());}
