@@ -38,6 +38,7 @@
       <dt>N</dt><dd data-en="next destination">prossima destinazione</dd>
       <dt>I</dt><dd data-en="flight plan and arrival runway">piano di volo e pista di arrivo</dd>
       <dt>T</dt><dd data-en="radio: talk to the tower (then 1…4 to choose the sentence)">radio: parla con la torre (poi 1…4 per scegliere la frase)</dd>
+      <dt>U</dt><dd data-en="radio COM1: next nearest station">radio COM1: prossima stazione vicina</dd>
       <dt>V</dt><dd data-en="NAV1: next VOR/ILS in range (nearest first)">NAV1: prossimo VOR/ILS ricevuto (il più vicino per primo)</dd>
       <dt>L</dt><dd data-en="NAV1: ILS of the arrival runway">NAV1: ILS della pista di arrivo</dd>
       <dt>, / .</dt><dd data-en="VOR course CRS −1° / +1° (with Shift ±10°)">rotta CRS del VOR −1° / +1° (con Maiusc ±10°)</dd>
@@ -78,6 +79,8 @@
       <span>RADIO <span class="dim">(T)</span></span><span id="radioCom" class="radiocom"></span><span class="freccia" aria-hidden="true">▾</span>
     </button>
     <div id="radioCorpo" class="corpo">
+      <div class="row riga-com"><span class="lbl">COM1</span><select id="selCom" class="selcom" aria-label="Frequenza della radio COM1" data-en-aria="COM1 radio frequency"></select></div>
+      <label class="regola"><input id="comAuto" type="checkbox"> <span data-en="Automatic tuning (the game sets the right frequency)">Sintonia automatica (il gioco imposta la frequenza giusta)</span></label>
       <div id="radioAvviso" class="radioavviso" hidden></div>
       <div id="radioLog" class="radiolog"></div>
       <ol id="radioMenu" class="radiomenu" hidden></ol>

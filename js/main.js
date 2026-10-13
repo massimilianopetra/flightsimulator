@@ -89,6 +89,7 @@ const nav={staz:null,crs:0};
 const piano=SIM.creaPiano(T,A,met,radio);
 // comunicazioni radio con la torre (js/atc.js)
 const atc=SIM.creaATC({A,T,met,audio,radio});
+piano.impostaCom(atc.stazioneDi);
 const ctxATC=()=>({part:partenza.ap?{ap:partenza.ap,te:partenza.te}:null,arr:piano.piano?{ap:piano.piano.arr,te:piano.piano.te}:null,finale:modalita==='finale'});
 let faseMostrata=-1;
 function ricalcolaPiano(){

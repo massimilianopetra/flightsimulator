@@ -100,6 +100,7 @@ To work on it with VS Code the *Live Server* extension is fine too.
 | M (or mouse wheel over the map, or the SCALE menu) | map scale: 2, 5, 10, 20, 50, 100 NM or the whole region |
 | O (or click on the map) | map with north up or heading up |
 | T | radio: talk to the tower (then 1…4 to choose the sentence) |
+| U | radio COM1: tune the next nearest station |
 | V | NAV1 radio: next VOR or ILS in range (nearest first) |
 | L | NAV1 radio: ILS of the arrival runway |
 | , / . | VOR course (CRS) −1° / +1°, with Shift ±10° |
@@ -158,6 +159,8 @@ The tower talks to you in **English**, with the standard ICAO phraseology, using
 You do not speak: press **T**, choose the sentence (1…4) and the game says it with the pilot's voice. Clearances must be
 read back, and sometimes one of the answers is deliberately wrong: the tower corrects you. Take-off, leaving the control
 zone, arrival (visual or ILS), final, landing, vacating the runway and MAYDAY are covered. Frequencies are simulated.
+You tune the COM1 radio yourself (COM1 menu or U key): on the wrong frequency nobody answers. Tick "Automatic tuning" to let
+the game do it.
 
 ## The flight plan
 
@@ -464,6 +467,7 @@ Per lavorarci con VS Code va bene anche l'estensione *Live Server*.
 | M (o rotellina sopra la mappa, o il menu SCALA) | scala della mappa: 2, 5, 10, 20, 50, 100 NM o tutta la regione |
 | O (o clic sulla mappa) | mappa con il nord in alto oppure con la prua in alto |
 | T | radio: parla con la torre (poi 1…4 per scegliere la frase) |
+| U | radio COM1: sintonizza la prossima stazione vicina |
 | V | radio NAV1: prossimo VOR o ILS ricevuto (il più vicino per primo) |
 | L | radio NAV1: ILS della pista di arrivo |
 | , / . | rotta del VOR (CRS) −1° / +1°, con Maiusc ±10° |
@@ -523,6 +527,8 @@ Tu non parli: premi **T**, scegli la frase (1…4) e il gioco la pronuncia con l
 traduzione italiana. Le autorizzazioni vanno ripetute, e a volte una delle risposte è volutamente sbagliata: la torre ti
 corregge. Ci sono decollo, uscita dalla zona di controllo, arrivo (a vista o ILS), finale, atterraggio, liberare la pista
 e MAYDAY. Le frequenze sono simulate.
+La radio COM1 la sintonizzi tu (menu COM1 o tasto U): sulla frequenza sbagliata nessuno risponde. Con "Sintonia automatica"
+ci pensa il gioco.
 
 ## Il piano di volo
 
