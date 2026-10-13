@@ -39,21 +39,32 @@ function frase(...pezzi){
   return {d:d.replace(/\s+/g,' ').trim(),s:s.replace(/\s+/g,' ').trim()};
 }
 
-SIM.creaATC=function({A,T,met,audio,radio}){
+SIM.creaATC=function({A,T,met,audio,radio,stato}){
   const $=id=>document.getElementById(id);
   /* ---------- nominativo dell'aereo ---------- */
   const REG=(A.registrazione||'I-VOLO').toUpperCase();
   const lett=REG.replace(/[^A-Z]/g,'');
   const CS={d:REG,s:lettere(REG)};                                         // completo
   const CSB={d:lett[0]+'-'+lett.slice(-2),s:lettere(lett[0]+lett.slice(-2))};  // abbreviato
-  /* ---------- stazioni: una per aeroporto ---------- */
-  const stazioni=new Map();
+  /* ---------- stazioni: una per aeroporto, più la "terra" (Ground) dove esiste ----------
+     frequenze e tipo veri da window.RADIO.com (OurAirports, dati/piemonte-radio.js): TWR = torre che autorizza,
+     INFO (AFIS) e RADIO = solo informazioni. Dove i dati mancano (e nel mondo inventato) la stazione è simulata:
+     torre se la pista principale è asfaltata e lunga almeno 1000 m, altrimenti Radio. */
+  const COM=(window.RADIO&&window.RADIO.com)||[];
+  const stazioni=new Map(), terra=new Map();
+  const staz0=(ap,torre,nome,freq,vera,extra)=>Object.assign({ap,torre,nome,freq,vera,parla:{d:nome,s:nome}},extra);
   T.aeroporti.forEach((ap,i)=>{
-    const p=ap.piste[0], torre=!p.erba&&p.L>=1000;
-    const nome=ap.nome.replace(/\s*\(.*\)/,'').replace(/-/g,' ');
-    const f=(118+((i*7)%160)*0.025).toFixed(3);   // 118,000…121,975
-    stazioni.set(ap,{ap,torre,nome:nome+(torre?' Tower':' Radio'),freq:f,
-      parla:{d:nome+(torre?' Tower':' Radio'),s:nome+(torre?' Tower':' Radio')}});
+    const vere=COM.filter(c=>c.ap===ap.codice);
+    const pr=vere.find(c=>c.tipo==='TWR')||vere.find(c=>c.tipo==='INFO')||vere.find(c=>c.tipo==='RADIO');
+    if(pr) stazioni.set(ap,staz0(ap,pr.tipo==='TWR',pr.nome,pr.freq,true));
+    else{
+      const p=ap.piste[0], torre=!p.erba&&p.L>=1000;
+      const nome=ap.nome.replace(/\s*\(.*\)/,'').replace(/-/g,' ')+(torre?' Tower':' Radio');
+      let f=(118+((i*7)%160)*0.025).toFixed(3);if(f==='121.500')f='121.525';   // mai la frequenza di emergenza
+      stazioni.set(ap,staz0(ap,torre,nome,f,false));   // simulata: 118,000…121,975
+    }
+    const g=vere.find(c=>c.tipo==='GND');
+    if(g&&pr&&pr.tipo==='TWR') terra.set(ap,staz0(ap,true,g.nome,g.freq,true,{terra:true}));
   });
   const QNH=Math.round(met.qnh||1016);
   const ventoF=()=>met.ventoNodi<1?{d:'wind calm',s:'wind calm'}:
@@ -119,7 +130,7 @@ SIM.creaATC=function({A,T,met,audio,radio}){
   /* ---------- sintonia della radio COM1 ----------
      manuale: il giocatore sceglie la frequenza (menu COM1 o tasto U) e la torre risponde solo se è quella giusta;
      automatica: il gioco sintonizza da solo la stazione giusta quando serve (si può comunque cambiare a mano) */
-  const elencoCom=[...stazioni.values()].sort((a,b)=>a.nome.localeCompare(b.nome));
+  const elencoCom=[...stazioni.values(),...terra.values()].sort((a,b)=>a.nome.localeCompare(b.nome));
   let com=null, auto=false;
   try{auto=localStorage.getItem('volo-com-auto')==='1';}catch(e){}
   function sintonizza(s){com=s;intestazione();}
@@ -143,13 +154,13 @@ SIM.creaATC=function({A,T,met,audio,radio}){
 
   /* ---------- stato della conversazione ---------- */
   let staz=null, fase='pronto', att=null, attTimer=0, ripetuto=false, chiamato=false, uscitaFatta=false, arrivoAvvisato=false;
-  let ultimoATC=null, ctx=null, st=null, emergenza=false, maydayFatto=false, benvenuto=false;
+  let ultimoATC=null, ctx=null, st=stato||null, emergenza=false, maydayFatto=false, benvenuto=false;
   function reset(c){
     zitto();registro.length=0;disegnaRegistro();chiudiMenu();
     ctx=c;att=null;ripetuto=false;chiamato=false;uscitaFatta=false;arrivoAvvisato=false;emergenza=false;maydayFatto=false;benvenuto=false;ultimoATC=null;
     if(c.finale&&c.fin){staz=stazioni.get(c.fin.ap);fase='arrivo';
       avvisa(L(`In finale: chiama ${staz.nome} per l'atterraggio (T)`,`On final: call ${staz.nome} for landing (T)`));}
-    else if(c.part&&c.parcheggio){staz=stazioni.get(c.part.ap);fase='parcheggio';
+    else if(c.part&&c.parcheggio){staz=terra.get(c.part.ap)||stazioni.get(c.part.ap);fase='parcheggio';
       avvisa(L(`Chiedi a ${staz.nome} di rullare (T)`,`Ask ${staz.nome} for taxi (T)`));}
     else if(c.part){staz=stazioni.get(c.part.ap);fase='pronto';
       avvisa(L(`Chiedi l'autorizzazione al decollo a ${staz.nome} (T)`,`Ask ${staz.nome} for take-off clearance (T)`));}
@@ -218,16 +229,22 @@ SIM.creaATC=function({A,T,met,audio,radio}){
     const f=frase(nomeStaz(),', ',CS,', Cessna ',{d:'172',s:'one seven two'},' at the apron',
       dest?', VFR to '+dest.nome.replace(/-/g,' '):', VFR local flight',', request taxi');
     const it=`${staz.nome}, ${REG}, Cessna 172 al piazzale, VFR ${dest?'per '+dest.nome:'locale'}, chiediamo di rullare.`;
-    const dopo=()=>{fase='rullaggio';avvisa(L('Segui la linea magenta fino al punto attesa (linea gialla), poi chiama la torre (T)',
-      'Follow the magenta line to the holding point (yellow line), then call the tower (T)'));};
+    const tw=staz.terra?stazioni.get(ctx.part.ap):null;   // dalla terra si passa alla torre
+    const poi=tw?frase(', at holding point contact ',tw.parla,' ',freqF(tw.freq)):'', poiRb=tw?frase(', ',freqF(tw.freq)):'';
+    const poiIt=tw?`, al punto attesa contattate ${tw.nome} su ${tw.freq}`:'', poiRbIt=tw?`, ${tw.freq}`:'';
+    const dopo=()=>{fase='rullaggio';
+      if(tw){staz=tw;avvisa(L(`Segui la linea magenta fino al punto attesa, poi sintonizza ${tw.nome} ${tw.freq} (U o menu COM1) e chiama (T)`,
+        `Follow the magenta line to the holding point, then tune ${tw.nome} ${tw.freq} (U or the COM1 menu) and call (T)`));}
+      else avvisa(L('Segui la linea magenta fino al punto attesa (linea gialla), poi chiama la torre (T)',
+        'Follow the magenta line to the holding point (yellow line), then call the tower (T)'));};
     return {f,it,fai:()=>{
       pilotaDice(f,it);attendi(1200);
       const altra=te.pista.testate.find(t=>t!==te), sbPista=!!altra&&Math.random()<0.5;
       if(staz.torre){
-        atcDice(frase(CSB,', taxi to holding point ',pistaF(te),', ',qnhF()),`${CSB.d}, rullate al punto attesa pista ${te.nome}, QNH ${QNH}.`,
-          readback(frase('Taxi to holding point ',pistaF(te),', ',qnhF(),', ',CSB),`Rulliamo al punto attesa pista ${te.nome}, QNH ${QNH}, ${CSB.d}.`,
-            sbPista?frase('Taxi to holding point ',pistaF(altra),', ',qnhF(),', ',CSB):frase('Taxi to holding point ',pistaF(te),', ',qnhF(QNH+10),', ',CSB),
-            sbPista?`Rulliamo al punto attesa pista ${altra.nome}, QNH ${QNH}, ${CSB.d}.`:`Rulliamo al punto attesa pista ${te.nome}, QNH ${QNH+10}, ${CSB.d}.`,
+        atcDice(frase(CSB,', taxi to holding point ',pistaF(te),', ',qnhF(),poi),`${CSB.d}, rullate al punto attesa pista ${te.nome}, QNH ${QNH}${poiIt}.`,
+          readback(frase('Taxi to holding point ',pistaF(te),', ',qnhF(),poiRb,', ',CSB),`Rulliamo al punto attesa pista ${te.nome}, QNH ${QNH}${poiRbIt}, ${CSB.d}.`,
+            sbPista?frase('Taxi to holding point ',pistaF(altra),', ',qnhF(),poiRb,', ',CSB):frase('Taxi to holding point ',pistaF(te),', ',qnhF(QNH+10),poiRb,', ',CSB),
+            sbPista?`Rulliamo al punto attesa pista ${altra.nome}, QNH ${QNH}${poiRbIt}, ${CSB.d}.`:`Rulliamo al punto attesa pista ${te.nome}, QNH ${QNH+10}${poiRbIt}, ${CSB.d}.`,
             frase(CSB,', negative, holding point ',pistaF(te),', ',qnhF()),`${CSB.d}, negativo, punto attesa pista ${te.nome}, QNH ${QNH}.`,dopo));
       }else{
         atcDice(frase(CSB,', ',nomeStaz(),', ',pistaF(te),' in use, ',ventoF(),', ',qnhF(),', no reported traffic'),
@@ -389,14 +406,14 @@ SIM.creaATC=function({A,T,met,audio,radio}){
   // tasto U: le stazioni più vicine, una dopo l'altra
   function prossimaCom(){
     if(!st) return;
-    const vic=[...stazioni.values()].sort((a,b)=>Math.hypot(a.ap.x-st.pos.x,a.ap.z-st.pos.z)-Math.hypot(b.ap.x-st.pos.x,b.ap.z-st.pos.z)).slice(0,6);
+    const vic=[...stazioni.values(),...terra.values()].sort((a,b)=>Math.hypot(a.ap.x-st.pos.x,a.ap.z-st.pos.z)-Math.hypot(b.ap.x-st.pos.x,b.ap.z-st.pos.z)).slice(0,6);
     sintonizza(vic[(vic.indexOf(com)+1)%vic.length]);
     if(audio.attivo)audio.fruscio(0.1);
   }
   // pannello: menu COM1 e casella della sintonia automatica
   const sel=$('selCom');
   if(sel){
-    sel.innerHTML=`<option value="-1">— ${L('spenta','off')} —</option>`+elencoCom.map((s,i)=>`<option value="${i}">${s.freq} ${esc(s.nome)}</option>`).join('');
+    sel.innerHTML=`<option value="-1">— ${L('spenta','off')} —</option>`+elencoCom.map((s,i)=>`<option value="${i}">${s.freq} ${esc(s.nome)}${s.vera?'':' '+L('(simulata)','(simulated)')}</option>`).join('');
     sel.addEventListener('change',()=>{const i=+sel.value;sintonizza(i>=0?elencoCom[i]:null);sel.blur();});
   }
   const ca=$('comAuto');
@@ -405,6 +422,7 @@ SIM.creaATC=function({A,T,met,audio,radio}){
   return {
     reset,
     stazioneDi:ap=>stazioni.get(ap)||null,
+    terraDi:ap=>terra.get(ap)||null,
     get menuAperto(){return !!menu;},
     // nessuna trasmissione in corso e nessuna risposta attesa (o attesa da più di 40 s)
     get libero(){return !parlando&&(!att||Date.now()-attTimer>40000);},

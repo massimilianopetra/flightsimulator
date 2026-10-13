@@ -120,8 +120,8 @@ const radio=SIM.creaRadio(T);strum.impostaRadio(radio);
 const nav={staz:null,crs:0};
 const piano=SIM.creaPiano(T,A,met,radio);
 // comunicazioni radio con la torre (js/atc.js)
-const atc=SIM.creaATC({A,T,met,audio,radio});
-piano.impostaCom(atc.stazioneDi);
+const atc=SIM.creaATC({A,T,met,audio,radio,stato:st});
+piano.impostaCom(atc.stazioneDi,atc.terraDi);
 const ctxATC=()=>({parcheggio:!!partenza.parcheggio&&modalita!=='finale',attesa:partenza.attesa||null,part:partenza.ap?{ap:partenza.ap,te:partenza.te}:null,arr:piano.piano?{ap:piano.piano.arr,te:piano.piano.te}:null,finale:modalita==='finale',fin:modalita==='finale'?pistaFinale():null});
 let faseMostrata=-1;
 function ricalcolaPiano(){
@@ -721,7 +721,7 @@ selCarb.addEventListener('change',()=>{
 ricomincia();
 aggiornaVento(0);
 // scorciatoie per le prove: index.html#salta (salta il briefing), #vista=1 (cabina)
-SIM.debug={st,fis,terreno,monumenti,scene};  // utile dalla console del browser (F12)
+SIM.debug={st,fis,terreno,monumenti,scene,atc};  // utile dalla console del browser (F12)
 if(/salta/.test(location.hash)) inizia();
 if(/finale/.test(location.hash)) inizia('finale');
 {const mv=/vista=(\d)/.exec(location.hash);if(mv)vista=(+mv[1])%3;}
