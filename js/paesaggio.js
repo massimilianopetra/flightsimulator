@@ -224,6 +224,7 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
           interroga(x,z);
           if(qLib<d/2+2.5) continue;               // troppo vicino a una via o a un fiume
           if(T.inLago(x,z)||T.inAeroporto(x,z,40)) continue;
+          if(SIM.zonaMonumenti&&SIM.zonaMonumenti(x,z)) continue;   // spazio per i monumenti (js/monumenti.js)
           const rot=qDir?Math.atan2(-qDz,qDx):h4*Math.PI;  // facciata parallela alla strada
           aggiungi(x,z,w,d,h,rot,tetto,muro,industria?1:0);
         }

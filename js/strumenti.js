@@ -506,6 +506,18 @@ SIM.creaStrumenti=function(A){
         mg.fillStyle='rgba(255,255,255,.85)';mg.fillText(ct.nome,x,y+Math.max(6,ct.r*k*0.8)+5);
       }
     }
+    // monumenti: piccolo simbolo dorato e nome (fino a 20 NM di scala)
+    if(SIM.listaMonumenti&&range<=40000){
+      mg.font=`700 9px ${MONO}`;mg.textAlign='left';mg.textBaseline='middle';
+      for(const m of SIM.listaMonumenti){
+        const [x,y]=P(m.x,m.z);
+        if(x<-60||x>MW+20||y<-10||y>MH+10) continue;
+        mg.fillStyle='#ffd27a';mg.strokeStyle='#3b2a06';mg.lineWidth=1;
+        mg.beginPath();mg.moveTo(x,y-6);mg.lineTo(x+5,y+4);mg.lineTo(x-5,y+4);mg.closePath();mg.fill();mg.stroke();
+        if(range<=20000){mg.fillStyle='rgba(8,14,26,.7)';const w=mg.measureText(m.nome).width;mg.fillRect(x+7,y-6,w+4,12);
+          mg.fillStyle='#ffd27a';mg.fillText(m.nome,x+9,y+0.5);}
+      }
+    }
     mg.lineCap='butt';
     for(const p of T.piste){
       const [ax,ay]=P(p.testate[0].x,p.testate[0].z),[bx,by]=P(p.testate[1].x,p.testate[1].z);

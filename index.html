@@ -186,7 +186,7 @@
 <!-- dati modificabili: il mondo si sceglie con ?mappa=piemonte (predefinito) o ?mappa=valle -->
 <script>
 (function(){
-  var MONDI={piemonte:["dati/piemonte-rilievo.js","dati/piemonte-vie.js","dati/piemonte-abitati.js","dati/piemonte.js","dati/piemonte-radio.js"], valle:["dati/mappa.js"]};
+  var MONDI={piemonte:["dati/piemonte-rilievo.js","dati/piemonte-vie.js","dati/piemonte-abitati.js","dati/piemonte.js","dati/piemonte-radio.js","dati/piemonte-monumenti.js"], valle:["dati/mappa.js"]};
   var m=/[?&]mappa=(\w+)/.exec(location.search), scelta=(m&&MONDI[m[1]])?m[1]:"piemonte";
   window.MONDO_SCELTO=scelta;
   MONDI[scelta].forEach(function(f){document.write('<script src="'+f+'"><\/script>');});
@@ -195,6 +195,7 @@
 <script src="dati/aereo.js"></script>
 <!-- motore del simulatore -->
 <script src="js/terreno.js"></script>
+<script src="js/monumenti.js"></script>
 <script src="js/paesaggio.js"></script>
 <script src="js/fisica.js"></script>
 <script src="js/cabina.js"></script>
