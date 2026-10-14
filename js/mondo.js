@@ -307,63 +307,10 @@ SIM.creaMondo=function(scene,renderer){
     },
   };
 
-  /* modello 3D in stile Cessna: muso verso -z, superfici di comando animate */
+  /* modello 3D del Cessna (js/aereo3d.js): muso verso -z, superfici di comando animate */
   function creaAereo(){
-    const gr=new THREE.Group();
-    const mB=new THREE.MeshStandardMaterial({color:0xf3f1ea,flatShading:true,roughness:.55});
-    const mR=new THREE.MeshStandardMaterial({color:0xc4302b,flatShading:true,roughness:.5});
-    const mBl=new THREE.MeshStandardMaterial({color:0x1d3f78,flatShading:true,roughness:.5});
-    const mS=new THREE.MeshStandardMaterial({color:0x1d2731,roughness:.3,metalness:.3});
-    const mG=new THREE.MeshStandardMaterial({color:0x222222,roughness:.9});
-    const mInt=new THREE.MeshStandardMaterial({color:0x2a2f36,roughness:.9});
-    const add=(geo,mat,x,y,z,par)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);(par||gr).add(m);return m;};
-    const cil=(r1,r2,h,seg)=>new THREE.CylinderGeometry(r1,r2,h,seg||12).rotateX(Math.PI/2); // asse lungo z, r1 verso +z
-
-    const fus=new THREE.Group();gr.add(fus); // parti nascoste nella vista dalla cabina
-    add(cil(0.6,0.62,3.0),mB,0,0,-0.5,fus);                  // cabina
-    add(cil(0.14,0.6,3.4),mB,0,0.12,2.7,fus);                // cono di coda
-    add(cil(0.45,0.36,0.9),mB,0,-0.14,-2.45);                // cofano motore (basso: dalla cabina si vede la pista)
-    add(new THREE.ConeGeometry(0.2,0.45,12).rotateX(-Math.PI/2),mR,0,0,-3.1); // ogiva
-    add(new THREE.BoxGeometry(1.27,0.08,4.8),mBl,0,-0.15,0.3,fus); // fascia blu
-    add(new THREE.BoxGeometry(1.29,0.5,1.7),mS,0,0.32,-0.6,fus); // finestrini
-    // ala alta
-    add(new THREE.BoxGeometry(11,0.14,1.15),mB,0,0.88,-0.58);
-    add(new THREE.BoxGeometry(0.6,0.15,1.16),mR,-5.2,0.88,-0.58);
-    add(new THREE.BoxGeometry(0.6,0.15,1.16),mR,5.2,0.88,-0.58);
-    for(const sx of [-1,1]){ // montanti: dalla pancia (±0.55,-0.4) all'ala (±2.6,0.85)
-      const m=add(new THREE.BoxGeometry(0.06,2.4,0.14),mB,sx*1.58,0.22,-0.45);m.rotation.z=-sx*Math.atan2(2.05,1.25);
-    }
-    // impennaggi
-    add(new THREE.BoxGeometry(3.4,0.07,0.6),mB,0,0.3,4.05);
-    add(new THREE.BoxGeometry(0.08,1.5,1.1),mB,0,1.0,3.85);
-    add(new THREE.BoxGeometry(0.09,0.4,1.2),mR,0,1.62,3.9);
-    const sup=(w,h,d,x,y,z,mat)=>{const piv=new THREE.Group();piv.position.set(x,y,z);
-      const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d).translate(0,0,d/2),mat||mB);piv.add(m);gr.add(piv);return piv;};
-    const elev=sup(3.4,0.06,0.45,0,0.3,4.35);
-    const tim=sup(0.07,1.45,0.5,0,1.0,4.4,mR);
-    const alS=sup(2.4,0.1,0.4,-3.9,0.88,0);
-    const alD=sup(2.4,0.1,0.4,3.9,0.88,0);
-    const flS=sup(2.5,0.1,0.4,-1.45,0.88,0);
-    const flD=sup(2.5,0.1,0.4,1.45,0.88,0);
-    // carrello
-    for(const sx of [-1,1]){
-      const g=add(new THREE.BoxGeometry(0.07,1.0,0.12),mS,sx*0.88,-0.88,0.3);g.rotation.z=sx*0.85;
-      add(new THREE.CylinderGeometry(0.25,0.25,0.16,14).rotateZ(Math.PI/2),mG,sx*1.25,-1.2,0.3);
-      add(new THREE.SphereGeometry(0.3,10,8).scale(0.5,0.75,1.4),mB,sx*1.25,-1.15,0.3);
-    }
-    add(new THREE.BoxGeometry(0.08,0.75,0.08),mS,0,-0.85,-1.7);
-    add(new THREE.CylinderGeometry(0.22,0.22,0.13,14).rotateZ(Math.PI/2),mG,0,-1.23,-1.7);
-    // elica: pale ferme o disco trasparente quando gira veloce
-    const elica=new THREE.Group();elica.position.set(0,0,-3.05);gr.add(elica);
-    const pale=new THREE.Group();elica.add(pale);
-    pale.add(new THREE.Mesh(new THREE.BoxGeometry(0.14,1.9,0.05),mS));
-    const disco=new THREE.Mesh(new THREE.CircleGeometry(0.95,32),new THREE.MeshBasicMaterial({color:0x111111,transparent:true,opacity:0.18,depthWrite:false,side:THREE.DoubleSide}));
-    elica.add(disco);
-    // luci di navigazione
-    const luce=(c,x,y,z)=>add(new THREE.SphereGeometry(0.07,8,6),new THREE.MeshBasicMaterial({color:c}),x,y,z);
-    luce(0xff2020,-5.52,0.88,-0.6);luce(0x20ff40,5.52,0.88,-0.6);luce(0xffffff,0,1.85,4.3);
-    const strobo=luce(0xffffff,0,1.86,3.4);
-    const luciNav=[...gr.children.slice(-4)];   // per js/notte.js (più grandi di notte)
+    const m=SIM.creaModelloAereo({registrazione:(window.AEREO&&window.AEREO.registrazione)||'I-VOLO'});
+    const gr=m.gruppo,fus=m.fus,{elev,tim,alS,alD,flS,flD,pale,disco,strobo,beacon,luciNav}=m;
     // interno della cabina (js/cabina.js), visibile solo dalla vista in cabina
     const cab=SIM.creaCabina();gr.add(cab.gruppo);
     const cabina=cab.gruppo;
@@ -381,7 +328,7 @@ SIM.creaMondo=function(scene,renderer){
         const veloce=s.rpm>900&&!s.crashed;
         if(!s.crashed)pale.rotation.z+=dt*s.rpm/60*Math.PI*2*(veloce?0.02:1);
         pale.visible=!veloce; disco.visible=veloce&&!inCabina;
-        strobo.visible=(tempo%1.2)<0.06;
+        strobo.visible=(tempo%1.2)<0.06;beacon.visible=(tempo%1.0)<0.15;
         cabina.visible=inCabina;fus.visible=!inCabina;
         if(inCabina)cab.aggiorna(s);
       }};
