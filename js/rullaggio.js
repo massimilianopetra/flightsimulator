@@ -171,6 +171,22 @@ SIM.disegnaRullaggio=function(scene){
   if(!rete) return;
   const mat=(c,o)=>new THREE.MeshStandardMaterial({color:c,roughness:.9,polygonOffset:true,polygonOffsetFactor:o,polygonOffsetUnits:o});
   const mAsf=mat(0x5d6064,-1.5),mPz=mat(0x6c6f73,-1),mGiallo=mat(0xf2c200,-3);
+  // l'asfalto grigio e i piazzali non coprono le piste (lì si vede la pista con la sua segnaletica):
+  // nello shader si scartano i punti dentro il rettangolo di ogni pista; la linea gialla invece resta
+  const rett=[],dims=[];
+  for(const r of rete.tutte())for(const p of r.ap.piste){
+    rett.push(new THREE.Vector4(p.cx,p.cz,p.dir.x,p.dir.z));dims.push(new THREE.Vector2(p.L/2,p.W/2));}
+  const NP=Math.max(1,rett.length);
+  if(!rett.length){rett.push(new THREE.Vector4(0,0,1,0));dims.push(new THREE.Vector2(0,0));}
+  for(const m of [mAsf,mPz])m.onBeforeCompile=sh=>{
+    sh.uniforms.uPiste={value:rett};sh.uniforms.uDimPiste={value:dims};
+    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vMondo;')
+      .replace('#include <project_vertex>','#include <project_vertex>\nvMondo=(modelMatrix*vec4(transformed,1.0)).xyz;');
+    sh.fragmentShader=sh.fragmentShader.replace('#include <common>',
+      '#include <common>\nvarying vec3 vMondo;\nuniform vec4 uPiste['+NP+'];\nuniform vec2 uDimPiste['+NP+'];')
+      .replace('void main() {','void main() {\nfor(int i=0;i<'+NP+';i++){vec2 d=vMondo.xz-uPiste[i].xy;'+
+        'if(abs(dot(d,uPiste[i].zw))<uDimPiste[i].x&&abs(d.x*uPiste[i].w-d.y*uPiste[i].z)<uDimPiste[i].y)discard;}');
+  };
   const h=(x,z,su)=>T.meshH(x,z)+su;
   // striscia lungo una spezzata (segmenti lunghi divisi, così segue il terreno), con dischi negli angoli
   function striscia(pos,pts,hw,su,dischi){
