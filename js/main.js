@@ -375,11 +375,11 @@ function aggiornaSchedaAP(){
   const acceso={ap:on,hdg:on&&ap.lat==='HDG',alt:on&&ap.vert==='ALT',vs:on&&ap.vert==='VS'};
   for(const b of document.querySelectorAll('[data-modo]'))b.classList.toggle('on',acceso[b.dataset.modo]);
   $('apStato').innerHTML=on?(ap.lat==='ROL'?L('ali livellate (ROL)','wings level (ROL)'):L('prua','heading')+' '+String(ap.hdgSel).padStart(3,'0')+'°')+' · '+
-    (ap.vert==='ALT'?L('quota','altitude')+' '+ap.altTenuta+' ft':`VS ${ap.vsSel} → ${ap.altSel} ft`)+(s.armato?' · '+s.armato:'')+
+    (ap.vert==='ALT'?L('quota','altitude')+' '+ap.altTenuta+' ft':`VS ${ap.vsSel>0?'+':''}${ap.vsSel} ft/min`+(s.armato?` → ${ap.altSel} ft`:''))+(s.armato?' · '+s.armato:'')+
     (s.limite?' · <b class="ambra">'+(s.limite==='BASSA'?L('VEL. MINIMA','MIN SPEED'):L('VEL. MASSIMA','MAX SPEED'))+'</b>':''):L('Autopilota spento','Autopilot off');
   $('apHdg').textContent=String(ap.hdgSel).padStart(3,'0')+'°';
   $('apAlt').textContent=on||ap.altSel?ap.altSel+' ft':'-----';
-  $('apVs').textContent=String(ap.vsSel);
+  $('apVs').textContent=(ap.vsSel>0?'+':'')+ap.vsSel;
   linguetta('ap').classList.toggle('acceso',on);
 }
 for(const b of document.querySelectorAll('[data-ap]'))b.addEventListener('click',()=>{

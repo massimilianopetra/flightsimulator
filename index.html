@@ -52,7 +52,7 @@
       <dt>, / .</dt><dd data-en="VOR course CRS −1° / +1° (with Shift ±10°)">rotta CRS del VOR −1° / +1° (con Maiusc ±10°)</dd>
       <dt>M / O</dt><dd data-en="map scale (or mouse wheel on the map) / north or heading up">scala mappa (anche rotellina sulla mappa) / nord o prua in alto</dd>
       <dt>P / R</dt><dd data-en="pause / restart (also the mission)">pausa / ricomincia (anche la missione)</dd>
-      <dt data-en="Shift+A">Maiusc+A</dt><dd data-en="autopilot on / off; when on, A/D heading, W/S altitude, Shift+W/S vertical speed, Shift+H current heading">autopilota sì / no; inserito: A/D prua, W/S quota, Maiusc+W/S velocità verticale, Maiusc+H prua attuale</dd>
+      <dt data-en="Shift+A">Maiusc+A</dt><dd data-en="autopilot on / off; when on, A/D heading, W/S altitude, Shift+S/W vertical speed +/− (negative = descend), Shift+H current heading">autopilota sì / no; inserito: A/D prua, W/S quota, Maiusc+S/W velocità verticale +/− (negativa = scende), Maiusc+H prua attuale</dd>
       <dt>H</dt><dd data-en="this window">questa finestra</dd>
       <dt>Esc</dt><dd data-en="close a window / back to the briefing (change airport, destination, mission…)">chiude una finestra / torna al briefing (cambia aeroporto, destinazione, missione…)</dd>
     </dl>
@@ -110,7 +110,7 @@
       <button type="button" id="apBtn" class="ap-btn" data-modo="ap" title="Inserisce / stacca l'autopilota (Maiusc+A)" data-en-title="Engage / disconnect the autopilot (Shift+A)">AP</button>
       <button type="button" class="ap-btn" data-modo="hdg" title="HDG: segue la prua scelta; premuto di nuovo tiene le ali livellate (ROL)" data-en-title="HDG: follows the selected heading; press again for wings level (ROL)">HDG</button>
       <button type="button" class="ap-btn" data-modo="alt" title="ALT: tiene la quota di adesso" data-en-title="ALT: holds the current altitude">ALT</button>
-      <button type="button" class="ap-btn" data-modo="vs" title="VS: sale o scende verso la quota scelta alla velocità verticale scelta" data-en-title="VS: climbs or descends to the selected altitude at the selected vertical speed">VS</button>
+      <button type="button" class="ap-btn" data-modo="vs" title="VS: tiene la velocità verticale di adesso (poi ±100); aggancia la quota scelta se è davanti" data-en-title="VS: holds the current vertical speed (then ±100); captures the selected altitude if it is ahead">VS</button>
     </div>
     <div id="apStato" class="ap-stato"></div>
     <div class="ap-riga"><span class="lbl" data-en="HDG">PRUA</span><button type="button" data-ap="hdg:-10">−10</button><button type="button" data-ap="hdg:-1">−1</button><b id="apHdg" class="ap-val">---°</b><button type="button" data-ap="hdg:1">+1</button><button type="button" data-ap="hdg:10">+10</button><button type="button" data-ap="sync" title="Prua scelta = prua attuale (Maiusc+H)" data-en-title="Selected heading = current heading (Shift+H)" data-en="SYNC">ORA</button></div>

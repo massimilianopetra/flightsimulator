@@ -29,10 +29,10 @@ SIM.creaAutopilota=function(A){
     altTenuta:0,         // quota tenuta in ALT (ft)
     hdgSel:0,            // prua scelta (°)
     altSel:0,            // quota scelta (ft), multipli di 100
-    vsSel:500,           // velocità verticale per salire o scendere (ft/min, sempre positiva)
+    vsSel:500,           // velocità verticale scelta (ft/min, + = sale, − = scende)
     limite:'',           // '' oppure 'BASSA' / 'ALTA' quando interviene la protezione di velocità
   };
-  let tetaCmd=0, iPitch=0, iAil=0, verso=0;   // verso: da che parte hai girato la prua scelta (per le virate di 180°)
+  let tetaCmd=0, iPitch=0, iAil=0, verso=0, ultimaAlt=0, lontano=false;   // lontano: la quota scelta era davanti (ALTS armato)   // verso: da che parte hai girato la prua scelta (per le virate di 180°)
   const fwd=new THREE.Vector3(), dx=new THREE.Vector3(), su=new THREE.Vector3();
   function misura(st){
     fwd.set(0,0,-1).applyQuaternion(st.q);dx.set(1,0,0).applyQuaternion(st.q);su.set(0,1,0).applyQuaternion(st.q);
@@ -48,6 +48,7 @@ SIM.creaAutopilota=function(A){
   function inserisci(st,elev0){
     if(st.aTerra||st.crashed) return L('L\'autopilota si inserisce solo in volo.','The autopilot can only be engaged in flight.');
     const m=misura(st);
+    ultimaAlt=m.alt;
     if(Math.abs(m.bank)>45||Math.abs(m.pitch)>25) return L('Prima rimetti l\'aereo più dritto: troppa inclinazione per l\'autopilota.','Level the aircraft first: too much bank or pitch for the autopilot.');
     ap.attivo=true;ap.hdgSel=Math.round(m.hdg)%360;ap.altSel=Math.round(m.alt/100)*100;ap.altTenuta=ap.altSel;ap.vert='ALT';ap.lat='HDG';ap.limite='';
     tetaCmd=m.pitch;iPitch=clamp(elev0||0,-0.4,0.4);iAil=0;verso=0;   // parte dall'equilibratore attuale: niente strappi
@@ -55,25 +56,40 @@ SIM.creaAutopilota=function(A){
   }
   function disinserisci(){ap.attivo=false;ap.limite='';}
   // cambia la quota scelta: se è lontana si passa in VS (sale o scende verso di lei)
+  // cambia la quota scelta: da ALT si passa in VS verso di lei (alla velocità verticale scelta, col segno giusto)
   function cambiaQuota(df){
     ap.altSel=clamp(Math.round((ap.altSel+df)/100)*100,500,18000);
-    if(ap.attivo)ap.vert='VS';
+    if(!ap.attivo) return;
+    const err=ap.altSel-ultimaAlt;
+    if(Math.abs(err)<60) return;
+    const v=Math.max(100,Math.abs(ap.vsSel)||500);
+    if(ap.vert==='ALT'||Math.sign(ap.vsSel)!==Math.sign(err)){ap.vert='VS';ap.vsSel=Math.sign(err)*v;}
   }
   function cambiaPrua(dg){ap.hdgSel=Math.round(giro(ap.hdgSel+dg))%360;verso=Math.sign(dg);}
-  function cambiaVs(dv){ap.vsSel=clamp(ap.vsSel+dv,100,1500);}
+  /* cambia la velocità verticale scelta (anche in discesa). Come la rotella UP/DN del GFC 700:
+     se si è in ALT si passa in VS partendo da 0 (quindi +100, +200… oppure −100, −200…) */
+  function cambiaVs(dv){
+    if(ap.attivo&&ap.vert==='ALT'){ap.vert='VS';ap.vsSel=0;}
+    ap.vsSel=clamp(ap.vsSel+dv,-1500,1500);
+  }
   /* modi scelti col tasto (scheda AP), come sul GFC 700. Restituiscono un testo se il modo non si può scegliere */
   function modoHdg(){ap.lat=ap.lat==='HDG'?'ROL':'HDG';verso=0;return '';}          // HDG <-> ali livellate
   function modoAlt(st){ap.altTenuta=Math.round(misura(st).alt/10)*10;ap.vert='ALT';return '';}   // tiene la quota di adesso
+  // VS: tiene la velocità verticale di adesso (arrotondata ai 100 ft/min); poi si cambia con ±100
   function modoVs(st){
-    if(Math.abs(ap.altSel-misura(st).alt)<60) return L('Scegli prima una quota diversa da quella attuale (W/S o i pulsanti QUOTA).','First choose an altitude different from the current one (W/S or the ALT buttons).');
+    const m=misura(st);
+    ap.vsSel=clamp(Math.round(m.vs/100)*100,-1500,1500);
     ap.vert='VS';return '';
   }
+  // ALTS armato: la quota scelta è nella direzione in cui si sale o si scende (allora la aggancia da solo)
+  // (e davvero davanti, almeno 80 ft: se si parte in VS dalla quota scelta non la si riaggancia subito)
+  const armato=()=>ap.vert==='VS'&&ap.vsSel!==0&&(ap.altSel-ultimaAlt)*Math.sign(ap.vsSel)>(lontano?0:80);
   function pruaAttuale(st){ap.hdgSel=Math.round(misura(st).hdg)%360;verso=0;}
 
   /* comandi dell'autopilota per questo passo: {elev, ail}; null se si è staccato (motivo in ap.staccato) */
   function comanda(st,dt){
     if(!ap.attivo) return null;
-    const m=misura(st);
+    const m=misura(st);ultimaAlt=m.alt;
     // si stacca da solo: stallo, assetti fuori dai limiti, a terra
     let motivo='';
     if(st.avvisoStallo&&m.ias<A.velocita.vs1+2)motivo=L('stallo','stall');
@@ -94,11 +110,14 @@ SIM.creaAutopilota=function(A){
     const errA=(ap.vert==='VS'?ap.altSel:ap.altTenuta)-m.alt;
     let vsCmd;
     if(ap.vert==='VS'){
-      vsCmd=Math.sign(errA)*ap.vsSel;
-      // aggancio della quota (ALTS): poco prima di arrivarci, con un anticipo che cresce con la velocità verticale
-      if(Math.abs(errA)<Math.max(60,Math.abs(m.vs)*0.12)){ap.vert='ALT';ap.altTenuta=ap.altSel;}
+      vsCmd=ap.vsSel;
+      // aggancio della quota (ALTS), solo se è nella direzione giusta: poco prima di arrivarci, con un anticipo
+      // che cresce con la velocità verticale
+      const arm=armato();
+      if(arm&&lontano&&Math.abs(errA)<Math.max(60,Math.abs(m.vs)*0.12)){ap.vert='ALT';ap.altTenuta=ap.altSel;lontano=false;}
+      else lontano=arm;
     }
-    if(ap.vert==='ALT')vsCmd=clamp(((ap.altTenuta-m.alt))*4,-Math.max(500,ap.vsSel),Math.max(500,ap.vsSel));
+    if(ap.vert==='ALT')vsCmd=clamp(((ap.altTenuta-m.alt))*4,-Math.max(500,Math.abs(ap.vsSel)),Math.max(500,Math.abs(ap.vsSel)));
     /* assetto voluto: varia con l'errore di velocità verticale (°/s). La manetta è del pilota, quindi c'è
        una protezione di velocità continua: fra "quanto alzare il muso per la VS" e "quanto per non scendere
        sotto vMin" si prende il più prudente (e lo stesso, al contrario, per non superare vMax) */
@@ -122,7 +141,7 @@ SIM.creaAutopilota=function(A){
   function stato(){
     if(!ap.attivo) return null;
     return {lat:ap.lat,vert:ap.vert==='ALT'?'ALT':'VS',vsSel:ap.vsSel,altSel:ap.altSel,hdgSel:ap.hdgSel,limite:ap.limite,
-      armato:ap.vert==='VS'?'ALTS':''};
+      armato:armato()?'ALTS':''};
   }
   return Object.assign(ap,{inserisci,disinserisci,comanda,modoHdg,modoAlt,modoVs,cambiaQuota,cambiaPrua,cambiaVs,pruaAttuale,stato,misura});
 };

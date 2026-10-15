@@ -185,7 +185,8 @@ landings, missions and stars, with totals and records. It stays in the browser.
 Like the GFC 700 of today's G1000 Cessna 172, in a simple version: **Shift+A** engages it and it holds
 the current heading (HDG) and altitude (ALT). With it engaged, A/D change the selected heading and W/S the
 selected altitude: it then climbs or descends at the chosen vertical speed (VS, default 500 ft/min) and
-captures the new altitude by itself. The throttle stays with the pilot; if the speed gets too low the
+captures the new altitude by itself. The VS mode alone holds a vertical speed (Shift+S/W ±100 ft/min, negative
+to descend) and captures the selected altitude only if it lies ahead. The throttle stays with the pilot; if the speed gets too low the
 autopilot lowers the nose (MIN SPD). It also moves the trim, and it disconnects (with a tone) if you take
 the stick, in a stall or with extreme attitudes. The mode bar is at the top of the PFD; the AP tab has clickable
 mode keys (AP, HDG / ROL wings level, ALT, VS) and buttons for the selected values.
@@ -688,6 +689,8 @@ atterraggi, missioni e stelle, con i totali e i record. Resta nel browser.
 Come il GFC 700 del Cessna 172 con G1000 di oggi, in versione semplice: **Maiusc+A** lo inserisce e tiene
 la prua (HDG) e la quota (ALT) attuali. Inserito, A/D cambiano la prua scelta e W/S la quota scelta: allora
 sale o scende alla velocità verticale scelta (VS, di serie 500 ft/min) e aggancia da solo la nuova quota.
+Il modo VS da solo tiene una velocità verticale (Maiusc+S/W ±100 ft/min, in negativo si scende) e aggancia
+la quota scelta solo se è davanti.
 La manetta resta al pilota; se la velocità scende troppo l'autopilota abbassa il muso (VEL MIN). Muove anche
 il trim e si stacca (con un segnale acustico) se prendi la cloche, in stallo o con assetti estremi. La barra
 dei modi è in alto nel PFD; la scheda AP ha i tasti dei modi cliccabili (AP, HDG / ROL ali livellate, ALT, VS)
