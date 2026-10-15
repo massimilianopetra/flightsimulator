@@ -34,6 +34,7 @@ try{const o=localStorage.getItem('volo-ora');if(o==='tramonto'||o==='notte')oraV
 notte.imposta(oraVolo);
 camera.far=Math.max(15000,scene.fog.far*1.15);camera.updateProjectionMatrix();
 const fis=SIM.creaFisica(A,T), st=fis.st;
+const ap=SIM.creaAutopilota(A);   // autopilota (js/autopilota.js)
 const strum=SIM.creaStrumenti(A);
 const audio=SIM.creaAudio();
 
@@ -188,6 +189,7 @@ try{const c=parseFloat(localStorage.getItem('volo-carburante'));if(c>0&&c<=A.car
 const NOMI_VISTA=[L('ESTERNA','OUTSIDE'),L('CABINA','COCKPIT'),L('TORRE','TOWER')];
 
 function ricomincia(){
+  ap.disinserisci();
   centraCloche();
   if(libretto.aperto)libretto.chiudi(st.crashed?'incidente':'interrotto');
   if(avviato)avviaMissione();
@@ -265,7 +267,7 @@ function alternaPausa(){
 /* ---------- colonna di destra a schede: MAPPA (J), RADIO (T), PIANO (I), MISSIONE (Y) ----------
    se ne vede una alla volta; premendo di nuovo la stessa la colonna si nasconde (restano le linguette).
    La scelta viene ricordata. Quando T apre la radio, finita la conversazione si torna alla scheda di prima. */
-const SCHEDE=['mappa','radio','piano','missione'];
+const SCHEDE=['mappa','radio','piano','ap','missione'];
 let scheda='mappa', schedaPrima=null, radioLibera=0;
 try{const s=localStorage.getItem('volo-scheda');if(s==='nessuna')scheda=null;else if(SCHEDE.includes(s)&&s!=='missione')scheda=s;}catch(e){}
 const linguetta=id=>document.querySelector(`[data-scheda="${id}"]`);
@@ -278,6 +280,7 @@ function mostraScheda(id,ricorda=true){
   }
   $('destra').dataset.aperta=id||'';
   if(id==='missione')$('missioneCorpo').innerHTML=missioni.pannello();
+  if(id==='ap')aggiornaSchedaAP();
   if(ricorda)try{localStorage.setItem('volo-scheda',id||'nessuna');}catch(e){}
   adattaDestra();
 }
@@ -361,6 +364,52 @@ function mostraEsito(){
 }
 $('esitoRiprova').addEventListener('click',()=>{$('esitoRiprova').blur();ricomincia();});
 
+/* ---------- autopilota (js/autopilota.js) ----------
+   Maiusc+A lo inserisce o lo stacca. Inserito, i tasti della cloche cambiano i valori scelti:
+   S/W (o frecce) quota scelta +100 / −100 ft (come tirare o spingere), con Maiusc la velocità verticale ±100 ft/min;
+   A/D prua scelta −1° / +1° (tenendo premuto corre); Maiusc+H prua scelta = prua attuale.
+   Si stacca anche prendendo la cloche col mouse o col gamepad. */
+// scheda AP: pulsanti per chi usa il mouse
+function aggiornaSchedaAP(){
+  const on=ap.attivo,s=ap.stato();
+  $('apBtn').classList.toggle('on',on);
+  $('apStato').innerHTML=on?`<b class="verde">HDG</b> · <b class="verde">${s.vert}</b>${s.armato?' · '+s.armato:''}${s.limite?' · <b class="ambra">'+(s.limite==='BASSA'?L('VEL. MINIMA','MIN SPEED'):L('VEL. MASSIMA','MAX SPEED'))+'</b>':''}`:L('spento','off');
+  $('apHdg').textContent=String(ap.hdgSel).padStart(3,'0')+'°';
+  $('apAlt').textContent=on||ap.altSel?ap.altSel+' ft':'-----';
+  $('apVs').textContent=String(ap.vsSel);
+  linguetta('ap').classList.toggle('acceso',on);
+}
+for(const b of document.querySelectorAll('[data-ap]'))b.addEventListener('click',()=>{
+  const [k,v]=b.dataset.ap.split(':');
+  if(k==='hdg')ap.cambiaPrua(+v);else if(k==='alt')ap.cambiaQuota(+v);else if(k==='vs')ap.cambiaVs(+v);else if(k==='sync')ap.pruaAttuale(st);
+  aggiornaSchedaAP();b.blur();
+});
+$('apBtn').addEventListener('click',()=>{if(avviato&&!inPausa&&!st.crashed)alternaAutopilota();$('apBtn').blur();});
+function alternaAutopilota(){
+  if(ap.attivo){staccaAP('');return;}
+  const r=ap.inserisci(st,inp.elev);
+  if(r){messaggio(r,3);return;}
+  centraCloche();
+  messaggio(L(`Autopilota <b>inserito</b>: prua <b>${String(ap.hdgSel).padStart(3,'0')}°</b>, quota <b>${ap.altSel} ft</b>. La manetta resta a te.<br>A/D prua · W/S quota · Maiusc+W/S velocità verticale · Maiusc+A stacca`,
+    `Autopilot <b>engaged</b>: heading <b>${String(ap.hdgSel).padStart(3,'0')}°</b>, altitude <b>${ap.altSel} ft</b>. The throttle is still yours.<br>A/D heading · W/S altitude · Shift+W/S vertical speed · Shift+A disconnect`),6);
+  aggiornaSchedaAP();
+}
+function staccaAP(motivo){
+  if(!ap.attivo&&!motivo) return;
+  ap.disinserisci();centraCloche();audio.apStacco();
+  messaggio(L(`Autopilota <b>disinserito</b>${motivo?': '+motivo:''}`,`Autopilot <b>disconnected</b>${motivo?': '+motivo:''}`),3);
+  aggiornaSchedaAP();
+}
+function tastoAutopilota(e){
+  if(!avviato||st.crashed||inPausa) return false;
+  if(e.shiftKey&&e.code==='KeyA'){if(!e.repeat)alternaAutopilota();return true;}
+  if(!ap.attivo) return false;
+  const c=e.code, picchia=c==='KeyW'||c==='ArrowUp', cabra=c==='KeyS'||c==='ArrowDown';
+  if(picchia||cabra){if(e.shiftKey)ap.cambiaVs(cabra?100:-100);else ap.cambiaQuota(cabra?100:-100);aggiornaSchedaAP();return true;}
+  if(c==='KeyA'||c==='ArrowLeft'||c==='KeyD'||c==='ArrowRight'){ap.cambiaPrua(c==='KeyA'||c==='ArrowLeft'?-1:1);aggiornaSchedaAP();return true;}
+  if(e.shiftKey&&c==='KeyH'){ap.pruaAttuale(st);aggiornaSchedaAP();return true;}
+  return false;
+}
 addEventListener('keydown',e=>{
   if(BLOCCA.includes(e.code))e.preventDefault();
   if(e.ctrlKey||e.metaKey||e.altKey) return;      // non interferire con le scorciatoie del browser
@@ -370,6 +419,7 @@ addEventListener('keydown',e=>{
     if(atc.menuAperto)apriRadio();
     return;
   }
+  if(tastoAutopilota(e)){e.preventDefault();return;}
   let nome=e.code;
   if(e.key==='+'||e.key==='='||e.code==='NumpadAdd'||e.code==='PageUp') nome='PIU';
   else if(e.key==='-'||e.key==='_'||e.code==='NumpadSubtract'||e.code==='PageDown') nome='MENO';
@@ -422,6 +472,7 @@ canvas.addEventListener('pointerdown',e=>{
     e.preventDefault();return;
   }
   if(e.pointerType==='mouse'&&e.button!==0) return;
+  if(ap.attivo)staccaAP(L('hai preso la cloche','you took the stick'));
   trascina={id:e.pointerId,x:e.clientX,y:e.clientY,x0:cloche.x,y0:cloche.y};
   try{canvas.setPointerCapture(e.pointerId);}catch(_){}
   stickEl.style.left=(e.clientX-cloche.x*RAGGIO)+'px';stickEl.style.top=(e.clientY-cloche.y*RAGGIO)+'px';stickEl.hidden=false;
@@ -493,6 +544,8 @@ function leggiGamepad(dt){
     if(!gp) continue;
     const zm=v=>Math.abs(v||0)<0.08?0:v;
     pad.ail=zm(gp.axes[0]);pad.elev=zm(gp.axes[1]);pad.rud=zm(gp.axes[2]);
+    if(ap.attivo&&(Math.abs(pad.ail)>0.3||Math.abs(pad.elev)>0.3))staccaAP(L('hai preso la cloche','you took the stick'));
+    if(ap.attivo){pad.ail=pad.elev=0;}
     const piu=gp.buttons[7]?gp.buttons[7].value:0, meno=gp.buttons[6]?gp.buttons[6].value:0;
     const dThr=(piu-meno)*0.6*dt-zm(gp.axes[3])*0.6*dt;
     if(dThr){st.thr=clamp(st.thr+dThr,0,1);$('thr').value=Math.round(st.thr*100);}
@@ -510,8 +563,7 @@ function comandi(dt){
   // tasti: spostano la cloche finché li tieni premuti, poi resta ferma (o torna al centro, se scelto)
   const VEL=0.1*opz.sens;
   const ty=k('KeyS','ArrowDown')-k('KeyW','ArrowUp'), tx=k('KeyD','ArrowRight')-k('KeyA','ArrowLeft');
-  cloche.y=clamp(cloche.y+ty*VEL*dt,-1,1);
-  cloche.x=clamp(cloche.x+tx*VEL*dt,-1,1);
+  if(!ap.attivo){cloche.y=clamp(cloche.y+ty*VEL*dt,-1,1);cloche.x=clamp(cloche.x+tx*VEL*dt,-1,1);}
   if(opz.centro&&!trascina){
     if(!ty)cloche.y-=clamp(cloche.y,-1.5*dt,1.5*dt);
     if(!tx)cloche.x-=clamp(cloche.x,-1.5*dt,1.5*dt);
@@ -655,7 +707,7 @@ function aggiornaStrumenti(dt){
     ias:st.ias*KT, alt:st.pos.y*FT, agl:Math.max(0,st.agl)*FT,
     vs:vsFiltrata, hdg, palla:st.palla, bug, gs:st.gs*KT,
     virata:st.aTerra?0:virataFiltrata, trim:st.trim, carb:st.carburante, flusso:st.crashed?0:st.flusso,
-    nav:misuraNav(),
+    nav:misuraNav(), ap:ap.stato(),
   };
   if(vista===1){
     // in cabina: gli strumenti vengono disegnati sugli schermi del pannello
@@ -885,6 +937,11 @@ function ciclo(ora){
   const attivo=avviato&&!inPausa;
   if(attivo&&!st.crashed){
     tempo+=dt;aggiornaVento(tempo);
+    if(ap.attivo){   // l'autopilota comanda equilibratore e alettoni (il timone resta al pilota)
+      const c=ap.comanda(st,dt);
+      if(c){inp.elev=c.elev;inp.ail=c.ail;puntoCloche.style.transform=`translate(${inp.ail*17}px,${inp.elev*17}px)`;}
+      else staccaAP(ap.staccato);
+    }
     const passi=Math.max(1,Math.ceil(dt*240)),h=dt/passi;
     for(let i=0;i<passi;i++)fis.passo(h,inp,vento);
     libretto.aggiorna(dt,st);
@@ -905,6 +962,7 @@ function ciclo(ora){
     if(missioni.daMostrare()&&st.aTerra&&st.gs<1&&!st.crashed)mostraEsito();
   }
   if(n%15===0)controllaRadio(attivo?0.25:0);
+  if(n%15===0&&scheda==='ap')aggiornaSchedaAP();
   if(n%6===0)aggiornaObiettivo();
   mondo.aggiorna(st,camera.position,vento,attivo?dt:0,vista===1);
   notte.aggiorna(camera.position);

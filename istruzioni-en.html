@@ -84,6 +84,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <li><a href="#volo">In flight: attitude, trim, turns</a></li>
     <li><a href="#atterraggio">Landing and PAPI</a></li>
     <li><a href="#missioni">Missions and logbook</a></li>
+    <li><a href="#autopilota">Autopilot</a></li>
     <li><a href="#vor">Navigating with a VOR</a></li>
     <li><a href="#ils">ILS approach</a></li>
     <li><a href="#radio">Radio communications</a></li>
@@ -153,6 +154,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <tr><td><kbd>V</kbd></td><td>NAV1: tune the next VOR or ILS station in range (nearest first)</td></tr>
     <tr><td><kbd>L</kbd></td><td>NAV1: tune the ILS of the arrival runway</td></tr>
     <tr><td><kbd>,</kbd> / <kbd>.</kbd></td><td>VOR course CRS −1° / +1° (with <kbd>Shift</kbd> ±10°)</td></tr>
+    <tr><td><kbd>Shift</kbd>+<kbd>A</kbd></td><td>Autopilot: engage / disconnect (see <a href="#autopilota">Autopilot</a>)</td></tr>
     <tr><td><kbd>H</kbd></td><td>Open / close the controls window (the flight is paused meanwhile)</td></tr>
     <tr><td><kbd>P</kbd> / <kbd>R</kbd></td><td>Pause / restart (the mission too, from the beginning)</td></tr>
     <tr><td><kbd>Esc</kbd></td><td>Close the open window; otherwise back to the briefing, to change airport, destination, mission, time or fuel (also from the button in the pause screen)</td></tr>
@@ -194,7 +196,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   <li><b>Mission objective</b> (top centre, only if you chose one): clock, next stop or score.</li>
   <li><b>PFD</b> (bottom left): the main instrument, with speed, attitude, altitude, vertical speed and compass.</li>
   <li><b>Engine and systems panel</b> (bottom centre): RPM, flaps, trim, g-load, turn coordinator, fuel, stick, throttle and buttons.</li>
-  <li><b>Tabbed column</b> (top right): <b>MAP</b> (<kbd>J</kbd>), <b>RADIO</b> (<kbd>T</kbd>), flight <b>PLAN</b> (<kbd>I</kbd>) and <b>MISSION</b> (<kbd>Y</kbd>). Only one shows at a time, so the view stays clear; click a tab or press its key to switch, again to hide the column. The game remembers your last choice.</li>
+  <li><b>Tabbed column</b> (top right): <b>MAP</b> (<kbd>J</kbd>), <b>RADIO</b> (<kbd>T</kbd>), flight <b>PLAN</b> (<kbd>I</kbd>), <b>AP</b> (the autopilot) and <b>MISSION</b> (<kbd>Y</kbd>). Only one shows at a time, so the view stays clear; click a tab or press its key to switch, again to hide the column. The game remembers your last choice.</li>
 </ul>
 <p>When the RADIO tab is not open, the <b>last transmission</b> shows for a few seconds below the tabs, and in orange the <b>prompt</b> about what to say to the tower; the RADIO tab flashes when the tower is waiting for your call. Pressing <kbd>T</kbd> opens the radio by itself and, once the conversation is over, the previous tab comes back.</p>
 <p>At the top centre you see <b>messages</b> (take-off, landing, radio…) and flashing <b>warnings</b> (stall, pull up…).</p>
@@ -468,7 +470,36 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 </figure>
 
 <!-- ================================================================ -->
-<h2 id="vor">13. Navigating with a VOR</h2>
+<h2 id="autopilota">13. Autopilot</h2>
+<p>Today's Cessna 172 with G1000 usually has the <b>Garmin GFC 700</b> autopilot; the simulator's one is a simple version of it. <b>Shift</b>+<kbd>A</kbd> (or the <b>AP</b> button in the AP tab) engages it: from then on it holds the <b>heading</b> and the <b>altitude</b> you had, rounded to 100 ft. It only engages in flight.</p>
+<div class="affianca">
+  <div>
+    <p>With the autopilot engaged the stick keys no longer move the aircraft; they change the selected values:</p>
+    <table>
+      <tbody>
+        <tr><td><kbd>A</kbd> / <kbd>D</kbd></td><td>selected heading −1° / +1° (hold to run). The aircraft turns towards it with at most 20° of bank</td></tr>
+        <tr><td><kbd>S</kbd> / <kbd>W</kbd></td><td>selected altitude +100 / −100 ft (like pulling or pushing the stick)</td></tr>
+        <tr><td><kbd>Shift</kbd>+<kbd>S</kbd> / <kbd>W</kbd></td><td>climb or descent vertical speed ±100 ft/min (default 500)</td></tr>
+        <tr><td><kbd>Shift</kbd>+<kbd>H</kbd></td><td>selected heading = current heading</td></tr>
+        <tr><td><kbd>Shift</kbd>+<kbd>A</kbd></td><td>disconnect the autopilot</td></tr>
+      </tbody>
+    </table>
+    <p>At the top of the PFD the <b>mode bar</b> tells you what it is doing: <b class="c-ver">AP</b> engaged, <b class="c-ver">HDG</b> follows the selected heading (the <span class="c-cya">cyan</span> bug on the compass), <b class="c-ver">ALT</b> holds the altitude or <b class="c-ver">VS 500</b> climbs or descends to the selected altitude (shown in <span class="c-cya">cyan</span> above the altitude tape), and <b>ALTS</b> means it will capture it by itself when it gets there.</p>
+    <p><b>The throttle is yours</b>, as in the real 172. If in a climb the speed drops towards 65 knots, the autopilot lowers the nose so as not to lose more and <b class="c-amb">MIN SPD</b> appears: add power. If in a descent it goes above the maximum cruise speed, <b class="c-amb">MAX SPD</b> appears: reduce power.</p>
+    <p>The autopilot moves the elevator and, slowly, the <b>trim</b>: when you disconnect it the aircraft is already in balance. It disconnects by itself, with three falling tones, if you take the stick with the mouse or gamepad, in a stall or if the attitude goes out of limits.</p>
+  </div>
+  <figure>
+    <img src="istruzioni/en/ap-scheda.png" alt="AP tab: AP button on, HDG and VS modes, selected heading, altitude and vertical speed with buttons" loading="lazy">
+    <figcaption>The AP tab: the same controls with the mouse.</figcaption>
+  </figure>
+</div>
+<figure>
+  <img src="istruzioni/en/ap-pfd.png" alt="PFD with the autopilot climbing: mode bar AP HDG VS 500 ALTS, selected altitude in cyan and the heading bug on the compass" loading="lazy">
+  <figcaption>Climbing to 6500 ft on autopilot: the mode bar at the top, the selected altitude above the tape and the heading bug on the compass.</figcaption>
+</figure>
+
+<!-- ================================================================ -->
+<h2 id="vor">14. Navigating with a VOR</h2>
 <p>A <b>VOR</b> is a ground radio station that transmits in all directions. The receiver on board works out which <b>radial</b> you are on, that is, in which direction you are as seen from the station: on radial 090 you are east of the station. If the station has <b>DME</b>, you also know how many miles away you are.</p>
 <ol class="passi">
   <li><b>Tune it</b>: press <kbd>V</kbd> (several times to move to the other stations in range) or choose from the <b>NAV1</b> menu. The CRS course is set direct to the station.</li>
@@ -482,7 +513,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>In the Piedmont world the VORs are the <b>real</b> ones, for example TOP Torino 114.50, CSL Caselle 116.75, VOG Voghera 115.50, SRN Saronno 113.70 and BLA Biella 116.10. One difference from reality: the simulator uses degrees referred to true north, while real VORs use magnetic north, which in Piedmont is about 3° further east.</p>
 
 <!-- ================================================================ -->
-<h2 id="ils">14. ILS approach</h2>
+<h2 id="ils">15. ILS approach</h2>
 <p>The <b>ILS</b> guides you all the way to the runway with two radio beams:</p>
 <ul>
   <li>the <b>localizer</b> (LOC) tells you whether you are left or right of the runway centre line. It is much more precise than a VOR: the needle is at full scale when you are 2.5° off;</li>
@@ -499,7 +530,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <div class="attenzione">In the simulator every asphalt runway at least 1000 m long has an ILS at both ends. Their <b>frequencies are invented</b> and do not match the real ones.</div>
 
 <!-- ================================================================ -->
-<h2 id="radio">15. Radio communications with the tower</h2>
+<h2 id="radio">16. Radio communications with the tower</h2>
 <p>Communications are in <b>English</b>, with the standard international (ICAO) phraseology, as in real life. The tower speaks with a synthetic browser voice; you do not have to speak: press <kbd>T</kbd>, choose the sentence with <kbd>1</kbd>…<kbd>4</kbd> and the game says it with the pilot's voice. In the <b>RADIO</b> tab (<kbd>T</kbd> opens it by itself) every transmission stays written.</p>
 <ul>
   <li>Your callsign is <b>I-VOLO</b> (“India Victor Oscar Lima Oscar”). After the first call the tower uses the abbreviated one, <b>I-LO</b>.</li>
@@ -533,7 +564,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <div class="attenzione">For airports without data (some small fields, and all those of Valle Azzurra) the station is <b>simulated</b> and marked as such in the COM1 menu. Procedures are simplified too: they resemble real ones but are not those published for each airport. The voice depends on the browser and the system: Windows already has English voices; if none is found, the transmissions are still written. With the AUDIO button off the radio does not speak.</div>
 
 <!-- ================================================================ -->
-<h2 id="emergenze">16. Warnings and emergencies</h2>
+<h2 id="emergenze">17. Warnings and emergencies</h2>
 <table>
   <thead><tr><th>Warning</th><th>Meaning</th><th>What to do</th></tr></thead>
   <tbody>
@@ -552,7 +583,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>You crash if you touch down faster than about 700 ft/min, end up in the water, hit the ground with a wing, the propeller or the fuselage, exceed about 183 kt, or exceed +5.7 / −2.3 g. Press <kbd>R</kbd> or <kbd>Enter</kbd> to start again.</p>
 
 <!-- ================================================================ -->
-<h2 id="numeri">17. Cessna 172 numbers</h2>
+<h2 id="numeri">18. Cessna 172 numbers</h2>
 <table>
   <thead><tr><th>Speed</th><th>Knots</th><th>Meaning</th></tr></thead>
   <tbody>
@@ -570,7 +601,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Other data: 1000 kg with pilot and fuel, 11 m wingspan, 53 US gallons of usable fuel. The flight model (6 degrees of freedom) uses the aerodynamic coefficients of the real C172: you can read and change them in <code>dati/aereo.js</code>.</p>
 
 <!-- ================================================================ -->
-<h2 id="mondi">18. Worlds and the editable map</h2>
+<h2 id="mondi">19. Worlds and the editable map</h2>
 <ul>
   <li><b>Piedmont</b>: real terrain (250 m grid), 32 airports with their real runways, lakes, towns, roads, railways, rivers, villages with buildings and the real VORs. It covers Piedmont plus parts of Lombardy, Liguria, Aosta Valley, Switzerland and France (about 219 × 287 km). The main monuments are there too, as visual landmarks: Mole Antonelliana, Superga, the Lingotto with its rooftop test track, the two Turin skyscrapers, the Palace of Venaria, Stupinigi, the Sacra di San Michele, Vicoforte, San Gaudenzio in Novara and Oropa. They are simplified models, marked on the map with a gold triangle.</li>
   <li><b>Valle Azzurra</b>: an invented world, small and simple. Everything is in the file <code>dati/mappa.js</code>, written to be edited by hand: mountains, lakes, airports and runways, towns, woods, VORs, weather and starting point. The comments in the file are in Italian.</li>
