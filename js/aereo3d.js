@@ -171,6 +171,13 @@ SIM.creaModelloAereo=function(opz){
     if(sx<0)g.scale(-1,1,1).computeVertexNormals();
     ali.push(add(g,mB));
   }
+  // tratto centrale sopra il tetto: l'ala del 172 è un pezzo unico da un'estremità all'altra
+  // (dentro la fusoliera, così sparisce con lei nella vista dalla cabina; serve anche all'ombra)
+  for(const sx of [-1,1]){
+    const g=superficie([stAla(0,0,1),stAla(0.56,0,1)],0.02,0.4,false,[0,0,0]);
+    if(sx<0)g.scale(-1,1,1).computeVertexNormals();
+    add(g,mB,0,0,0,fus);
+  }
   // superfici mobili: perno sulla cerniera (z = 0 per l'ala)
   function mobile(st,m,p,vert,piv){
     const o=new THREE.Group();o.position.set(...piv);gr.add(o);
