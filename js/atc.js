@@ -88,7 +88,7 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
   if(window.speechSynthesis){scegliVoci();speechSynthesis.addEventListener&&speechSynthesis.addEventListener('voiceschanged',scegliVoci);}
 
   /* ---------- coda delle trasmissioni ---------- */
-  const coda=[];let parlando=false,sicurezza=0,inPausa=false;
+  const coda=[];let parlando=false,sicurezza=0,inPausa=false,turno=0;
   const registro=[];   // ultime trasmissioni mostrate
   function trasmetti(chi,f,it,dopo){coda.push({chi,en:f.d,sp:f.s,it,dopo});if(!parlando)prossimo();}
   function attendi(ms){coda.push({pausa:ms});if(!parlando)prossimo();}
@@ -107,13 +107,30 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
       const v=m.chi==='atc'?voci.atc:voci.pilota;
       if(v){u.voice=v;u.lang=v.lang;}else u.lang='en-GB';
       u.rate=m.chi==='atc'?1.08:1.0;u.pitch=m.chi==='atc'?0.9:1.1;
-      let fatto=false;const una=()=>{if(!fatto){fatto=true;fine();}};
+      let fatto=false,partita=false;const io=++turno;
+      const una=()=>{if(!fatto){fatto=true;clearTimeout(sveglia);fine();}};
+      // se il browser non avvisa la fine: si butta via la frase, così non resta in coda
+      // (prima le frasi bloccate si accumulavano e uscivano tutte insieme dopo una pausa)
+      const durata=2000+m.sp.length*70;
+      const scaduto=()=>{if(inPausa){sicurezza=setTimeout(scaduto,1000);return;}   // in pausa si aspetta
+        if(!fatto)speechSynthesis.cancel();una();};
+      sicurezza=setTimeout(scaduto,durata);
+      // il conto riparte quando la voce comincia davvero (può partire in ritardo)
+      u.onstart=()=>{partita=true;if(!fatto){clearTimeout(sicurezza);sicurezza=setTimeout(scaduto,durata);}};
       u.onend=una;u.onerror=una;
-      sicurezza=setTimeout(una,2000+m.sp.length*70);   // se il browser non avvisa la fine
-      setTimeout(()=>speechSynthesis.speak(u),250);
+      let sveglia=0;
+      setTimeout(()=>{
+        if(fatto||io!==turno)return;
+        // ogni tanto Chrome si inceppa: la voce resta "in pausa" o "occupata" senza parlare
+        if(speechSynthesis.speaking||speechSynthesis.pending)speechSynthesis.cancel();
+        if(speechSynthesis.paused&&!inPausa)speechSynthesis.resume();
+        speechSynthesis.speak(u);
+        // se dopo un secondo e mezzo non è ancora partita, la si sblocca come fa pausa/ripresa
+        sveglia=setTimeout(()=>{if(!partita&&!fatto&&!inPausa){speechSynthesis.pause();speechSynthesis.resume();}},1500);
+      },250);
     }else sicurezza=setTimeout(fine,1500+m.en.length*55);
   }
-  function zitto(){coda.length=0;clearTimeout(sicurezza);parlando=false;if(window.speechSynthesis)speechSynthesis.cancel();}
+  function zitto(){coda.length=0;clearTimeout(sicurezza);parlando=false;turno++;if(window.speechSynthesis)speechSynthesis.cancel();}
 
   /* ---------- pannello ---------- */
   const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
