@@ -121,21 +121,23 @@
         <div class="row"><span class="lbl">G</span><span id="gload" class="val">1.0</span></div>
       </div>
       <canvas id="aux" class="aux" aria-label="Virosbandometro, trim e carburante" data-en-aria="Turn coordinator, trim and fuel"></canvas>
+      <!-- cloche accanto a spie e manetta: il pannello resta alto quanto il PFD -->
       <div class="riga-cloche">
         <div class="cloche-ind" title="Posizione della cloche: in basso = tirata (cabra)" data-en-title="Stick position: down = pulled back (nose up)"><i id="puntoCloche"></i></div>
-        <span class="lbl" data-en="STICK">CLOCHE</span>
-        <button type="button" data-azione="centra" title="Riporta la cloche al centro (K)" data-en-title="Centre the stick (K)" data-en="CENTRE (K)">CENTRA (K)</button>
+        <div class="cloche-dx">
+          <div class="spie">
+            <span id="spiaFreni" class="spia" data-en="BRAKES">FRENI</span>
+            <span id="spiaTerra" class="spia" data-en="ON GROUND">A TERRA</span>
+            <span id="spiaVista" class="spia on">ESTERNA</span>
+            <button type="button" data-azione="centra" title="Riporta la cloche al centro (K)" data-en-title="Centre the stick (K)" data-en="CENTRE (K)">CENTRA (K)</button>
+          </div>
+          <label class="manetta" for="thr">
+            <span class="lbl" data-en="THROTTLE">MANETTA</span>
+            <input id="thr" type="range" min="0" max="100" value="0" aria-label="Manetta" data-en-aria="Throttle">
+            <span id="thrv" class="val">0</span><span class="unit">%</span>
+          </label>
+        </div>
       </div>
-      <div class="spie">
-        <span id="spiaFreni" class="spia" data-en="BRAKES">FRENI</span>
-        <span id="spiaTerra" class="spia" data-en="ON GROUND">A TERRA</span>
-        <span id="spiaVista" class="spia on">ESTERNA</span>
-      </div>
-      <label class="manetta" for="thr">
-        <span class="lbl" data-en="THROTTLE">MANETTA</span>
-        <input id="thr" type="range" min="0" max="100" value="0" aria-label="Manetta" data-en-aria="Throttle">
-        <span id="thrv" class="val">0</span><span class="unit">%</span>
-      </label>
       <div class="bottoni">
         <button type="button" data-azione="flapsu" title="Flap su (G)" data-en-title="Flaps up (G)">FLAP −</button>
         <button type="button" data-azione="flapgiu" title="Flap giù (F)" data-en-title="Flaps down (F)">FLAP +</button>
