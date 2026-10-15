@@ -53,6 +53,7 @@
       <dt>M / O</dt><dd data-en="map scale (or mouse wheel on the map) / north or heading up">scala mappa (anche rotellina sulla mappa) / nord o prua in alto</dd>
       <dt>P / R</dt><dd data-en="pause / restart (also the mission)">pausa / ricomincia (anche la missione)</dd>
       <dt data-en="Shift+A">Maiusc+A</dt><dd data-en="autopilot on / off; when on, A/D heading, W/S altitude, Shift+S/W vertical speed +/− (negative = descend), Shift+H current heading">autopilota sì / no; inserito: A/D prua, W/S quota, Maiusc+S/W velocità verticale +/− (negativa = scende), Maiusc+H prua attuale</dd>
+      <dt data-en="Shift+N · L · C">Maiusc+N · L · C</dt><dd data-en="autopilot NAV (follows the CDI source) · APR (ILS approach) · CDI: GPS or NAV1">autopilota NAV (segue la sorgente del CDI) · APR (avvicinamento ILS) · CDI: GPS o NAV1</dd>
       <dt>H</dt><dd data-en="this window">questa finestra</dd>
       <dt>Esc</dt><dd data-en="close a window / back to the briefing (change airport, destination, mission…)">chiude una finestra / torna al briefing (cambia aeroporto, destinazione, missione…)</dd>
     </dl>
@@ -109,14 +110,17 @@
     <div class="ap-modi">
       <button type="button" id="apBtn" class="ap-btn" data-modo="ap" title="Inserisce / stacca l'autopilota (Maiusc+A)" data-en-title="Engage / disconnect the autopilot (Shift+A)">AP</button>
       <button type="button" class="ap-btn" data-modo="hdg" title="HDG: segue la prua scelta; premuto di nuovo tiene le ali livellate (ROL)" data-en-title="HDG: follows the selected heading; press again for wings level (ROL)">HDG</button>
+      <button type="button" class="ap-btn" data-modo="nav" title="NAV: segue la sorgente del CDI (rotta GPS o radiale VOR); armato finché non arriva sulla rotta (Maiusc+N)" data-en-title="NAV: follows the CDI source (GPS course or VOR radial); armed until it reaches the course (Shift+N)">NAV</button>
+      <button type="button" class="ap-btn" data-modo="apr" title="APR: avvicinamento ILS, localizzatore e sentiero di discesa (Maiusc+L)" data-en-title="APR: ILS approach, localizer and glide slope (Shift+L)">APR</button>
       <button type="button" class="ap-btn" data-modo="alt" title="ALT: tiene la quota di adesso" data-en-title="ALT: holds the current altitude">ALT</button>
       <button type="button" class="ap-btn" data-modo="vs" title="VS: tiene la velocità verticale di adesso (poi ±100); aggancia la quota scelta se è davanti" data-en-title="VS: holds the current vertical speed (then ±100); captures the selected altitude if it is ahead">VS</button>
+      <button type="button" id="apCdi" class="ap-cdi gps" title="Sorgente della navigazione: GPS (rotta magenta) o NAV1 (VOR/ILS, verde) (Maiusc+C)" data-en-title="Navigation source: GPS (magenta course) or NAV1 (VOR/ILS, green) (Shift+C)">CDI GPS</button>
     </div>
     <div id="apStato" class="ap-stato"></div>
     <div class="ap-riga"><span class="lbl" data-en="HDG">PRUA</span><button type="button" data-ap="hdg:-10">−10</button><button type="button" data-ap="hdg:-1">−1</button><b id="apHdg" class="ap-val">---°</b><button type="button" data-ap="hdg:1">+1</button><button type="button" data-ap="hdg:10">+10</button><button type="button" data-ap="sync" title="Prua scelta = prua attuale (Maiusc+H)" data-en-title="Selected heading = current heading (Shift+H)" data-en="SYNC">ORA</button></div>
     <div class="ap-riga"><span class="lbl" data-en="ALT">QUOTA</span><button type="button" data-ap="alt:-1000">−1000</button><button type="button" data-ap="alt:-100">−100</button><b id="apAlt" class="ap-val">-----</b><button type="button" data-ap="alt:100">+100</button><button type="button" data-ap="alt:1000">+1000</button></div>
     <div class="ap-riga"><span class="lbl">VS</span><button type="button" data-ap="vs:-100">−100</button><b id="apVs" class="ap-val">500</b><button type="button" data-ap="vs:100">+100</button><span class="unit">ft/min</span></div>
-    <div class="dim ap-nota" data-en="Click a mode (with the autopilot off it also engages it) or Shift+A · A/D heading · W/S altitude · Shift+W/S vertical speed. The throttle is yours: the autopilot only protects the speed with the nose.">Clicca un modo (ad autopilota spento lo inserisce anche) o Maiusc+A · A/D prua · W/S quota · Maiusc+W/S velocità verticale. La manetta è tua: l'autopilota protegge la velocità solo col muso.</div>
+    <div class="dim ap-nota" data-en="Green = active, white outline = armed. Shift+A AP · Shift+N NAV · Shift+L APR · Shift+C CDI · A/D heading · W/S altitude · Shift+W/S vertical speed. The throttle is yours; at 200 ft (minimums) disconnect and land by hand.">Verde = attivo, contorno bianco = armato. Maiusc+A AP · Maiusc+N NAV · Maiusc+L APR · Maiusc+C CDI · A/D prua · W/S quota · Maiusc+W/S velocità verticale. La manetta è tua; a 200 ft (minimi) stacca e atterra a mano.</div>
   </section>
   <section id="missione" class="hud missione scheda" role="tabpanel" aria-label="Missione" data-en-aria="Mission">
     <div id="missioneCorpo" class="corpo"></div>
