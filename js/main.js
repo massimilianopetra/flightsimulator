@@ -372,8 +372,11 @@ $('esitoRiprova').addEventListener('click',()=>{$('esitoRiprova').blur();ricomin
 // scheda AP: pulsanti per chi usa il mouse
 function aggiornaSchedaAP(){
   const on=ap.attivo,s=ap.stato();
-  $('apBtn').classList.toggle('on',on);
-  $('apStato').innerHTML=on?`<b class="verde">HDG</b> · <b class="verde">${s.vert}</b>${s.armato?' · '+s.armato:''}${s.limite?' · <b class="ambra">'+(s.limite==='BASSA'?L('VEL. MINIMA','MIN SPEED'):L('VEL. MASSIMA','MAX SPEED'))+'</b>':''}`:L('spento','off');
+  const acceso={ap:on,hdg:on&&ap.lat==='HDG',alt:on&&ap.vert==='ALT',vs:on&&ap.vert==='VS'};
+  for(const b of document.querySelectorAll('[data-modo]'))b.classList.toggle('on',acceso[b.dataset.modo]);
+  $('apStato').innerHTML=on?(ap.lat==='ROL'?L('ali livellate (ROL)','wings level (ROL)'):L('prua','heading')+' '+String(ap.hdgSel).padStart(3,'0')+'°')+' · '+
+    (ap.vert==='ALT'?L('quota','altitude')+' '+ap.altTenuta+' ft':`VS ${ap.vsSel} → ${ap.altSel} ft`)+(s.armato?' · '+s.armato:'')+
+    (s.limite?' · <b class="ambra">'+(s.limite==='BASSA'?L('VEL. MINIMA','MIN SPEED'):L('VEL. MASSIMA','MAX SPEED'))+'</b>':''):L('Autopilota spento','Autopilot off');
   $('apHdg').textContent=String(ap.hdgSel).padStart(3,'0')+'°';
   $('apAlt').textContent=on||ap.altSel?ap.altSel+' ft':'-----';
   $('apVs').textContent=String(ap.vsSel);
@@ -384,7 +387,17 @@ for(const b of document.querySelectorAll('[data-ap]'))b.addEventListener('click'
   if(k==='hdg')ap.cambiaPrua(+v);else if(k==='alt')ap.cambiaQuota(+v);else if(k==='vs')ap.cambiaVs(+v);else if(k==='sync')ap.pruaAttuale(st);
   aggiornaSchedaAP();b.blur();
 });
-$('apBtn').addEventListener('click',()=>{if(avviato&&!inPausa&&!st.crashed)alternaAutopilota();$('apBtn').blur();});
+// tasti dei modi: AP inserisce/stacca; HDG, ALT e VS scelgono il modo (ad autopilota spento lo inseriscono anche)
+for(const b of document.querySelectorAll('[data-modo]'))b.addEventListener('click',()=>{
+  b.blur();
+  if(!avviato||inPausa||st.crashed) return;
+  const modo=b.dataset.modo;
+  if(modo==='ap'){alternaAutopilota();return;}
+  if(!ap.attivo){alternaAutopilota();if(!ap.attivo)return;if(modo==='hdg')return;}   // inserito: è già in HDG
+  const r=modo==='hdg'?ap.modoHdg():modo==='alt'?ap.modoAlt(st):ap.modoVs(st);
+  if(r)messaggio(r,3);
+  aggiornaSchedaAP();
+});
 function alternaAutopilota(){
   if(ap.attivo){staccaAP('');return;}
   const r=ap.inserisci(st,inp.elev);
