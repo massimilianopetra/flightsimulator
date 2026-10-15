@@ -247,10 +247,10 @@ select:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
 .selscala{pointer-events:auto;color:var(--cyan);font-size:13px;padding:3px 4px;flex:1;min-width:0}
 /* scheda AP (autopilota) */
 .apan{padding:8px 10px;font-size:12px;display:grid;gap:7px}
-.ap-testa{display:flex;align-items:center;gap:10px}
-.ap-btn{padding:7px 14px;font:700 13px var(--f-num);letter-spacing:.1em}
+.ap-modi{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.ap-btn{padding:8px 0;font:700 13px var(--f-num);letter-spacing:.1em}
 .ap-btn.on{background:#4ade80;border-color:#4ade80;color:#06210f}
-.ap-stato{font:700 12px var(--f-num);color:var(--dim)}
+.ap-stato{font:700 11.5px var(--f-num);color:#4ade80;min-height:1.3em}
 .verde{color:#4ade80}
 .ap-riga{display:flex;align-items:center;gap:4px}
 .ap-riga .lbl{min-width:4.6em}

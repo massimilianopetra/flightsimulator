@@ -187,8 +187,8 @@ the current heading (HDG) and altitude (ALT). With it engaged, A/D change the se
 selected altitude: it then climbs or descends at the chosen vertical speed (VS, default 500 ft/min) and
 captures the new altitude by itself. The throttle stays with the pilot; if the speed gets too low the
 autopilot lowers the nose (MIN SPD). It also moves the trim, and it disconnects (with a tone) if you take
-the stick, in a stall or with extreme attitudes. The mode bar is at the top of the PFD; the AP tab has the
-same controls for the mouse.
+the stick, in a stall or with extreme attitudes. The mode bar is at the top of the PFD; the AP tab has clickable
+mode keys (AP, HDG / ROL wings level, ALT, VS) and buttons for the selected values.
 
 <p align="center">
   <img src="istruzioni/en/ap-pfd.png" alt="PFD with the autopilot climbing: mode bar, selected altitude and heading bug" width="70%">
@@ -690,7 +690,8 @@ la prua (HDG) e la quota (ALT) attuali. Inserito, A/D cambiano la prua scelta e 
 sale o scende alla velocità verticale scelta (VS, di serie 500 ft/min) e aggancia da solo la nuova quota.
 La manetta resta al pilota; se la velocità scende troppo l'autopilota abbassa il muso (VEL MIN). Muove anche
 il trim e si stacca (con un segnale acustico) se prendi la cloche, in stallo o con assetti estremi. La barra
-dei modi è in alto nel PFD; la scheda AP ha gli stessi comandi per il mouse.
+dei modi è in alto nel PFD; la scheda AP ha i tasti dei modi cliccabili (AP, HDG / ROL ali livellate, ALT, VS)
+e i pulsanti per i valori scelti.
 
 <p align="center">
   <img src="istruzioni/ap-pfd.png" alt="PFD con l'autopilota in salita: barra dei modi, quota scelta e prua scelta" width="70%">

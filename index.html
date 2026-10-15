@@ -105,11 +105,18 @@
     <div id="pianoCorpo" class="corpo"></div>
   </section>
   <section id="ap" class="hud apan scheda" role="tabpanel" aria-label="Autopilota" data-en-aria="Autopilot">
-    <div class="ap-testa"><button type="button" id="apBtn" class="ap-btn" title="Inserisce / stacca (Maiusc+A)" data-en-title="Engage / disconnect (Shift+A)">AP</button><span id="apStato" class="ap-stato"></span></div>
+    <!-- tasti dei modi, come sul GFC 700: verde = modo attivo -->
+    <div class="ap-modi">
+      <button type="button" id="apBtn" class="ap-btn" data-modo="ap" title="Inserisce / stacca l'autopilota (Maiusc+A)" data-en-title="Engage / disconnect the autopilot (Shift+A)">AP</button>
+      <button type="button" class="ap-btn" data-modo="hdg" title="HDG: segue la prua scelta; premuto di nuovo tiene le ali livellate (ROL)" data-en-title="HDG: follows the selected heading; press again for wings level (ROL)">HDG</button>
+      <button type="button" class="ap-btn" data-modo="alt" title="ALT: tiene la quota di adesso" data-en-title="ALT: holds the current altitude">ALT</button>
+      <button type="button" class="ap-btn" data-modo="vs" title="VS: sale o scende verso la quota scelta alla velocità verticale scelta" data-en-title="VS: climbs or descends to the selected altitude at the selected vertical speed">VS</button>
+    </div>
+    <div id="apStato" class="ap-stato"></div>
     <div class="ap-riga"><span class="lbl" data-en="HDG">PRUA</span><button type="button" data-ap="hdg:-10">−10</button><button type="button" data-ap="hdg:-1">−1</button><b id="apHdg" class="ap-val">---°</b><button type="button" data-ap="hdg:1">+1</button><button type="button" data-ap="hdg:10">+10</button><button type="button" data-ap="sync" title="Prua scelta = prua attuale (Maiusc+H)" data-en-title="Selected heading = current heading (Shift+H)" data-en="SYNC">ORA</button></div>
     <div class="ap-riga"><span class="lbl" data-en="ALT">QUOTA</span><button type="button" data-ap="alt:-1000">−1000</button><button type="button" data-ap="alt:-100">−100</button><b id="apAlt" class="ap-val">-----</b><button type="button" data-ap="alt:100">+100</button><button type="button" data-ap="alt:1000">+1000</button></div>
     <div class="ap-riga"><span class="lbl">VS</span><button type="button" data-ap="vs:-100">−100</button><b id="apVs" class="ap-val">500</b><button type="button" data-ap="vs:100">+100</button><span class="unit">ft/min</span></div>
-    <div class="dim ap-nota" data-en="Shift+A engages · A/D heading · W/S altitude · Shift+W/S vertical speed. The throttle is yours: the autopilot only protects the speed with the nose.">Maiusc+A inserisce · A/D prua · W/S quota · Maiusc+W/S velocità verticale. La manetta è tua: l'autopilota protegge la velocità solo col muso.</div>
+    <div class="dim ap-nota" data-en="Click a mode (with the autopilot off it also engages it) or Shift+A · A/D heading · W/S altitude · Shift+W/S vertical speed. The throttle is yours: the autopilot only protects the speed with the nose.">Clicca un modo (ad autopilota spento lo inserisce anche) o Maiusc+A · A/D prua · W/S quota · Maiusc+W/S velocità verticale. La manetta è tua: l'autopilota protegge la velocità solo col muso.</div>
   </section>
   <section id="missione" class="hud missione scheda" role="tabpanel" aria-label="Missione" data-en-aria="Mission">
     <div id="missioneCorpo" class="corpo"></div>
