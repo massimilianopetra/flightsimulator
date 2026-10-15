@@ -44,7 +44,7 @@
       <dt data-en="Right mouse">Tasto destro</dt><dd data-en="hold and drag: look around (cockpit) or around the aircraft (outside)">tieni premuto e trascina: guardati intorno (cabina) o gira attorno all'aereo (fuori)</dd>
       <dt data-en="Mouse wheel">Rotellina</dt><dd data-en="cockpit zoom">zoom in cabina</dd>
       <dt>N</dt><dd data-en="next destination">prossima destinazione</dd>
-      <dt>J · T · I · Y</dt><dd data-en="right column tabs: map, radio, flight plan, mission (press again to hide)">schede a destra: mappa, radio, piano di volo, missione (di nuovo per nasconderle)</dd>
+      <dt>J · T · I · Y</dt><dd data-en="right column tabs: map, radio, flight plan, mission (press again to hide); AP tab with the mouse">schede a destra: mappa, radio, piano di volo, missione (di nuovo per nasconderle); la scheda AP col mouse</dd>
       <dt>T</dt><dd data-en="radio: talk to the tower (then 1…4 to choose the sentence)">radio: parla con la torre (poi 1…4 per scegliere la frase)</dd>
       <dt>U</dt><dd data-en="radio COM1: next nearest station">radio COM1: prossima stazione vicina</dd>
       <dt>V</dt><dd data-en="NAV1: next VOR/ILS in range (nearest first)">NAV1: prossimo VOR/ILS ricevuto (il più vicino per primo)</dd>
@@ -52,6 +52,7 @@
       <dt>, / .</dt><dd data-en="VOR course CRS −1° / +1° (with Shift ±10°)">rotta CRS del VOR −1° / +1° (con Maiusc ±10°)</dd>
       <dt>M / O</dt><dd data-en="map scale (or mouse wheel on the map) / north or heading up">scala mappa (anche rotellina sulla mappa) / nord o prua in alto</dd>
       <dt>P / R</dt><dd data-en="pause / restart (also the mission)">pausa / ricomincia (anche la missione)</dd>
+      <dt data-en="Shift+A">Maiusc+A</dt><dd data-en="autopilot on / off; when on, A/D heading, W/S altitude, Shift+W/S vertical speed, Shift+H current heading">autopilota sì / no; inserito: A/D prua, W/S quota, Maiusc+W/S velocità verticale, Maiusc+H prua attuale</dd>
       <dt>H</dt><dd data-en="this window">questa finestra</dd>
       <dt>Esc</dt><dd data-en="close a window / back to the briefing (change airport, destination, mission…)">chiude una finestra / torna al briefing (cambia aeroporto, destinazione, missione…)</dd>
     </dl>
@@ -72,6 +73,7 @@
     <button type="button" role="tab" data-scheda="mappa" aria-controls="mappa" title="Mappa e navigazione (J)" data-en-title="Map and navigation (J)" data-en="MAP <kbd>J</kbd>">MAPPA <kbd>J</kbd></button>
     <button type="button" role="tab" data-scheda="radio" aria-controls="radio" title="Radio con la torre (T)" data-en-title="Radio with the tower (T)">RADIO <kbd>T</kbd></button>
     <button type="button" role="tab" data-scheda="piano" aria-controls="piano" title="Piano di volo (I)" data-en-title="Flight plan (I)" data-en="PLAN <kbd>I</kbd>">PIANO <kbd>I</kbd></button>
+    <button type="button" role="tab" data-scheda="ap" aria-controls="ap" title="Autopilota (Maiusc+A lo inserisce)" data-en-title="Autopilot (Shift+A engages it)">AP</button>
     <button type="button" role="tab" data-scheda="missione" aria-controls="missione" title="Missione (Y)" data-en-title="Mission (Y)" data-en="MISSION <kbd>Y</kbd>" hidden>MISSIONE <kbd>Y</kbd></button>
   </div>
   <!-- ultima trasmissione e avvisi della radio, quando la scheda RADIO non è aperta -->
@@ -101,6 +103,13 @@
   </section>
   <section id="piano" class="hud piano scheda" role="tabpanel" aria-label="Piano di volo" data-en-aria="Flight plan">
     <div id="pianoCorpo" class="corpo"></div>
+  </section>
+  <section id="ap" class="hud apan scheda" role="tabpanel" aria-label="Autopilota" data-en-aria="Autopilot">
+    <div class="ap-testa"><button type="button" id="apBtn" class="ap-btn" title="Inserisce / stacca (Maiusc+A)" data-en-title="Engage / disconnect (Shift+A)">AP</button><span id="apStato" class="ap-stato"></span></div>
+    <div class="ap-riga"><span class="lbl" data-en="HDG">PRUA</span><button type="button" data-ap="hdg:-10">−10</button><button type="button" data-ap="hdg:-1">−1</button><b id="apHdg" class="ap-val">---°</b><button type="button" data-ap="hdg:1">+1</button><button type="button" data-ap="hdg:10">+10</button><button type="button" data-ap="sync" title="Prua scelta = prua attuale (Maiusc+H)" data-en-title="Selected heading = current heading (Shift+H)" data-en="SYNC">ORA</button></div>
+    <div class="ap-riga"><span class="lbl" data-en="ALT">QUOTA</span><button type="button" data-ap="alt:-1000">−1000</button><button type="button" data-ap="alt:-100">−100</button><b id="apAlt" class="ap-val">-----</b><button type="button" data-ap="alt:100">+100</button><button type="button" data-ap="alt:1000">+1000</button></div>
+    <div class="ap-riga"><span class="lbl">VS</span><button type="button" data-ap="vs:-100">−100</button><b id="apVs" class="ap-val">500</b><button type="button" data-ap="vs:100">+100</button><span class="unit">ft/min</span></div>
+    <div class="dim ap-nota" data-en="Shift+A engages · A/D heading · W/S altitude · Shift+W/S vertical speed. The throttle is yours: the autopilot only protects the speed with the nose.">Maiusc+A inserisce · A/D prua · W/S quota · Maiusc+W/S velocità verticale. La manetta è tua: l'autopilota protegge la velocità solo col muso.</div>
   </section>
   <section id="missione" class="hud missione scheda" role="tabpanel" aria-label="Missione" data-en-aria="Mission">
     <div id="missioneCorpo" class="corpo"></div>
@@ -282,6 +291,7 @@
 <script src="js/monumenti.js"></script>
 <script src="js/paesaggio.js"></script>
 <script src="js/fisica.js"></script>
+<script src="js/autopilota.js"></script>
 <script src="js/cabina.js"></script>
 <script src="js/aereo3d.js"></script>
 <script src="js/mondo.js"></script>

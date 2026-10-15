@@ -71,8 +71,20 @@ SIM.creaAudio=function(){
     src.connect(f);f.connect(g);g.connect(n.master);src.start(t,Math.random());src.stop(t+durata+0.2);
   }
 
+  // autopilota disinserito: tre toni discendenti, come il "disconnect tone" del G1000
+  function apStacco(){
+    if(!ctx||!n) return;
+    const t=ctx.currentTime;
+    [988,784,659].forEach((f,i)=>{
+      const o=ctx.createOscillator();o.type='sine';o.frequency.value=f;
+      const g=ctx.createGain(),t0=t+i*0.17;
+      g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(0.12,t0+0.02);g.gain.setTargetAtTime(0,t0+0.12,0.03);
+      o.connect(g);g.connect(n.master);o.start(t0);o.stop(t0+0.4);
+    });
+  }
+
   return {
-    avvia, aggiorna, colpo, fruscio,
+    avvia, aggiorna, colpo, fruscio, apStacco,
     get attivo(){return attivo;},
     alterna(){
       attivo=!attivo;

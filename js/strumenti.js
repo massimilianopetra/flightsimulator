@@ -133,7 +133,7 @@ SIM.creaStrumenti=function(A){
     g.fillStyle='#fff';g.font=`700 ${Math.round(fs*1.25)}px ${MONO}`;g.textAlign='right';
     g.fillText(Math.round(d.alt),ax+aw-4,cy+1);
     g.font=`700 ${Math.round(fs*0.8)}px ${MONO}`;g.textAlign='left';g.fillStyle='#cbd5e1';
-    g.fillText('ALT ft',ax+2,ty-fs*0.7);
+    if(!d.ap)g.fillText('ALT ft',ax+2,ty-fs*0.7);   // con l'autopilota al suo posto c'è la quota scelta
     g.fillStyle=d.agl<1000?'#fbbf24':'#cbd5e1';
     g.fillText('RA '+(d.agl<2500?Math.max(0,Math.round(d.agl)):'----'),ax+2,ty+th+fs*0.7);
 
@@ -155,6 +155,27 @@ SIM.creaStrumenti=function(A){
     /* ---- NAV1: CDI (ago di deviazione), TO/FROM, sentiero di discesa ---- */
     if(d.nav) disegnaNav(d.nav,{cx,cy,AH,fs,tx,tw,ty,ax});
 
+    /* ---- autopilota: barra dei modi in alto (come il G1000) e quota scelta sopra il nastro ---- */
+    if(d.ap){
+      const a=d.ap,fa=Math.round(fs*0.85),yb=Math.max(2,ty-fa*1.55),hb=fa*1.35;
+      g.font=`700 ${fa}px ${MONO}`;g.textBaseline='middle';
+      const pezzi=[['AP','#000','#4ade80'],[a.lat,'#4ade80'],[a.vert==='VS'?`VS ${a.vsSel}`:'ALT','#4ade80']];
+      if(a.armato)pezzi.push([a.armato,'#fff']);
+      if(a.limite)pezzi.push([a.limite==='BASSA'?Lg('VEL MIN','MIN SPD'):Lg('VEL MAX','MAX SPD'),'#fbbf24']);
+      const lw=pezzi.map(p=>g.measureText(p[0]).width+fa*0.9);
+      let x=cx-lw.reduce((s,v)=>s+v,0)/2;
+      g.fillStyle='rgba(8,14,26,.75)';g.fillRect(x-3,yb,lw.reduce((s,v)=>s+v,0)+6,hb);
+      pezzi.forEach((p,i)=>{
+        if(p[2]){g.fillStyle=p[2];g.fillRect(x+1,yb+2,lw[i]-2,hb-4);}
+        g.fillStyle=p[1];g.textAlign='center';g.fillText(p[0],x+lw[i]/2,yb+hb/2+1);x+=lw[i];
+      });
+      // quota scelta: in azzurro sopra il nastro della quota, e un segno sul nastro
+      g.fillStyle='rgba(8,14,26,.85)';g.fillRect(ax,yb,aw,hb);
+      g.fillStyle='#22d3ee';g.textAlign='center';g.fillText(String(a.altSel),ax+aw/2,yb+hb/2+1);
+      const ysel=clamp(ya(a.altSel),ty,ty+th);
+      g.fillRect(ax,ysel-6,5,12);
+    }
+
     /* ---- bussola (nastro di prua) ---- */
     g.fillStyle='#0b1322';g.fillRect(0,AH,W,HB);
     g.save();g.beginPath();g.rect(0,AH,W,HB);g.clip();
@@ -175,6 +196,10 @@ SIM.creaStrumenti=function(A){
       let rel=((d.bug-d.hdg+540)%360)-180;
       const x=clamp(cx+rel*pd,8,W-8);
       g.fillStyle='#ff5ad9';g.beginPath();g.moveTo(x,AH+1);g.lineTo(x-6,AH+9);g.lineTo(x+6,AH+9);g.closePath();g.fill();
+    }
+    if(d.ap){ // prua scelta dell'autopilota: segno azzurro a "U" sul bordo della bussola
+      const rel=((d.ap.hdgSel-d.hdg+540)%360)-180, x=clamp(cx+rel*pd,8,W-8);
+      g.fillStyle='#22d3ee';g.beginPath();g.moveTo(x-8,AH);g.lineTo(x+8,AH);g.lineTo(x+8,AH+8);g.lineTo(x+3,AH+8);g.lineTo(x,AH+4);g.lineTo(x-3,AH+8);g.lineTo(x-8,AH+8);g.closePath();g.fill();
     }
     g.restore();
     box(cx-fs*1.7,AH+2,fs*3.4,HB-4);

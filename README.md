@@ -115,6 +115,7 @@ To work on it with VS Code the *Live Server* extension is fine too.
 | L | NAV1 radio: ILS of the arrival runway |
 | , / . | VOR course (CRS) −1° / +1°, with Shift ±10° |
 | P / R | pause / restart (the mission too) |
+| Shift+A | autopilot on / off (when on: A/D heading, W/S altitude, Shift+W/S vertical speed, Shift+H current heading) |
 | H | open or close the controls window (the flight pauses) |
 | Esc | close the open window, otherwise back to the briefing |
 
@@ -159,7 +160,7 @@ VOR and ILS navigation and the emergencies step by step:
 
 The screen keeps the view clear: at the **top left** two buttons open the controls window (H) and the
 **logbook**; at the **top right** a single column with four tabs, **MAP** (J), **RADIO** (T), flight
-**PLAN** (I) and **MISSION** (Y), of which only one shows at a time. When the radio tab is closed, the
+**PLAN** (I), **AP** and **MISSION** (Y), of which only one shows at a time. When the radio tab is closed, the
 last transmission and the tower prompt appear below the tabs, and the RADIO tab flashes when the tower
 is waiting for you; T opens it by itself. At the bottom are the PFD and the engine panel.
 
@@ -177,6 +178,20 @@ landings, missions and stars, with totals and records. It stays in the browser.
 
 <p align="center">
   <img src="istruzioni/en/libretto.png" alt="The logbook with totals, records and the list of flights" width="85%">
+</p>
+
+## Autopilot
+
+Like the GFC 700 of today's G1000 Cessna 172, in a simple version: **Shift+A** engages it and it holds
+the current heading (HDG) and altitude (ALT). With it engaged, A/D change the selected heading and W/S the
+selected altitude: it then climbs or descends at the chosen vertical speed (VS, default 500 ft/min) and
+captures the new altitude by itself. The throttle stays with the pilot; if the speed gets too low the
+autopilot lowers the nose (MIN SPD). It also moves the trim, and it disconnects (with a tone) if you take
+the stick, in a stall or with extreme attitudes. The mode bar is at the top of the PFD; the AP tab has the
+same controls for the mouse.
+
+<p align="center">
+  <img src="istruzioni/en/ap-pfd.png" alt="PFD with the autopilot climbing: mode bar, selected altitude and heading bug" width="70%">
 </p>
 
 ## Instruments
@@ -300,6 +315,7 @@ The site needs no build step: it is made of static files.
 | `js/monumenti.js` | the 3D models of the monuments | |
 | `js/piano.js` | flight plan to the destination and arrival runway information | |
 | `js/audio.js` | synthesised sounds: engine, wind, stall horn | |
+| `js/autopilota.js` | the autopilot: heading, altitude and vertical speed, speed protection, auto-trim | |
 | `js/missioni.js` | missions: against the clock, tours, precision landing; stars and result | |
 | `js/libretto.js` | the logbook: every flight saved in the browser, totals and records | |
 | `js/main.js` | ties everything together: controls, cameras, messages, main loop | |
@@ -602,6 +618,7 @@ Per lavorarci con VS Code va bene anche l'estensione *Live Server*.
 | L | radio NAV1: ILS della pista di arrivo |
 | , / . | rotta del VOR (CRS) −1° / +1°, con Maiusc ±10° |
 | P / R | pausa / ricomincia (anche la missione) |
+| Maiusc+A | autopilota sì / no (inserito: A/D prua, W/S quota, Maiusc+W/S velocità verticale, Maiusc+H prua attuale) |
 | H | apre o chiude la finestra dei comandi (il volo va in pausa) |
 | Esc | chiude la finestra aperta, altrimenti torna al briefing |
 
@@ -646,7 +663,7 @@ virosbandometro, la navigazione VOR e ILS e le emergenze:
 
 Lo schermo lascia libera la vista: **in alto a sinistra** due pulsanti aprono la finestra dei comandi (H)
 e il **libretto di volo**; **in alto a destra** c'è una sola colonna con quattro schede, **MAPPA** (J),
-**RADIO** (T), **PIANO** di volo (I) e **MISSIONE** (Y), e se ne vede una alla volta. Con la radio
+**RADIO** (T), **PIANO** di volo (I), **AP** e **MISSIONE** (Y), e se ne vede una alla volta. Con la radio
 chiusa, l'ultima trasmissione e l'avviso della torre compaiono sotto le linguette, e la linguetta RADIO
 lampeggia quando la torre ti aspetta; T la apre da sola. In basso restano il PFD e il pannello motore.
 
@@ -664,6 +681,19 @@ atterraggi, missioni e stelle, con i totali e i record. Resta nel browser.
 
 <p align="center">
   <img src="istruzioni/libretto.png" alt="Il libretto di volo con i totali, i record e l'elenco dei voli" width="85%">
+</p>
+
+## Autopilota
+
+Come il GFC 700 del Cessna 172 con G1000 di oggi, in versione semplice: **Maiusc+A** lo inserisce e tiene
+la prua (HDG) e la quota (ALT) attuali. Inserito, A/D cambiano la prua scelta e W/S la quota scelta: allora
+sale o scende alla velocità verticale scelta (VS, di serie 500 ft/min) e aggancia da solo la nuova quota.
+La manetta resta al pilota; se la velocità scende troppo l'autopilota abbassa il muso (VEL MIN). Muove anche
+il trim e si stacca (con un segnale acustico) se prendi la cloche, in stallo o con assetti estremi. La barra
+dei modi è in alto nel PFD; la scheda AP ha gli stessi comandi per il mouse.
+
+<p align="center">
+  <img src="istruzioni/ap-pfd.png" alt="PFD con l'autopilota in salita: barra dei modi, quota scelta e prua scelta" width="70%">
 </p>
 
 ## Strumenti
@@ -785,6 +815,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `js/radio.js` | radionavigazione: VOR, DME e ILS, il ricevitore NAV1 | |
 | `js/rullaggio.js` | vie di rullaggio: rete, percorso più breve dal piazzale al punto attesa, disegno | |
 | `js/atc.js` | comunicazioni radio con la torre (sintesi vocale, menu delle risposte) | |
+| `js/autopilota.js` | l'autopilota: prua, quota e velocità verticale, protezione di velocità, trim automatico | |
 | `js/missioni.js` | missioni: a tempo, giri a tappe, atterraggio di precisione; stelle e risultato | |
 | `js/libretto.js` | il libretto di volo: ogni volo salvato nel browser, totali e record | |
 | `js/monumenti.js` | i modelli 3D dei monumenti | |

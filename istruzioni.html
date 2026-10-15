@@ -84,6 +84,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <li><a href="#volo">In volo: assetto, trim, virate</a></li>
     <li><a href="#atterraggio">Atterraggio e PAPI</a></li>
     <li><a href="#missioni">Missioni e libretto di volo</a></li>
+    <li><a href="#autopilota">Autopilota</a></li>
     <li><a href="#vor">Navigare con il VOR</a></li>
     <li><a href="#ils">Avvicinamento ILS</a></li>
     <li><a href="#radio">Comunicazioni radio</a></li>
@@ -153,6 +154,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <tr><td><kbd>V</kbd></td><td>NAV1: sintonizza la stazione VOR o ILS successiva fra quelle ricevute (la più vicina per prima)</td></tr>
     <tr><td><kbd>L</kbd></td><td>NAV1: sintonizza l'ILS della pista di arrivo</td></tr>
     <tr><td><kbd>,</kbd> / <kbd>.</kbd></td><td>Rotta CRS del VOR −1° / +1° (con <kbd>Maiusc</kbd> ±10°)</td></tr>
+    <tr><td><kbd>Maiusc</kbd>+<kbd>A</kbd></td><td>Autopilota: inserisce / stacca (vedi <a href="#autopilota">Autopilota</a>)</td></tr>
     <tr><td><kbd>H</kbd></td><td>Apre / chiude la finestra dei comandi (intanto il volo è in pausa)</td></tr>
     <tr><td><kbd>P</kbd> / <kbd>R</kbd></td><td>Pausa / ricomincia (anche la missione, da capo)</td></tr>
     <tr><td><kbd>Esc</kbd></td><td>Chiude la finestra aperta; altrimenti torna al briefing, per cambiare aeroporto, destinazione, missione, ora o carburante (anche dal pulsante nella pausa)</td></tr>
@@ -194,7 +196,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   <li><b>Obiettivo della missione</b> (in alto al centro, solo se ne hai scelta una): cronometro, prossima tappa o punteggio.</li>
   <li><b>PFD</b> (in basso a sinistra): lo strumento principale, con velocità, assetto, quota, variometro e bussola.</li>
   <li><b>Pannello motore e sistemi</b> (in basso al centro): giri, flap, trim, accelerazione g, virosbandometro, carburante, cloche, manetta e pulsanti.</li>
-  <li><b>Colonna a schede</b> (in alto a destra): <b>MAPPA</b> (<kbd>J</kbd>), <b>RADIO</b> (<kbd>T</kbd>), <b>PIANO</b> di volo (<kbd>I</kbd>) e <b>MISSIONE</b> (<kbd>Y</kbd>). Se ne vede una alla volta, così la scena resta libera; clic sulla linguetta o il suo tasto per cambiarla, di nuovo per nascondere la colonna. Il gioco ricorda l'ultima scelta.</li>
+  <li><b>Colonna a schede</b> (in alto a destra): <b>MAPPA</b> (<kbd>J</kbd>), <b>RADIO</b> (<kbd>T</kbd>), <b>PIANO</b> di volo (<kbd>I</kbd>), <b>AP</b> (l'autopilota) e <b>MISSIONE</b> (<kbd>Y</kbd>). Se ne vede una alla volta, così la scena resta libera; clic sulla linguetta o il suo tasto per cambiarla, di nuovo per nascondere la colonna. Il gioco ricorda l'ultima scelta.</li>
 </ul>
 <p>Quando la scheda RADIO non è aperta, sotto le linguette compaiono per qualche secondo l'<b>ultima trasmissione</b> e, in arancione, l'<b>avviso</b> su cosa dire alla torre; la linguetta RADIO lampeggia quando la torre aspetta una tua chiamata. Premendo <kbd>T</kbd> la radio si apre da sola e, finita la conversazione, torna la scheda di prima.</p>
 <p>Al centro in alto compaiono i <b>messaggi</b> (decollo, atterraggio, radio…) e gli <b>avvisi</b> lampeggianti (stallo, pull up…).</p>
@@ -468,7 +470,36 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 </figure>
 
 <!-- ================================================================ -->
-<h2 id="vor">13. Navigare con il VOR</h2>
+<h2 id="autopilota">13. Autopilota</h2>
+<p>Il Cessna 172 con G1000 di oggi ha di solito l'autopilota <b>Garmin GFC 700</b>; quello del simulatore gli somiglia, in versione semplice. <b>Maiusc</b>+<kbd>A</kbd> (o il tasto <b>AP</b> nella scheda AP) lo inserisce: da quel momento tiene la <b>prua</b> e la <b>quota</b> che avevi, arrotondata ai 100 ft. Si inserisce solo in volo.</p>
+<div class="affianca">
+  <div>
+    <p>Con l'autopilota inserito i tasti della cloche non muovono più l'aereo, ma cambiano i valori scelti:</p>
+    <table>
+      <tbody>
+        <tr><td><kbd>A</kbd> / <kbd>D</kbd></td><td>prua scelta −1° / +1° (tenendo premuto corre). L'aereo vira verso di lei inclinato al massimo di 20°</td></tr>
+        <tr><td><kbd>S</kbd> / <kbd>W</kbd></td><td>quota scelta +100 / −100 ft (come tirare o spingere la cloche)</td></tr>
+        <tr><td><kbd>Maiusc</kbd>+<kbd>S</kbd> / <kbd>W</kbd></td><td>velocità verticale di salita o discesa ±100 ft/min (di serie 500)</td></tr>
+        <tr><td><kbd>Maiusc</kbd>+<kbd>H</kbd></td><td>prua scelta = prua attuale</td></tr>
+        <tr><td><kbd>Maiusc</kbd>+<kbd>A</kbd></td><td>stacca l'autopilota</td></tr>
+      </tbody>
+    </table>
+    <p>Sul PFD, in alto, la <b>barra dei modi</b> dice che cosa sta facendo: <b class="c-ver">AP</b> inserito, <b class="c-ver">HDG</b> segue la prua scelta (il segno <span class="c-cya">azzurro</span> sulla bussola), <b class="c-ver">ALT</b> tiene la quota oppure <b class="c-ver">VS 500</b> sale o scende verso la quota scelta (scritta in <span class="c-cya">azzurro</span> sopra il nastro della quota) e <b>ALTS</b> vuol dire che la aggancerà da solo quando ci arriva.</p>
+    <p><b>La manetta resta a te</b>, come sul 172 vero. Se in salita la velocità scende verso 65 nodi, l'autopilota abbassa il muso per non perderne altra e compare <b class="c-amb">VEL MIN</b>: dai più motore. Se in discesa supera la velocità massima di crociera compare <b class="c-amb">VEL MAX</b>: togli motore.</p>
+    <p>L'autopilota muove l'equilibratore e, piano piano, il <b>trim</b>: quando lo stacchi l'aereo è già in equilibrio. Si stacca da solo, con tre toni discendenti, se prendi la cloche col mouse o col gamepad, in caso di stallo o se l'assetto esce dai limiti.</p>
+  </div>
+  <figure>
+    <img src="istruzioni/ap-scheda.png" alt="Scheda AP: tasto AP acceso, modi HDG e VS, prua, quota e velocità verticale scelte con i pulsanti" loading="lazy">
+    <figcaption>La scheda AP: gli stessi comandi col mouse.</figcaption>
+  </figure>
+</div>
+<figure>
+  <img src="istruzioni/ap-pfd.png" alt="PFD con l'autopilota in salita: barra dei modi AP HDG VS 500 ALTS, quota scelta in azzurro e segno della prua scelta sulla bussola" loading="lazy">
+  <figcaption>In salita verso 6500 ft con l'autopilota: la barra dei modi in alto, la quota scelta sopra il nastro e la prua scelta sulla bussola.</figcaption>
+</figure>
+
+<!-- ================================================================ -->
+<h2 id="vor">14. Navigare con il VOR</h2>
 <p>Il <b>VOR</b> è una stazione radio a terra che trasmette in tutte le direzioni. Il ricevitore di bordo capisce su quale <b>radiale</b> ti trovi, cioè in che direzione sei visto dalla stazione: sul radiale 090 sei a est della stazione. Se la stazione ha il <b>DME</b>, sai anche a quante miglia sei.</p>
 <ol class="passi">
   <li><b>Sintonizza</b>: premi <kbd>V</kbd> (più volte per passare alle altre stazioni ricevute) oppure scegli dal menu <b>NAV1</b>. La rotta CRS viene impostata dritta verso la stazione.</li>
@@ -482,7 +513,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Nel mondo Piemonte i VOR sono quelli <b>veri</b>, per esempio TOP Torino 114.50, CSL Caselle 116.75, VOG Voghera 115.50, SRN Saronno 113.70 e BLA Biella 116.10. Una differenza dalla realtà: il simulatore usa i gradi riferiti al nord geografico, mentre i VOR veri usano il nord magnetico, che in Piemonte è circa 3° più a est.</p>
 
 <!-- ================================================================ -->
-<h2 id="ils">14. Avvicinamento ILS</h2>
+<h2 id="ils">15. Avvicinamento ILS</h2>
 <p>L'<b>ILS</b> guida fino alla pista con due fasci radio:</p>
 <ul>
   <li>il <b>localizzatore</b> (LOC) dice se sei a destra o a sinistra dell'asse pista. È molto più preciso del VOR: l'ago va a fondo scala quando sei 2,5° fuori asse;</li>
@@ -499,7 +530,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <div class="attenzione">Gli ILS del simulatore si trovano su tutte le piste asfaltate lunghe almeno 1000 m, su entrambe le testate. Le loro <b>frequenze sono inventate</b> e non corrispondono a quelle vere.</div>
 
 <!-- ================================================================ -->
-<h2 id="radio">15. Comunicazioni radio con la torre</h2>
+<h2 id="radio">16. Comunicazioni radio con la torre</h2>
 <p>Le comunicazioni sono in <b>inglese</b>, con la fraseologia standard internazionale (ICAO), come nella realtà. La torre parla con una voce sintetica del browser; tu non devi parlare: premi <kbd>T</kbd>, scegli la frase con <kbd>1</kbd>…<kbd>4</kbd> e il gioco la pronuncia con la voce del pilota. Nella scheda <b>RADIO</b> (<kbd>T</kbd> la apre da sola) ogni trasmissione resta scritta, con la traduzione italiana sotto.</p>
 <ul>
   <li>Il tuo nominativo è <b>I-VOLO</b> (si dice “India Victor Oscar Lima Oscar”). Dopo la prima chiamata la torre usa quello abbreviato, <b>I-LO</b>.</li>
@@ -533,7 +564,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <div class="attenzione">Per gli aeroporti senza dati (alcuni campi piccoli, e tutti quelli della Valle Azzurra) la stazione è <b>simulata</b> e nel menu COM1 è indicata come tale. Anche le procedure sono semplificate: assomigliano a quelle vere ma non sono quelle pubblicate per ogni aeroporto. La voce dipende dal browser e dal sistema: su Windows ci sono già voci inglesi; se non ne trovi, le trasmissioni restano comunque scritte. Con il pulsante AUDIO spento la radio non parla.</div>
 
 <!-- ================================================================ -->
-<h2 id="emergenze">16. Avvisi ed emergenze</h2>
+<h2 id="emergenze">17. Avvisi ed emergenze</h2>
 <table>
   <thead><tr><th>Avviso</th><th>Cosa significa</th><th>Cosa fare</th></tr></thead>
   <tbody>
@@ -552,7 +583,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Si ha un incidente toccando terra a più di circa 700 ft/min, finendo in acqua, toccando il suolo con un'ala, l'elica o la fusoliera, superando circa 183 kt oppure i limiti di +5,7 / −2,3 g. Premi <kbd>R</kbd> o <kbd>Invio</kbd> per ricominciare.</p>
 
 <!-- ================================================================ -->
-<h2 id="numeri">17. Numeri del Cessna 172</h2>
+<h2 id="numeri">18. Numeri del Cessna 172</h2>
 <table>
   <thead><tr><th>Velocità</th><th>Nodi</th><th>Significato</th></tr></thead>
   <tbody>
@@ -570,7 +601,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Altri dati: 1000 kg con pilota e carburante, ala di 11 m, serbatoi da 53 galloni utilizzabili. Il modello di volo (6 gradi di libertà) usa i coefficienti aerodinamici del vero C172: si possono leggere e modificare in <code>dati/aereo.js</code>.</p>
 
 <!-- ================================================================ -->
-<h2 id="mondi">18. Mondi e mappa modificabile</h2>
+<h2 id="mondi">19. Mondi e mappa modificabile</h2>
 <ul>
   <li><b>Piemonte</b>: il rilievo vero (griglia di 250 m), 32 aeroporti con le piste vere, laghi, città, strade, ferrovie, fiumi, paesi con gli edifici e i VOR veri. Copre il Piemonte con un po' di Lombardia, Liguria, Valle d'Aosta, Svizzera e Francia (circa 219 × 287 km). Ci sono anche i principali monumenti, come riferimenti a vista: la Mole Antonelliana, Superga, il Lingotto con la pista sul tetto, i due grattacieli di Torino, la Reggia di Venaria, Stupinigi, la Sacra di San Michele, Vicoforte, San Gaudenzio a Novara e Oropa. Sono modelli semplificati e sulla mappa sono segnati con un triangolo dorato.</li>
   <li><b>Valle Azzurra</b>: un mondo inventato, piccolo e semplice. Tutto è nel file <code>dati/mappa.js</code>, scritto per essere modificato a mano: montagne, laghi, aeroporti e piste, città, boschi, VOR, meteo e punto di partenza.</li>
