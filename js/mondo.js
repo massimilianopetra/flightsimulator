@@ -314,6 +314,7 @@ SIM.creaMondo=function(scene,renderer){
     // interno della cabina (js/cabina.js), visibile solo dalla vista in cabina
     const cab=SIM.creaCabina();gr.add(cab.gruppo);
     const cabina=cab.gruppo;
+    const ombra=creaOmbra(gr,[cabina,m.pale,disco,m.strobo]);
 
     let tempo=0;
     return {gruppo:gr, cabina:cab, luciNav,
@@ -331,7 +332,48 @@ SIM.creaMondo=function(scene,renderer){
         strobo.visible=(tempo%1.2)<0.06;beacon.visible=(tempo%1.0)<0.15;
         cabina.visible=inCabina;fus.visible=!inCabina;
         if(inCabina)cab.aggiorna(s);
+        ombra(s);
       }};
+  }
+
+  /* Ombra dell'aereo: la sagoma del modello schiacciata sul suolo lungo la direzione
+     del sole (matrice di proiezione su un piano). Il piano passa sotto l'aereo e segue
+     la pendenza del terreno. Si vede solo vicino al suolo (decollo, atterraggio, rullaggio)
+     e sfuma salendo. Lo stencil evita che i pezzi sovrapposti facciano macchie più scure. */
+  function creaOmbra(gr,esclusi){
+    // tutti i triangoli del modello (senza cabina, pale, disco dell'elica e luci) in coordinate dell'aereo
+    gr.updateMatrixWorld(true);
+    const pos=[],v=new THREE.Vector3();
+    gr.traverse(o=>{
+      if(!o.isMesh)return;
+      for(let p=o;p;p=p.parent)if(esclusi.includes(p))return;
+      const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry,a=g.attributes.position;
+      for(let i=0;i<a.count;i++){v.fromBufferAttribute(a,i).applyMatrix4(o.matrixWorld);pos.push(v.x,v.y,v.z);}
+    });
+    const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+    const mat=new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.4,depthWrite:false,side:THREE.DoubleSide,
+      stencilWrite:true,stencilRef:0,stencilFunc:THREE.EqualStencilFunc,stencilZPass:THREE.IncrementStencilOp});
+    const mesh=new THREE.Mesh(geo,mat);
+    mesh.matrixAutoUpdate=false;mesh.frustumCulled=false;mesh.renderOrder=1;mesh.visible=false;
+    scene.add(mesh);
+    const L=new THREE.Vector3(),n=new THREE.Vector3(),P=new THREE.Matrix4();
+    return function(s){
+      const h=T.suolo(s.pos.x,s.pos.z),alt=s.pos.y-h;
+      const k=clamp(1-alt/150,0,1)*clamp(sole.intensity/0.78,0,1);
+      L.copy(sole.position).normalize();
+      mesh.visible=k>0.02&&L.y>0.05;
+      if(!mesh.visible)return;
+      mat.opacity=0.5*k;
+      // piano del suolo: normale dalla pendenza della mesh, 20 cm sopra (piste e linee stanno a +6/+8 cm)
+      const e=4,x=s.pos.x,z=s.pos.z;
+      n.set(T.meshH(x-e,z)-T.meshH(x+e,z),2*e,T.meshH(x,z-e)-T.meshH(x,z+e)).normalize();
+      const d=-(n.x*x+n.y*(h+0.2)+n.z*z);
+      // matrice d'ombra classica M = (n·L) I − L ⊗ piano, divisa per n·L (così w resta 1)
+      const dot=n.dot(L),pl=[n.x,n.y,n.z,d],l=[L.x,L.y,L.z,0],me=P.elements;
+      for(let c=0;c<4;c++)for(let r=0;r<4;r++)me[c*4+r]=(r===c?1:0)-l[r]*pl[c]/dot;
+      gr.updateMatrix();
+      mesh.matrix.multiplyMatrices(P,gr.matrix);
+    };
   }
 };
 })();
