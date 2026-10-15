@@ -369,17 +369,80 @@ $('esitoRiprova').addEventListener('click',()=>{$('esitoRiprova').blur();ricomin
    S/W (o frecce) quota scelta +100 / −100 ft (come tirare o spingere), con Maiusc la velocità verticale ±100 ft/min;
    A/D prua scelta −1° / +1° (tenendo premuto corre); Maiusc+H prua scelta = prua attuale.
    Si stacca anche prendendo la cloche col mouse o col gamepad. */
-// scheda AP: pulsanti per chi usa il mouse
+/* ---------- CDI: sorgente della navigazione, come il tasto CDI del G1000 ----------
+   GPS = la rotta magenta del piano di volo; NAV1 = il VOR o l'ILS sintonizzato (ago verde).
+   La segue il PFD e, in NAV e APR, l'autopilota. Si cambia col tasto CDI (scheda AP) o Maiusc+C. */
+let cdi='GPS';
+function impostaCdi(c,silenzioso){
+  if(c===cdi) return;
+  cdi=c;ap.sorgenteCambiata(st);eventiAP();
+  if(!silenzioso)messaggio('CDI: <b>'+nomeCdi()+'</b>',2);
+  aggiornaSchedaAP();
+}
+const nomeCdi=()=>cdi==='GPS'?'GPS':nav.staz?(nav.staz.tipo==='ILS'?'LOC1':'VOR1'):'NAV1';
+// tratto attivo della rotta magenta (lo stesso della mappa): dal punto lasciato al prossimo
+function trattoGPS(){
+  const p=piano.piano;if(!p||rull) return null;
+  const punti=[{x:p.x0,z:p.z0},{x:p.faf.x,z:p.faf.z,nome:p.nomeFaf},{x:p.te.x,z:p.te.z,nome:'RW'+p.te.nome}];
+  const i=Math.min(p.prossimo+1,2);
+  return {a:punti[i-1],b:punti[i],finale:i===2};
+}
+/* misura GPS, nello stesso formato del ricevitore NAV1: rotta voluta (DTK), distanza dalla rotta (xtk, m,
+   + = rotta a destra) e deviazione con fondo scala 2 NM (1 NM sul tratto finale), come sul G1000 */
+function misuraGPS(){
+  const t=trattoGPS();if(!t) return null;
+  const ux=t.b.x-t.a.x,uz=t.b.z-t.a.z,lu=Math.hypot(ux,uz)||1,ex=ux/lu,ez=uz/lu;
+  const dtk=((Math.atan2(ex,-ez)*R2D)+360)%360;
+  const xtk=-((st.pos.x-t.a.x)*(-ez)+(st.pos.z-t.a.z)*ex);
+  const fs=(t.finale?1:2)*1852;
+  return {staz:{tipo:'GPS',id:t.b.nome||'WPT',freq:0},ricevuto:true,dev:clamp(xtk/fs,-1,1),daA:'TO',crs:dtk,
+    dme:Math.hypot(t.b.x-st.pos.x,t.b.z-st.pos.z)/1852,xtk,dtk,scala:t.finale?'TERM':'ENR'};
+}
+// la sorgente del CDI per l'autopilota (vedi comanda in js/autopilota.js)
+function navPerAP(){
+  if(cdi==='GPS'){const g=misuraGPS();return g?{fonte:'GPS',ricevuto:true,dev:g.dev,dtk:g.dtk,xtk:g.xtk,gsErr:null,gsDev:null}:{fonte:'GPS',assente:true,ricevuto:false};}
+  const s=nav.staz;if(!s) return {fonte:'VOR',assente:true,ricevuto:false};
+  const fonte=s.tipo==='ILS'?'LOC':'VOR', m=radio.misura(s,st.pos,nav.crs);
+  if(!m.ricevuto) return {fonte,ricevuto:false};
+  const dist=Math.hypot(st.pos.x-s.x,st.pos.z-s.z), xtk=dist*Math.sin(m.dev*(s.tipo==='ILS'?2.5:10)*D2R);
+  let gsErr=null;
+  if(s.tipo==='ILS'&&m.gs!=null){const dg=Math.hypot(st.pos.x-s.gs.x,st.pos.z-s.gs.z);gsErr=(st.pos.y-s.quota)-dg*Math.tan(3*D2R);}
+  return {fonte,ricevuto:true,dev:m.dev,dtk:s.tipo==='ILS'?s.crs:nav.crs,xtk,gsErr,gsDev:m.gs};
+}
+let minimiFino=0;   // fino a quando lampeggia l'avviso MINIMI
+function eventiAP(){
+  while(ap.eventi.length){
+    const t=ap.eventi.shift();
+    if(t==='MINIMI'){
+      minimiFino=tempo+6;audio.apStacco();
+      messaggio(L("<b>MINIMI</b> (200 ft): stacca l'autopilota (Maiusc+A), togli motore e atterra a mano. Il 172 non atterra da solo.",
+                  '<b>MINIMUMS</b> (200 ft): disconnect the autopilot (Shift+A), reduce power and land by hand. The 172 does not land itself.'),6);
+    }else messaggio(t,4);
+    aggiornaSchedaAP();
+  }
+}
+
+// scheda AP: tasti dei modi (verde = attivo, contorno bianco = armato) e valori scelti, per chi usa il mouse
 function aggiornaSchedaAP(){
   const on=ap.attivo,s=ap.stato();
-  const acceso={ap:on,hdg:on&&ap.lat==='HDG',alt:on&&ap.vert==='ALT',vs:on&&ap.vert==='VS'};
-  for(const b of document.querySelectorAll('[data-modo]'))b.classList.toggle('on',acceso[b.dataset.modo]);
-  $('apStato').innerHTML=on?(ap.lat==='ROL'?L('ali livellate (ROL)','wings level (ROL)'):L('prua','heading')+' '+String(ap.hdgSel).padStart(3,'0')+'°')+' · '+
-    (ap.vert==='ALT'?L('quota','altitude')+' '+ap.altTenuta+' ft':`VS ${ap.vsSel>0?'+':''}${ap.vsSel} ft/min`+(s.armato?` → ${ap.altSel} ft`:''))+(s.armato?' · '+s.armato:'')+
-    (s.limite?' · <b class="ambra">'+(s.limite==='BASSA'?L('VEL. MINIMA','MIN SPEED'):L('VEL. MASSIMA','MAX SPEED'))+'</b>':''):L('Autopilota spento','Autopilot off');
+  const acceso={ap:on,hdg:on&&ap.lat==='HDG',nav:on&&ap.lat==='NAV',apr:on&&(ap.lat==='LOC'||ap.vert==='GS'),alt:on&&ap.vert==='ALT',vs:on&&ap.vert==='VS'};
+  const armato={nav:on&&ap.latArm==='NAV',apr:on&&(ap.latArm==='LOC'||ap.gsArm)};
+  for(const b of document.querySelectorAll('[data-modo]')){
+    const k=b.dataset.modo;b.classList.toggle('on',!!acceso[k]);b.classList.toggle('armato',!acceso[k]&&!!armato[k]);
+  }
+  const nomeLat={ROL:L('ali livellate (ROL)','wings level (ROL)'),GPS:L('rotta GPS','GPS course'),VOR:L('radiale VOR','VOR radial'),LOC:L('localizzatore','localizer')};
+  nomeLat.HDG=L('prua','heading')+' '+String(ap.hdgSel).padStart(3,'0')+'°';
+  let h=L('Autopilota spento','Autopilot off');
+  if(on){
+    const vert=s.vert==='ALT'?L('quota','altitude')+' '+ap.altTenuta+' ft':s.vert==='GS'?L('sentiero ILS','glide slope'):s.vert+' ft/min';
+    h='<b>'+(nomeLat[s.lat]||s.lat)+'</b> · <b>'+vert+'</b>'+(s.armato?' · <span class="armato">'+s.armato+'</span>':'');
+    if(s.limite)h+=' · <b class="ambra">'+(s.limite==='BASSA'?L('VEL. MINIMA','MIN SPEED'):L('VEL. MASSIMA','MAX SPEED'))+'</b>';
+  }
+  $('apStato').innerHTML=h;
   $('apHdg').textContent=String(ap.hdgSel).padStart(3,'0')+'°';
   $('apAlt').textContent=on||ap.altSel?ap.altSel+' ft':'-----';
   $('apVs').textContent=(ap.vsSel>0?'+':'')+ap.vsSel;
+  $('apCdi').textContent='CDI '+nomeCdi();$('apCdi').classList.toggle('gps',cdi==='GPS');
   linguetta('ap').classList.toggle('acceso',on);
 }
 for(const b of document.querySelectorAll('[data-ap]'))b.addEventListener('click',()=>{
@@ -387,35 +450,49 @@ for(const b of document.querySelectorAll('[data-ap]'))b.addEventListener('click'
   if(k==='hdg')ap.cambiaPrua(+v);else if(k==='alt')ap.cambiaQuota(+v);else if(k==='vs')ap.cambiaVs(+v);else if(k==='sync')ap.pruaAttuale(st);
   aggiornaSchedaAP();b.blur();
 });
-// tasti dei modi: AP inserisce/stacca; HDG, ALT e VS scelgono il modo (ad autopilota spento lo inseriscono anche)
-for(const b of document.querySelectorAll('[data-modo]'))b.addEventListener('click',()=>{
-  b.blur();
+$('apCdi').addEventListener('click',()=>{impostaCdi(cdi==='GPS'?'NAV1':'GPS');$('apCdi').blur();});
+/* tasti dei modi: AP inserisce/stacca; HDG, NAV, APR, ALT e VS scelgono il modo (ad autopilota spento lo inseriscono
+   anche). Tastiera: Maiusc+A AP, Maiusc+N NAV, Maiusc+L APR, Maiusc+C CDI */
+function premiModo(modo){
   if(!avviato||inPausa||st.crashed) return;
-  const modo=b.dataset.modo;
   if(modo==='ap'){alternaAutopilota();return;}
-  if(!ap.attivo){alternaAutopilota();if(!ap.attivo)return;if(modo==='hdg')return;}   // inserito: è già in HDG
-  const r=modo==='hdg'?ap.modoHdg():modo==='alt'?ap.modoAlt(st):ap.modoVs(st);
-  if(r)messaggio(r,3);
+  // APR: serve l'ILS su NAV1, e il CDI passa su LOC1 (come fa il G1000 quando ci si avvicina all'ILS)
+  if(modo==='apr'&&nav.staz&&nav.staz.tipo==='ILS'&&cdi==='GPS')impostaCdi('NAV1');
+  if(!ap.attivo){
+    if(modo==='nav'||modo==='apr'){
+      const n=navPerAP();
+      if(n.assente||(modo==='apr')!==(n.fonte==='LOC')){messaggio(modo==='apr'?ap.modoApr(st,n):ap.modoNav(st,n),4);return;}
+    }
+    alternaAutopilota();if(!ap.attivo)return;if(modo==='hdg')return;   // inserito: è già in HDG
+  }
+  const r=modo==='hdg'?ap.modoHdg():modo==='alt'?ap.modoAlt(st):modo==='vs'?ap.modoVs(st):modo==='nav'?ap.modoNav(st,navPerAP()):ap.modoApr(st,navPerAP());
+  if(r)messaggio(r,4);
   aggiornaSchedaAP();
-});
+}
+for(const b of document.querySelectorAll('[data-modo]'))b.addEventListener('click',()=>{b.blur();premiModo(b.dataset.modo);});
 function alternaAutopilota(){
   if(ap.attivo){staccaAP('');return;}
   const r=ap.inserisci(st,inp.elev);
   if(r){messaggio(r,3);return;}
   centraCloche();
-  messaggio(L(`Autopilota <b>inserito</b>: prua <b>${String(ap.hdgSel).padStart(3,'0')}°</b>, quota <b>${ap.altSel} ft</b>. La manetta resta a te.<br>A/D prua · W/S quota · Maiusc+W/S velocità verticale · Maiusc+A stacca`,
-    `Autopilot <b>engaged</b>: heading <b>${String(ap.hdgSel).padStart(3,'0')}°</b>, altitude <b>${ap.altSel} ft</b>. The throttle is still yours.<br>A/D heading · W/S altitude · Shift+W/S vertical speed · Shift+A disconnect`),6);
+  const hs=String(ap.hdgSel).padStart(3,'0');
+  messaggio(L('Autopilota <b>inserito</b>: prua <b>'+hs+'°</b>, quota <b>'+ap.altSel+' ft</b>. La manetta resta a te.<br>A/D prua · W/S quota · Maiusc+W/S velocità verticale · Maiusc+A stacca',
+    'Autopilot <b>engaged</b>: heading <b>'+hs+'°</b>, altitude <b>'+ap.altSel+' ft</b>. The throttle is still yours.<br>A/D heading · W/S altitude · Shift+W/S vertical speed · Shift+A disconnect'),6);
   aggiornaSchedaAP();
 }
 function staccaAP(motivo){
   if(!ap.attivo&&!motivo) return;
   ap.disinserisci();centraCloche();audio.apStacco();
-  messaggio(L(`Autopilota <b>disinserito</b>${motivo?': '+motivo:''}`,`Autopilot <b>disconnected</b>${motivo?': '+motivo:''}`),3);
+  messaggio(L('Autopilota <b>disinserito</b>'+(motivo?': '+motivo:''),'Autopilot <b>disconnected</b>'+(motivo?': '+motivo:'')),3);
   aggiornaSchedaAP();
 }
 function tastoAutopilota(e){
   if(!avviato||st.crashed||inPausa) return false;
-  if(e.shiftKey&&e.code==='KeyA'){if(!e.repeat)alternaAutopilota();return true;}
+  if(e.shiftKey&&!e.repeat){
+    const modo={KeyA:'ap',KeyN:'nav',KeyL:'apr'}[e.code];
+    if(modo){premiModo(modo);return true;}
+    if(e.code==='KeyC'){impostaCdi(cdi==='GPS'?'NAV1':'GPS');return true;}
+  }
   if(!ap.attivo) return false;
   const c=e.code, picchia=c==='KeyW'||c==='ArrowUp', cabra=c==='KeyS'||c==='ArrowDown';
   if(picchia||cabra){if(e.shiftKey)ap.cambiaVs(cabra?100:-100);else ap.cambiaQuota(cabra?100:-100);aggiornaSchedaAP();return true;}
@@ -720,7 +797,7 @@ function aggiornaStrumenti(dt){
     ias:st.ias*KT, alt:st.pos.y*FT, agl:Math.max(0,st.agl)*FT,
     vs:vsFiltrata, hdg, palla:st.palla, bug, gs:st.gs*KT,
     virata:st.aTerra?0:virataFiltrata, trim:st.trim, carb:st.carburante, flusso:st.crashed?0:st.flusso,
-    nav:misuraNav(), ap:ap.stato(),
+    nav:cdi==='GPS'?misuraGPS():misuraNav(), ap:ap.stato(),
   };
   if(vista===1){
     // in cabina: gli strumenti vengono disegnati sugli schermi del pannello
@@ -769,6 +846,7 @@ function aggiornaTesti(hdg,bug){
     else if(st.g>3.8||st.g<-1.5)w=L('SOVRACCARICO','OVER-G');
     else if(st.carburante<=0)w=L('MOTORE SPENTO','ENGINE OUT');
     else if(st.carburante<5)w=L('CARBURANTE BASSO','LOW FUEL');
+    else if(minimiFino>tempo)w=L('MINIMI','MINIMUMS');
     else if(st.aTerra&&st.gs*KT>15&&sulPiazzale())w=L('RULLA PIÙ PIANO','TAXI SLOWER');
   }
   el.avviso.hidden=!w;
@@ -882,11 +960,17 @@ function sintonizza(s,silenzioso){
   if(s)nav.crs=s.tipo==='ILS'?s.crs:rottaVerso(s);   // VOR: rotta diretta verso la stazione
   strum.impostaNav(nav);
   if(silenzioso) return;
-  if(!s){messaggio(L('NAV1 spento','NAV1 off'),1.5);return;}
+  // sintonizzare NAV1 porta il CDI su NAV1 (spegnerlo lo riporta sul GPS); in NAV o APR cambia la sorgente
+  const eraNav=ap.attivo&&(ap.lat==='NAV'||ap.lat==='LOC');
+  if(cdi==='NAV1')ap.sorgenteCambiata(st);
+  impostaCdi(s?'NAV1':'GPS',true);
+  ap.eventi.length=0;   // l'avviso dell'autopilota va nel messaggio della sintonia, qui sotto
+  const nota=eraNav&&ap.lat==='ROL'?L('<br>Sorgente cambiata: autopilota in <b>ROL</b> (ali livellate); ripremi NAV o APR.','<br>Source changed: autopilot in <b>ROL</b> (wings level); press NAV or APR again.'):'';
+  if(!s){messaggio(L('NAV1 spento','NAV1 off')+nota,nota?4:1.5);return;}
   const m=radio.misura(s,st.pos,nav.crs);
   messaggio(`NAV1: <b>${s.freq.toFixed(2)} ${s.id}</b> ${s.nome}${m.ricevuto?'':L(' — <b>fuori portata</b>',' — <b>out of range</b>')}`+
     (s.tipo==='VOR'?`<br>CRS ${String(nav.crs).padStart(3,'0')}° `+L('(diretto alla stazione) · cambialo con , e .','(direct to the station) · change it with , and .')
-                  :`<br>${L('localizzatore','localizer')} ${String(Math.round(s.crs)).padStart(3,'0')}° · ${L('sentiero','glide slope')} 3°`),4);
+                  :`<br>${L('localizzatore','localizer')} ${String(Math.round(s.crs)).padStart(3,'0')}° · ${L('sentiero','glide slope')} 3°`)+nota,nota?6:4);
 }
 function prossimaNav(){
   // stazioni ricevute, dalla più vicina; ogni pressione passa alla successiva
@@ -951,7 +1035,7 @@ function ciclo(ora){
   if(attivo&&!st.crashed){
     tempo+=dt;aggiornaVento(tempo);
     if(ap.attivo){   // l'autopilota comanda equilibratore e alettoni (il timone resta al pilota)
-      const c=ap.comanda(st,dt);
+      const c=ap.comanda(st,dt,navPerAP());eventiAP();
       if(c){inp.elev=c.elev;inp.ail=c.ail;puntoCloche.style.transform=`translate(${inp.ail*17}px,${inp.elev*17}px)`;}
       else staccaAP(ap.staccato);
     }

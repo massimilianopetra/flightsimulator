@@ -116,6 +116,7 @@ To work on it with VS Code the *Live Server* extension is fine too.
 | , / . | VOR course (CRS) −1° / +1°, with Shift ±10° |
 | P / R | pause / restart (the mission too) |
 | Shift+A | autopilot on / off (when on: A/D heading, W/S altitude, Shift+W/S vertical speed, Shift+H current heading) |
+| Shift+N · Shift+L · Shift+C | autopilot NAV · APR (ILS approach) · CDI source GPS / NAV1 |
 | H | open or close the controls window (the flight pauses) |
 | Esc | close the open window, otherwise back to the briefing |
 
@@ -189,7 +190,11 @@ captures the new altitude by itself. The VS mode alone holds a vertical speed (S
 to descend) and captures the selected altitude only if it lies ahead. The throttle stays with the pilot; if the speed gets too low the
 autopilot lowers the nose (MIN SPD). It also moves the trim, and it disconnects (with a tone) if you take
 the stick, in a stall or with extreme attitudes. The mode bar is at the top of the PFD; the AP tab has clickable
-mode keys (AP, HDG / ROL wings level, ALT, VS) and buttons for the selected values.
+mode keys (AP, HDG / ROL wings level, NAV, APR, ALT, VS) and buttons for the selected values. **NAV** (Shift+N)
+follows the CDI source, chosen with the **CDI** key (Shift+C) as on the G1000: the GPS flight plan course
+(magenta) or the VOR radial on NAV1 (green); it stays armed until the needle comes alive, then captures.
+**APR** (Shift+L) flies the ILS: it captures the localizer, then the glide slope. The 172 does not land
+itself: at 200 ft MINIMUMS flashes, and you disconnect and land by hand.
 
 <p align="center">
   <img src="istruzioni/en/ap-pfd.png" alt="PFD with the autopilot climbing: mode bar, selected altitude and heading bug" width="70%">
@@ -210,7 +215,8 @@ mode keys (AP, HDG / ROL wings level, ALT, VS) and buttons for the selected valu
 
 The NAV1 receiver can tune **VOR** stations (with DME distance) and **ILS** approaches.
 In the Piedmont world the VORs are the real ones (from OurAirports), for example TOP Torino 114.50.
-The ILS stations are created by the simulator on every asphalt runway at least 1000 m long:
+The ILS stations are created by the simulator on asphalt runways at least 1000 m long, where the 3° glide
+slope is clear of terrain:
 **their frequencies are invented**. Stations are only received within line of sight, so the higher
 you fly the further they reach. The simulator uses true north, not magnetic north.
 
@@ -468,7 +474,7 @@ Add an airport with two crossing runways:
 
 The runway numbers are computed by themselves: heading 90 gives runways “09” and “27”. Next to the first
 runway an apron, hangars, a tower, a windsock and PAPI lights appear automatically. Asphalt runways of at
-least 1000 m also get an ILS.
+least 1000 m also get an ILS, if the glide slope is clear of the hills.
 
 Add a mountain (or a valley, with a negative `altezza`):
 
@@ -620,6 +626,7 @@ Per lavorarci con VS Code va bene anche l'estensione *Live Server*.
 | , / . | rotta del VOR (CRS) −1° / +1°, con Maiusc ±10° |
 | P / R | pausa / ricomincia (anche la missione) |
 | Maiusc+A | autopilota sì / no (inserito: A/D prua, W/S quota, Maiusc+W/S velocità verticale, Maiusc+H prua attuale) |
+| Maiusc+N · Maiusc+L · Maiusc+C | autopilota NAV · APR (avvicinamento ILS) · sorgente del CDI GPS / NAV1 |
 | H | apre o chiude la finestra dei comandi (il volo va in pausa) |
 | Esc | chiude la finestra aperta, altrimenti torna al briefing |
 
@@ -693,8 +700,11 @@ Il modo VS da solo tiene una velocità verticale (Maiusc+S/W ±100 ft/min, in ne
 la quota scelta solo se è davanti.
 La manetta resta al pilota; se la velocità scende troppo l'autopilota abbassa il muso (VEL MIN). Muove anche
 il trim e si stacca (con un segnale acustico) se prendi la cloche, in stallo o con assetti estremi. La barra
-dei modi è in alto nel PFD; la scheda AP ha i tasti dei modi cliccabili (AP, HDG / ROL ali livellate, ALT, VS)
-e i pulsanti per i valori scelti.
+dei modi è in alto nel PFD; la scheda AP ha i tasti dei modi cliccabili (AP, HDG / ROL ali livellate, NAV, APR,
+ALT, VS) e i pulsanti per i valori scelti. **NAV** (Maiusc+N) segue la sorgente scelta col tasto **CDI**
+(Maiusc+C), come sul G1000: la rotta GPS del piano di volo (magenta) o la radiale del VOR su NAV1 (verde);
+resta armato finché l'ago non si muove, poi aggancia. **APR** (Maiusc+L) vola l'ILS: aggancia il localizzatore
+e poi il sentiero di discesa. Il 172 non atterra da solo: a 200 ft lampeggia MINIMI, si stacca e si atterra a mano.
 
 <p align="center">
   <img src="istruzioni/ap-pfd.png" alt="PFD con l'autopilota in salita: barra dei modi, quota scelta e prua scelta" width="70%">
@@ -715,7 +725,8 @@ e i pulsanti per i valori scelti.
 
 Il ricevitore NAV1 sintonizza le stazioni **VOR** (con la distanza DME) e gli avvicinamenti **ILS**.
 Nel mondo Piemonte i VOR sono quelli veri (da OurAirports), per esempio TOP Torino 114.50.
-Gli ILS li crea il simulatore su tutte le piste asfaltate di almeno 1000 m: **le loro frequenze sono
+Gli ILS li crea il simulatore sulle piste asfaltate di almeno 1000 m, dove il sentiero di 3° è libero dal
+terreno: **le loro frequenze sono
 inventate**. Le stazioni si ricevono solo in linea di vista, quindi più si vola alti più arrivano lontano.
 Il simulatore usa il nord geografico, non quello magnetico.
 
@@ -972,7 +983,7 @@ Aggiungere un aeroporto con due piste incrociate:
 
 I numeri delle testate si calcolano da soli: la direzione 90 dà le piste "09" e "27".
 Accanto alla prima pista compaiono in automatico piazzale, hangar, torre,
-manica a vento e luci PAPI. Le piste asfaltate di almeno 1000 m hanno anche l'ILS.
+manica a vento e luci PAPI. Le piste asfaltate di almeno 1000 m hanno anche l'ILS, se il sentiero è libero dalle colline.
 
 Aggiungere una montagna (oppure una valle, con `altezza` negativa):
 

@@ -36,7 +36,18 @@ SIM.creaRadio=function(T){
   let n=0;
   const usate=new Set();
   const sigla=b=>{let id=b,k=2;while(usate.has(id))id=b+'-'+(k++);usate.add(id);return id;};   // piste parallele
+  /* un ILS vero esiste solo se il sentiero di 3° è libero dal terreno: negli ultimi 10 NM il rilievo deve
+     restare almeno 250 ft sotto il sentiero (vicino alla pista, almeno a metà della sua altezza) */
+  function sentieroLibero(p,te){
+    const t3=Math.tan(3*D2R);
+    for(let d=600;d<=10*NM;d+=150){
+      const x=te.x+te.dir.x*(300-d), z=te.z+te.dir.z*(300-d), h=d*t3;
+      if(T.terrainH(x,z)-p.quota>h-Math.min(76,h*0.5)) return false;
+    }
+    return true;
+  }
   for(const p of piste)for(const te of p.testate){
+    if(!sentieroLibero(p,te)) continue;
     const loc={x:te.x+te.dir.x*(p.L+300),z:te.z+te.dir.z*(p.L+300)};   // antenna oltre la fine della pista
     const gs={x:te.x+te.dir.x*300,z:te.z+te.dir.z*300};                // antenna del sentiero, 300 m dopo la soglia
     stazioni.push({tipo:'ILS',id:sigla('I'+p.ap.codice.slice(2)+te.nome),nome:p.ap.codice+(SIM.L?SIM.L(' pista ',' runway '):' pista ')+te.nome,ap:p.ap,te,

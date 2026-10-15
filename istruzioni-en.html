@@ -155,6 +155,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <tr><td><kbd>L</kbd></td><td>NAV1: tune the ILS of the arrival runway</td></tr>
     <tr><td><kbd>,</kbd> / <kbd>.</kbd></td><td>VOR course CRS −1° / +1° (with <kbd>Shift</kbd> ±10°)</td></tr>
     <tr><td><kbd>Shift</kbd>+<kbd>A</kbd></td><td>Autopilot: engage / disconnect (see <a href="#autopilota">Autopilot</a>)</td></tr>
+    <tr><td><kbd>Shift</kbd>+<kbd>N</kbd> · <kbd>L</kbd> · <kbd>C</kbd></td><td>Autopilot: NAV mode · APR mode (ILS approach) · CDI source (GPS or NAV1)</td></tr>
     <tr><td><kbd>H</kbd></td><td>Open / close the controls window (the flight is paused meanwhile)</td></tr>
     <tr><td><kbd>P</kbd> / <kbd>R</kbd></td><td>Pause / restart (the mission too, from the beginning)</td></tr>
     <tr><td><kbd>Esc</kbd></td><td>Close the open window; otherwise back to the briefing, to change airport, destination, mission, time or fuel (also from the button in the pause screen)</td></tr>
@@ -475,6 +476,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>The <b>AP</b> tab has the <b>mode keys</b>, as on the GFC 700 panel; the active mode is lit in green. Clicking a mode with the autopilot off also engages it:</p>
 <ul>
   <li><b>AP</b>: engages or disconnects the autopilot;</li>
+  <li><b>NAV</b> and <b>APR</b>: follow the course and the ILS (see below);</li>
   <li><b>HDG</b>: follows the selected heading; press it again for <b>ROL</b>, wings level (the aircraft flies straight wherever it is pointing);</li>
   <li><b>ALT</b>: holds the current altitude;</li>
   <li><b>VS</b>: holds the current <b>vertical speed</b> (rounded to 100 ft/min), which you then change with the VS buttons or <kbd>Shift</kbd>+<kbd>S</kbd>/<kbd>W</kbd>, negative to descend. If the selected altitude is ahead of you (above in a climb, below in a descent) it captures it by itself when you get there (<b>ALTS</b>); otherwise it keeps climbing or descending.</li>
@@ -497,13 +499,31 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   </div>
   <figure>
     <img src="istruzioni/en/ap-scheda.png" alt="AP tab: AP button on, HDG and VS modes, selected heading, altitude and vertical speed with buttons" loading="lazy">
-    <figcaption>The AP tab: the mode keys (green = active) and the selected values.</figcaption>
+    <figcaption>The AP tab during an approach: APR and ALT lit, GS armed, CDI on LOC1.</figcaption>
   </figure>
 </div>
 <figure>
   <img src="istruzioni/en/ap-pfd.png" alt="PFD with the autopilot climbing: mode bar AP HDG VS 500 ALTS, selected altitude in cyan and the heading bug on the compass" loading="lazy">
   <figcaption>Climbing to 6500 ft on autopilot: the mode bar at the top, the selected altitude above the tape and the heading bug on the compass.</figcaption>
 </figure>
+<h3>Navigating with the autopilot: CDI, NAV and APR</h3>
+<p>As on the G1000, the <b>CDI</b> key (in the AP tab, or <kbd>Shift</kbd>+<kbd>C</kbd>) selects the <b>navigation source</b>: <b class="c-mag">GPS</b>, the magenta course of the flight plan, or <b class="c-ver">NAV1</b>, the tuned VOR or ILS (<b>VOR1</b> or <b>LOC1</b>). On the PFD the deviation needle is magenta with GPS and green with NAV1; with GPS the box at the top shows the next waypoint, the desired track <b>DTK</b> and the distance, and the scale is 2 NM (<b>ENR</b>) or 1 NM on the final leg (<b>TERM</b>). Tuning NAV1 (<kbd>V</kbd>, <kbd>L</kbd> or the menu) switches the CDI to NAV1; turning it off switches back to GPS.</p>
+<ul>
+  <li><b>NAV</b> (<kbd>Shift</kbd>+<kbd>N</kbd>): follows the CDI source, that is the GPS course or the VOR radial with the CRS you chose. If the needle is at full scale NAV stays <b>armed</b> (white): meanwhile it flies HDG towards the course and captures it by itself when the needle starts to move (it turns green). It tracks the ground track, so it corrects for the wind by itself.</li>
+  <li><b>APR</b> (<kbd>Shift</kbd>+<kbd>L</kbd>): ILS approach. The ILS must be tuned (<kbd>L</kbd>); the CDI switches to LOC1. It arms <b>LOC</b> and <b>GS</b>: you usually arrive in HDG and ALT, the LOC is captured and the aircraft lines up with the runway; when the 3° glide slope comes down to the aircraft the GS is captured and the descent begins. Hold the speed with the throttle (70–90 knots) and lower the flaps.</li>
+  <li><b>Minimums</b>: the 172 does not land itself. At 200 ft above the runway <b class="c-amb">MINIMUMS</b> flashes with a tone: disconnect the autopilot (<kbd>Shift</kbd>+<kbd>A</kbd>), reduce power and land by hand.</li>
+  <li>Changing the CDI source while in NAV or APR puts the autopilot in <b>ROL</b> (wings level), as in the real aircraft: then press NAV or APR again. The same happens if the signal is lost.</li>
+</ul>
+<div class="affianca">
+  <figure>
+    <img src="istruzioni/en/ap-nav.png" alt="PFD with the autopilot in NAV on the GPS course: AP GPS ALT mode bar, magenta GPS ENR box with DTK and distance, magenta needle" loading="lazy">
+    <figcaption>NAV on the GPS course to the final approach fix F03: the magenta needle says the course is to the right, and the autopilot turns to intercept it.</figcaption>
+  </figure>
+  <figure>
+    <img src="istruzioni/en/ap-apr.png" alt="PFD on an ILS approach with the autopilot: AP LOC ALT mode bar with GS armed, localizer needle and glide slope diamond at the top" loading="lazy">
+    <figcaption>APR to Cuneo-Levaldigi runway 03: LOC captured, GS armed (white) waiting for the glide slope to come down to the aircraft.</figcaption>
+  </figure>
+</div>
 
 <!-- ================================================================ -->
 <h2 id="vor">14. Navigating with a VOR</h2>
@@ -534,7 +554,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   <li>Diamond <b>above</b> the centre = you are low, descend less. Diamond <b>below</b> the centre = you are high, descend more.</li>
   <li>Over the threshold you will be at about 50 ft: look outside, flare and land.</li>
 </ol>
-<div class="attenzione">In the simulator every asphalt runway at least 1000 m long has an ILS at both ends. Their <b>frequencies are invented</b> and do not match the real ones.</div>
+<div class="attenzione">In the simulator asphalt runways at least 1000 m long have an ILS on the ends where the 3° glide slope is clear of terrain (as for real ILS: among the mountains, for example at Aosta, there is none). Their <b>frequencies are invented</b> and do not match the real ones.</div>
 
 <!-- ================================================================ -->
 <h2 id="radio">16. Radio communications with the tower</h2>

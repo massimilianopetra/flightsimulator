@@ -159,8 +159,8 @@ SIM.creaStrumenti=function(A){
     if(d.ap){
       const a=d.ap,fa=Math.round(fs*0.85),yb=Math.max(2,ty-fa*1.55),hb=fa*1.35;
       g.font=`700 ${fa}px ${MONO}`;g.textBaseline='middle';
-      const pezzi=[['AP','#000','#4ade80'],[a.lat,'#4ade80'],[a.vert==='VS'?`VS ${a.vsSel>0?'+':''}${a.vsSel}`:'ALT','#4ade80']];
-      if(a.armato)pezzi.push([a.armato,'#fff']);
+      const pezzi=[['AP','#000','#4ade80'],[a.lat,'#4ade80'],[a.vert,'#4ade80']];
+      for(const x of a.armati)pezzi.push([x,'#fff']);   // modi armati in bianco
       if(a.limite)pezzi.push([a.limite==='BASSA'?Lg('VEL MIN','MIN SPD'):Lg('VEL MAX','MAX SPD'),'#fbbf24']);
       const lw=pezzi.map(p=>g.measureText(p[0]).width+fa*0.9);
       let x=cx-lw.reduce((s,v)=>s+v,0)/2;
@@ -211,15 +211,17 @@ SIM.creaStrumenti=function(A){
   /* NAV1 sul PFD. n = misura del ricevitore (js/radio.js) + staz */
   const VERDE='#4ade80';
   function disegnaNav(n,L){
-    const {cx,cy,AH,fs,tx,tw,ty,ax}=L, s=n.staz, ils=s.tipo==='ILS';
+    const {cx,cy,AH,fs,tx,tw,ty,ax}=L, s=n.staz, ils=s.tipo==='ILS', gps=s.tipo==='GPS';
+    const COL=gps?'#ff5ad9':VERDE;   // GPS in magenta, NAV1 in verde (come sul G1000)
     // riquadro con frequenza, sigla, rotta e distanza
     const fsn=Math.round(fs*0.78), bx=tx+tw+6, by=ty;
     g.font=`700 ${fsn}px ${MONO}`;g.textAlign='left';g.textBaseline='top';
-    const righe=[`${ils?'LOC':'VOR'} ${s.id} ${s.freq.toFixed(2)}`,
+    const righe=gps?[`GPS ${n.scala} ▸ ${s.id}`,`DTK ${String(Math.round(n.crs)%360).padStart(3,'0')}° ${n.dme.toFixed(1)} NM`]:
+      [`${ils?'LOC':'VOR'} ${s.id} ${s.freq.toFixed(2)}`,
       n.ricevuto?`CRS ${String(Math.round(n.crs)%360).padStart(3,'0')}°${n.dme!=null?` DME ${n.dme.toFixed(1)}`:''}`:Lg('FUORI PORTATA','OUT OF RANGE')];
     const bw=Math.max(...righe.map(r=>g.measureText(r).width))+8;
     g.fillStyle='rgba(8,14,26,.7)';g.fillRect(bx,by,bw,fsn*2.5);
-    g.fillStyle=n.ricevuto?VERDE:'#fbbf24';righe.forEach((r,i)=>g.fillText(r,bx+4,by+3+i*fsn*1.2));
+    g.fillStyle=n.ricevuto?COL:'#fbbf24';righe.forEach((r,i)=>g.fillText(r,bx+4,by+3+i*fsn*1.2));
     // CDI orizzontale: 2 pallini per lato, fondo scala = 10° (VOR) o 2,5° (LOC)
     const yc=AH-fs*1.5, half=AH*0.3;
     g.fillStyle='rgba(8,14,26,.55)';g.fillRect(cx-half-fs*2.2,yc-fs*0.75,2*half+fs*4.4,fs*1.5);
@@ -227,11 +229,11 @@ SIM.creaStrumenti=function(A){
     for(const k of [-1,-0.5,0.5,1]){g.beginPath();g.arc(cx+k*half,yc,fs*0.17,0,Math.PI*2);g.stroke();}
     g.fillStyle='#fff';g.fillRect(cx-1,yc-fs*0.6,2,fs*1.2);
     g.font=`700 ${Math.round(fs*0.7)}px ${MONO}`;g.textBaseline='middle';g.textAlign='right';
-    g.fillStyle=VERDE;g.fillText(ils?'LOC':'VOR',cx-half-fs*0.5,yc);
+    g.fillStyle=COL;g.fillText(gps?'GPS':ils?'LOC':'VOR',cx-half-fs*0.5,yc);
     if(n.ricevuto){
       const xn=cx+n.dev*half;
       g.fillStyle='#000';g.fillRect(xn-3.5,yc-fs*0.65,7,fs*1.3);
-      g.fillStyle=VERDE;g.fillRect(xn-2.5,yc-fs*0.6,5,fs*1.2);
+      g.fillStyle=COL;g.fillRect(xn-2.5,yc-fs*0.6,5,fs*1.2);
       // TO = triangolo in su, FROM = in giù
       const xt=cx+half+fs*1.2;g.beginPath();
       if(n.daA==='TO'){g.moveTo(xt,yc-fs*0.5);g.lineTo(xt-fs*0.4,yc+fs*0.3);g.lineTo(xt+fs*0.4,yc+fs*0.3);}

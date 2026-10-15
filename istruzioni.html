@@ -155,6 +155,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <tr><td><kbd>L</kbd></td><td>NAV1: sintonizza l'ILS della pista di arrivo</td></tr>
     <tr><td><kbd>,</kbd> / <kbd>.</kbd></td><td>Rotta CRS del VOR −1° / +1° (con <kbd>Maiusc</kbd> ±10°)</td></tr>
     <tr><td><kbd>Maiusc</kbd>+<kbd>A</kbd></td><td>Autopilota: inserisce / stacca (vedi <a href="#autopilota">Autopilota</a>)</td></tr>
+    <tr><td><kbd>Maiusc</kbd>+<kbd>N</kbd> · <kbd>L</kbd> · <kbd>C</kbd></td><td>Autopilota: modo NAV · modo APR (avvicinamento ILS) · sorgente del CDI (GPS o NAV1)</td></tr>
     <tr><td><kbd>H</kbd></td><td>Apre / chiude la finestra dei comandi (intanto il volo è in pausa)</td></tr>
     <tr><td><kbd>P</kbd> / <kbd>R</kbd></td><td>Pausa / ricomincia (anche la missione, da capo)</td></tr>
     <tr><td><kbd>Esc</kbd></td><td>Chiude la finestra aperta; altrimenti torna al briefing, per cambiare aeroporto, destinazione, missione, ora o carburante (anche dal pulsante nella pausa)</td></tr>
@@ -475,6 +476,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Nella scheda <b>AP</b> ci sono i <b>tasti dei modi</b>, come sul pannello del GFC 700; il modo attivo è acceso in verde. Cliccare un modo ad autopilota spento lo inserisce anche:</p>
 <ul>
   <li><b>AP</b>: inserisce o stacca l'autopilota;</li>
+  <li><b>NAV</b> e <b>APR</b>: seguono la rotta e l'ILS (vedi sotto);</li>
   <li><b>HDG</b>: segue la prua scelta; premuto di nuovo passa a <b>ROL</b>, ali livellate (l'aereo va dritto dove si trova);</li>
   <li><b>ALT</b>: tiene la quota di adesso;</li>
   <li><b>VS</b>: tiene la <b>velocità verticale</b> di adesso (arrotondata ai 100 ft/min), che poi cambi con i pulsanti VS o <kbd>Maiusc</kbd>+<kbd>S</kbd>/<kbd>W</kbd>, anche in negativo per scendere. Se la quota scelta è davanti a te, cioè sopra in salita o sotto in discesa, la aggancia da sola quando ci arrivi (<b>ALTS</b>); altrimenti continua a salire o scendere.</li>
@@ -497,13 +499,31 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   </div>
   <figure>
     <img src="istruzioni/ap-scheda.png" alt="Scheda AP: tasto AP acceso, modi HDG e VS, prua, quota e velocità verticale scelte con i pulsanti" loading="lazy">
-    <figcaption>La scheda AP: i tasti dei modi (verde = attivo) e i valori scelti.</figcaption>
+    <figcaption>La scheda AP durante un avvicinamento: APR e ALT accesi, GS armato, CDI su LOC1.</figcaption>
   </figure>
 </div>
 <figure>
   <img src="istruzioni/ap-pfd.png" alt="PFD con l'autopilota in salita: barra dei modi AP HDG VS 500 ALTS, quota scelta in azzurro e segno della prua scelta sulla bussola" loading="lazy">
   <figcaption>In salita verso 6500 ft con l'autopilota: la barra dei modi in alto, la quota scelta sopra il nastro e la prua scelta sulla bussola.</figcaption>
 </figure>
+<h3>Navigare con l'autopilota: CDI, NAV e APR</h3>
+<p>Come sul G1000, il tasto <b>CDI</b> (nella scheda AP, o <kbd>Maiusc</kbd>+<kbd>C</kbd>) sceglie la <b>sorgente della navigazione</b>: <b class="c-mag">GPS</b>, la rotta magenta del piano di volo, oppure <b class="c-ver">NAV1</b>, il VOR o l'ILS sintonizzato (<b>VOR1</b> o <b>LOC1</b>). Sul PFD l'ago di deviazione è magenta col GPS e verde con NAV1; col GPS il riquadro in alto mostra il prossimo punto, la rotta voluta <b>DTK</b> e la distanza, e la scala è di 2 NM (<b>ENR</b>) o 1 NM sul tratto finale (<b>TERM</b>). Sintonizzare NAV1 (<kbd>V</kbd>, <kbd>L</kbd> o il menu) porta il CDI su NAV1; spegnerlo lo riporta sul GPS.</p>
+<ul>
+  <li><b>NAV</b> (<kbd>Maiusc</kbd>+<kbd>N</kbd>): segue la sorgente del CDI, cioè la rotta GPS o la radiale del VOR con la rotta CRS che hai scelto. Se l'ago è a fondo scala NAV resta <b>armato</b> (bianco): intanto vola in HDG verso la rotta e la aggancia da solo quando l'ago comincia a muoversi (diventa verde). Insegue la traccia al suolo, quindi corregge da solo il vento.</li>
+  <li><b>APR</b> (<kbd>Maiusc</kbd>+<kbd>L</kbd>): avvicinamento ILS. Serve l'ILS sintonizzato (<kbd>L</kbd>); il CDI passa su LOC1. Arma <b>LOC</b> e <b>GS</b>: di solito si arriva in HDG e in ALT, il LOC si aggancia e l'aereo si allinea con la pista; quando il sentiero di 3° scende fino all'aereo si aggancia il GS e comincia la discesa. Tieni la velocità con la manetta (70–90 nodi) e abbassa i flap.</li>
+  <li><b>Minimi</b>: il 172 non atterra da solo. A 200 ft sopra la pista lampeggia <b class="c-amb">MINIMI</b> con un segnale acustico: stacca l'autopilota (<kbd>Maiusc</kbd>+<kbd>A</kbd>), togli motore e atterra a mano.</li>
+  <li>Cambiare la sorgente del CDI mentre sei in NAV o APR fa passare l'autopilota in <b>ROL</b> (ali livellate), come sull'aereo vero: poi ripremi NAV o APR. Se il segnale si perde succede la stessa cosa.</li>
+</ul>
+<div class="affianca">
+  <figure>
+    <img src="istruzioni/ap-nav.png" alt="PFD con l'autopilota in NAV sulla rotta GPS: barra AP GPS ALT, riquadro magenta GPS ENR con DTK e distanza, ago magenta" loading="lazy">
+    <figcaption>NAV sulla rotta GPS verso il punto di finale F03: l'ago magenta dice che la rotta è a destra, e l'autopilota vira per intercettarla.</figcaption>
+  </figure>
+  <figure>
+    <img src="istruzioni/ap-apr.png" alt="PFD in avvicinamento ILS con l'autopilota: barra AP LOC ALT e GS armato, ago del localizzatore e rombo del sentiero in alto" loading="lazy">
+    <figcaption>APR su Cuneo-Levaldigi pista 03: LOC agganciato, GS armato (in bianco) in attesa che il sentiero scenda fino all'aereo.</figcaption>
+  </figure>
+</div>
 
 <!-- ================================================================ -->
 <h2 id="vor">14. Navigare con il VOR</h2>
@@ -534,7 +554,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   <li>Rombo <b>sopra</b> il centro = sei basso, scendi meno. Rombo <b>sotto</b> il centro = sei alto, scendi di più.</li>
   <li>Sulla soglia sarai a circa 50 ft: guarda fuori, richiama e atterra.</li>
 </ol>
-<div class="attenzione">Gli ILS del simulatore si trovano su tutte le piste asfaltate lunghe almeno 1000 m, su entrambe le testate. Le loro <b>frequenze sono inventate</b> e non corrispondono a quelle vere.</div>
+<div class="attenzione">Gli ILS del simulatore si trovano sulle piste asfaltate lunghe almeno 1000 m, sulle testate dove il sentiero di 3° è libero dal terreno (come per gli ILS veri: tra le montagne, per esempio ad Aosta, non c'è). Le loro <b>frequenze sono inventate</b> e non corrispondono a quelle vere.</div>
 
 <!-- ================================================================ -->
 <h2 id="radio">16. Comunicazioni radio con la torre</h2>
