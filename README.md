@@ -259,7 +259,7 @@ The site needs no build step: it is made of static files.
 | `js/paesaggio.js` | draws roads, rivers and towns on the terrain and generates the buildings (real map only) | |
 | `js/fisica.js` | the flight physics (forces, moments, landing gear, stall, ground effect, fuel) | |
 | `js/cabina.js` | the 3D G1000-style cockpit: PFD and MFD screens, standby instruments, yokes, throttle | |
-| `js/mondo.js` | 3D graphics: sky, runways with markings, PAPI, hangars, trees, houses, aircraft | |
+| `js/mondo.js` | 3D graphics: sky, runways with markings, PAPI, hangars, trees, houses, aircraft and its shadow near the ground | |
 | `js/notte.js` | time of day: sky and light colours, runway, town and landing lights, stars | |
 | `js/strumenti.js` | PFD, turn coordinator, fuel and trim indicators, MFD and the map | |
 | `js/radio.js` | radio navigation: VOR, DME and ILS, the NAV1 receiver | |
@@ -714,7 +714,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `js/paesaggio.js` | disegna strade, fiumi e paesi sul terreno e genera gli edifici (solo mappa reale) | |
 | `js/fisica.js` | la fisica del volo (forze, momenti, carrello, stallo, effetto suolo, carburante) | |
 | `js/cabina.js` | la cabina 3D in stile G1000: schermi PFD e MFD, strumenti di riserva, cloche, manetta | |
-| `js/mondo.js` | grafica 3D: cielo, piste con segnaletica, PAPI, hangar, alberi, case, aereo | |
+| `js/mondo.js` | grafica 3D: cielo, piste con segnaletica, PAPI, hangar, alberi, case, aereo e la sua ombra vicino al suolo | |
 | `js/notte.js` | ora del volo: colori di cielo e luce, luci di piste e città, faro di atterraggio, stelle | |
 | `js/strumenti.js` | il PFD, virosbandometro, carburante e trim, l'MFD e la mappa | |
 | `js/radio.js` | radionavigazione: VOR, DME e ILS, il ricevitore NAV1 | |
