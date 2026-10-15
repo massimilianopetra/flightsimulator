@@ -83,6 +83,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <li><a href="#decollo">Take-off step by step</a></li>
     <li><a href="#volo">In flight: attitude, trim, turns</a></li>
     <li><a href="#atterraggio">Landing and PAPI</a></li>
+    <li><a href="#missioni">Missions and logbook</a></li>
     <li><a href="#vor">Navigating with a VOR</a></li>
     <li><a href="#ils">ILS approach</a></li>
     <li><a href="#radio">Radio communications</a></li>
@@ -114,14 +115,15 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
       <li><b>Start</b>: <i>on the runway</i>, ready for take-off, or <i>from the parking area</i>, on the apron: you taxi to the runway (see <a href="#decollo">Take-off step by step</a>).</li>
       <li><b>Destination</b>: the simulator prepares the flight plan by itself.</li>
       <li><b>Time of day</b>: day, sunset or night.</li>
+      <li><b>Mission</b>: free flight or a challenge with stars: <i>against the clock</i>, <i>tour</i> or <i>precision landing</i> (see <a href="#missioni">Missions and logbook</a>).</li>
       <li><b>Fuel</b>: from full tanks (about 6 hours) to almost empty (about 15 minutes).</li>
     </ul>
-    <p>Then press <b>Take off</b> (<kbd>Enter</kbd>) to start at the runway threshold, or <b>Practise landing</b> to start on final approach to the arrival runway of your destination, about 2.7 NM out.</p>
+    <p>Then press <b>Take off</b> (<kbd>Enter</kbd>) to start at the runway threshold, or <b>Practise landing</b> to start on final approach to the arrival runway of your destination, about 2.7 NM out. The <b>Logbook</b> button shows your flights and records.</p>
     <div class="nota">The simulator is designed for a PC with a keyboard. Mouse and gamepads work too.</div>
   </div>
   <figure>
-    <img src="istruzioni/en/briefing.png" alt="Flight briefing window with language, world, airport, runway, destination and fuel selectors" loading="lazy">
-    <figcaption>The briefing: first choices and the pre-take-off checklist.</figcaption>
+    <img src="istruzioni/en/briefing.png" alt="Flight briefing window with language, world, airport, runway, destination, mission and fuel selectors" loading="lazy">
+    <figcaption>The briefing with the <i>against the clock</i> mission from Turin-Caselle to Cuneo-Levaldigi.</figcaption>
   </figure>
 </div>
 
@@ -144,24 +146,23 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <tr><td>Right mouse button</td><td>Hold and drag: in the cockpit you look around, outside you orbit the aircraft. Release it and the view returns straight ahead</td></tr>
     <tr><td>Mouse wheel</td><td>Zoom in the cockpit</td></tr>
     <tr><td><kbd>N</kbd></td><td>Next destination</td></tr>
-    <tr><td><kbd>I</kbd></td><td>Show / hide the flight plan</td></tr>
-    <tr><td><kbd>J</kbd></td><td>Show / hide the map</td></tr>
+    <tr><td><kbd>J</kbd> · <kbd>T</kbd> · <kbd>I</kbd> · <kbd>Y</kbd></td><td>Tabs of the right column: <b>map</b>, <b>radio</b>, <b>flight plan</b>, <b>mission</b>. Press the same key again to hide the column</td></tr>
     <tr><td><kbd>M</kbd> / <kbd>O</kbd></td><td>Map scale / north up or heading up</td></tr>
     <tr><td><kbd>T</kbd></td><td>Radio: opens the menu of sentences to say to the tower (then <kbd>1</kbd>…<kbd>4</kbd>)</td></tr>
     <tr><td><kbd>U</kbd></td><td>Radio COM1: tune the next nearest station</td></tr>
     <tr><td><kbd>V</kbd></td><td>NAV1: tune the next VOR or ILS station in range (nearest first)</td></tr>
     <tr><td><kbd>L</kbd></td><td>NAV1: tune the ILS of the arrival runway</td></tr>
     <tr><td><kbd>,</kbd> / <kbd>.</kbd></td><td>VOR course CRS −1° / +1° (with <kbd>Shift</kbd> ±10°)</td></tr>
-    <tr><td><kbd>H</kbd></td><td>Show / hide the controls panel</td></tr>
-    <tr><td><kbd>P</kbd> / <kbd>R</kbd></td><td>Pause / restart</td></tr>
-    <tr><td><kbd>Esc</kbd></td><td>Back to the briefing, to change airport, destination, time or fuel (also from the button in the pause screen)</td></tr>
+    <tr><td><kbd>H</kbd></td><td>Open / close the controls window (the flight is paused meanwhile)</td></tr>
+    <tr><td><kbd>P</kbd> / <kbd>R</kbd></td><td>Pause / restart (the mission too, from the beginning)</td></tr>
+    <tr><td><kbd>Esc</kbd></td><td>Close the open window; otherwise back to the briefing, to change airport, destination, mission, time or fuel (also from the button in the pause screen)</td></tr>
   </tbody>
 </table>
 <div class="nota">The game never uses the <kbd>Ctrl</kbd> key: <kbd>Ctrl</kbd>+<kbd>W</kbd> would close the browser tab in the middle of a dive.</div>
 
 <h3>How the keyboard moves the stick</h3>
 <p>While you hold <kbd>W</kbd> or <kbd>S</kbd> the stick moves little by little. When you release the key it normally <b>stays where you left it</b>, like a pilot holding it still. You can see its position in the small <b>STICK</b> square of the bottom panel: the dot low down means the stick is pulled back.</p>
-<p>The <b>CONTROLS</b> panel has two settings, which the game remembers:</p>
+<p>The <b>CONTROLS</b> window (<kbd>H</kbd> or the button at the top left) has two settings, which the game remembers:</p>
 <ul>
   <li><b>Stick sensitivity</b> (1–10, default 5): the lower it is, the softer the controls near the centre and the slower the keys move the stick. At full deflection you always have the full range.</li>
   <li><b>The stick returns to the centre when you release the keys</b>: the aircraft, which is stable, goes back to balanced flight by itself. For long climbs or descents you then use the trim.</li>
@@ -185,16 +186,17 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <!-- ================================================================ -->
 <h2 id="schermo">3. The screen</h2>
 <figure>
-  <img src="istruzioni/en/schermo.jpg" alt="Game screen on the Turin-Caselle runway with the controls, PFD, engine, map and flight plan panels" loading="lazy">
-  <figcaption>On runway 36 at Turin-Caselle, with the Caselle VOR tuned.</figcaption>
+  <img src="istruzioni/en/schermo.jpg" alt="Game screen on the Turin-Caselle runway with the buttons at the top left, the timed mission at the top centre, the tabbed column with the map, the PFD and the engine panel" loading="lazy">
+  <figcaption>On runway 36 at Turin-Caselle, with the Caselle ILS tuned and the timed mission to Cuneo just started.</figcaption>
 </figure>
 <ul>
-  <li><b>CONTROLS</b> (top left): the list of keys and the stick settings. Hide it with <kbd>H</kbd>.</li>
+  <li><b>? CONTROLS</b> and <b>LOGBOOK</b> (top left): open the window with the list of keys and the stick settings (also with <kbd>H</kbd>) and the logbook. While they are open the flight is paused.</li>
+  <li><b>Mission objective</b> (top centre, only if you chose one): clock, next stop or score.</li>
   <li><b>PFD</b> (bottom left): the main instrument, with speed, attitude, altitude, vertical speed and compass.</li>
   <li><b>Engine and systems panel</b> (bottom centre): RPM, flaps, trim, g-load, turn coordinator, fuel, stick, throttle and buttons.</li>
-  <li><b>MAP</b> (top right): moving map, destination, distance, bearing, wind and NAV1 radio.</li>
-  <li><b>FLIGHT PLAN</b> (below the map): the phases of the flight and the arrival runway.</li>
+  <li><b>Tabbed column</b> (top right): <b>MAP</b> (<kbd>J</kbd>), <b>RADIO</b> (<kbd>T</kbd>), flight <b>PLAN</b> (<kbd>I</kbd>) and <b>MISSION</b> (<kbd>Y</kbd>). Only one shows at a time, so the view stays clear; click a tab or press its key to switch, again to hide the column. The game remembers your last choice.</li>
 </ul>
+<p>When the RADIO tab is not open, the <b>last transmission</b> shows for a few seconds below the tabs, and in orange the <b>prompt</b> about what to say to the tower; the RADIO tab flashes when the tower is waiting for your call. Pressing <kbd>T</kbd> opens the radio by itself and, once the conversation is over, the previous tab comes back.</p>
 <p>At the top centre you see <b>messages</b> (take-off, landing, radio…) and flashing <b>warnings</b> (stall, pull up…).</p>
 
 <!-- ================================================================ -->
@@ -266,8 +268,8 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <h2 id="mappa">6. Map and NAV1 radio</h2>
 <div class="affianca">
   <figure>
-    <img src="istruzioni/en/mappa.png" alt="Moving map over Turin with roads, airports, VORs and the magenta route" loading="lazy">
-    <figcaption>The map: the aircraft is the orange arrow in the middle.</figcaption>
+    <img src="istruzioni/en/mappa.png" alt="MAP tab: moving map over Turin with roads, airports, VORs and the magenta route" loading="lazy">
+    <figcaption>The MAP tab (<kbd>J</kbd>): the aircraft is the orange arrow in the middle.</figcaption>
   </figure>
   <div>
     <ul>
@@ -307,8 +309,8 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <p>Below are the details of the <b>arrival runway</b>: length, surface, field elevation, pattern altitude and the wind relative to the runway. When available you also see the <b>ILS</b> frequency (tune it with <kbd>L</kbd>) and the <b>VOR</b> nearest to the destination. The last line changes during the flight and tells you what to do now.</p>
   </div>
   <figure>
-    <img src="istruzioni/en/piano.png" alt="Flight plan panel from Turin-Caselle to Cuneo-Levaldigi with phases, arrival runway, ILS and VOR" loading="lazy">
-    <figcaption>From Turin-Caselle (LIMF) to Cuneo-Levaldigi (LIMZ).</figcaption>
+    <img src="istruzioni/en/piano.png" alt="PLAN tab from Turin-Caselle to Cuneo-Levaldigi with phases, arrival runway, ILS and VOR" loading="lazy">
+    <figcaption>The PLAN tab (<kbd>I</kbd>): from Turin-Caselle (LIMF) to Cuneo-Levaldigi (LIMZ).</figcaption>
   </figure>
 </div>
 
@@ -414,7 +416,59 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Once you have stopped, the airport where you landed becomes the <b>departure of the next flight</b>: the flight plan is recalculated (if you had reached your destination, the nearest airport is suggested; change it with <kbd>N</kbd> or the DEST menu) and the radio reminds you to ask for take-off. Taxi to the start of the runway and ask for clearance with <kbd>T</kbd>. Fuel and position stay as they are; from then on <kbd>R</kbd> restarts from this airport.</p>
 
 <!-- ================================================================ -->
-<h2 id="vor">12. Navigating with a VOR</h2>
+<h2 id="missioni">12. Missions and logbook</h2>
+<p>In the briefing, under <b>Mission</b>, you can give the flight a goal. Each mission is worth 0 to 3 stars. A strip at the top centre shows the objective and the clock; the <b>MISSION</b> tab (<kbd>Y</kbd>) has all the details. <kbd>R</kbd> restarts the mission from the beginning.</p>
+<div class="affianca">
+  <div>
+    <h3>Against the clock</h3>
+    <p>Land at the destination chosen in the briefing within a <b>time limit</b>, worked out from the distance (cruise at about 95 knots, plus a few minutes for take-off and landing, and 4 more minutes if you start from the parking area). The clock starts at once and stops when the wheels touch the runway.</p>
+    <ul>
+      <li>★ you arrive in time;</li>
+      <li>★★ and the landing is good: on the runway, under 450 ft/min;</li>
+      <li>★★★ and at least a fifth of the time is left.</li>
+    </ul>
+    <h3>Tour</h3>
+    <p>The <b>short tour</b> has 2 stops, the <b>long tour</b> 3, picked at random among nearby airports; at the end you fly home. The <b>Another tour</b> button in the briefing draws a new one. A stop counts when you touch its runway: you can stop or do a <b>touch-and-go</b> (full power as soon as you touch down), which saves time. The destination moves to the next stop by itself.</p>
+    <ul>
+      <li>★ tour completed;</li>
+      <li>★★ and every landing good;</li>
+      <li>★★★ and within the <b>reference time</b>.</li>
+    </ul>
+  </div>
+  <figure>
+    <img src="istruzioni/en/missione.png" alt="Right column with the MISSION tab of a short tour: first stop done, second in progress, time and reference" loading="lazy">
+    <figcaption>The MISSION tab during a short tour, after the first stop.</figcaption>
+  </figure>
+</div>
+<div class="affianca">
+  <div>
+    <h3>Precision landing</h3>
+    <p>You start on final for the arrival runway, as with <i>Practise landing</i>. At the first touchdown the game gives up to <b>100 points</b>:</p>
+    <table>
+      <tbody>
+        <tr><td class="num">30</td><td>vertical speed: full marks up to 100 ft/min, zero from 600</td></tr>
+        <tr><td class="num">30</td><td>touchdown point: within 30 m of the <b>aiming point</b>, abeam the PAPI (300 m past the threshold on long runways)</td></tr>
+        <tr><td class="num">20</td><td>centre line: within 1 m</td></tr>
+        <tr><td class="num">20</td><td>airspeed between 45 and 62 knots</td></tr>
+      </tbody>
+    </table>
+    <p>★ from 40 points, ★★ from 65, ★★★ from 85. Off the runway the mission fails.</p>
+    <p>When the aircraft stops, the <b>result</b> window opens, with the details and a tip to improve. From there you can keep flying, try again (<kbd>R</kbd>), open the logbook or go back to the briefing.</p>
+  </div>
+  <figure>
+    <img src="istruzioni/en/esito.png" alt="Result window: mission complete with three stars and the score table" loading="lazy">
+    <figcaption>The result of a precision landing at Cuneo-Levaldigi.</figcaption>
+  </figure>
+</div>
+<h3>The logbook</h3>
+<p>Like a real pilot's, the <b>logbook</b> fills itself in: each flight runs from take-off until you stop after landing (or until a crash). For every flight there are the date, departure and arrival airports, time, miles flown, landings with their vertical speed, time of day and any mission with its stars. At the top are the totals (flights, hours, landings, miles, softest landing, missions and stars) and the <b>records</b>: the best precision score and the best times. Open it from the <b>LOGBOOK</b> button, the briefing, the pause screen or the result window; it stays in your browser and can be cleared.</p>
+<figure>
+  <img src="istruzioni/en/libretto.png" alt="Logbook with totals, records and the list of flights" loading="lazy">
+  <figcaption>The logbook after a few days of flying.</figcaption>
+</figure>
+
+<!-- ================================================================ -->
+<h2 id="vor">13. Navigating with a VOR</h2>
 <p>A <b>VOR</b> is a ground radio station that transmits in all directions. The receiver on board works out which <b>radial</b> you are on, that is, in which direction you are as seen from the station: on radial 090 you are east of the station. If the station has <b>DME</b>, you also know how many miles away you are.</p>
 <ol class="passi">
   <li><b>Tune it</b>: press <kbd>V</kbd> (several times to move to the other stations in range) or choose from the <b>NAV1</b> menu. The CRS course is set direct to the station.</li>
@@ -428,7 +482,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>In the Piedmont world the VORs are the <b>real</b> ones, for example TOP Torino 114.50, CSL Caselle 116.75, VOG Voghera 115.50, SRN Saronno 113.70 and BLA Biella 116.10. One difference from reality: the simulator uses degrees referred to true north, while real VORs use magnetic north, which in Piedmont is about 3° further east.</p>
 
 <!-- ================================================================ -->
-<h2 id="ils">13. ILS approach</h2>
+<h2 id="ils">14. ILS approach</h2>
 <p>The <b>ILS</b> guides you all the way to the runway with two radio beams:</p>
 <ul>
   <li>the <b>localizer</b> (LOC) tells you whether you are left or right of the runway centre line. It is much more precise than a VOR: the needle is at full scale when you are 2.5° off;</li>
@@ -445,13 +499,13 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <div class="attenzione">In the simulator every asphalt runway at least 1000 m long has an ILS at both ends. Their <b>frequencies are invented</b> and do not match the real ones.</div>
 
 <!-- ================================================================ -->
-<h2 id="radio">14. Radio communications with the tower</h2>
-<p>Communications are in <b>English</b>, with the standard international (ICAO) phraseology, as in real life. The tower speaks with a synthetic browser voice; you do not have to speak: press <kbd>T</kbd>, choose the sentence with <kbd>1</kbd>…<kbd>4</kbd> and the game says it with the pilot's voice. In the <b>RADIO</b> panel (below the map) every transmission stays written.</p>
+<h2 id="radio">15. Radio communications with the tower</h2>
+<p>Communications are in <b>English</b>, with the standard international (ICAO) phraseology, as in real life. The tower speaks with a synthetic browser voice; you do not have to speak: press <kbd>T</kbd>, choose the sentence with <kbd>1</kbd>…<kbd>4</kbd> and the game says it with the pilot's voice. In the <b>RADIO</b> tab (<kbd>T</kbd> opens it by itself) every transmission stays written.</p>
 <ul>
   <li>Your callsign is <b>I-VOLO</b> (“India Victor Oscar Lima Oscar”). After the first call the tower uses the abbreviated one, <b>I-LO</b>.</li>
   <li>Numbers are said digit by digit: runway 27 = “runway two seven”, QNH 1016 = “Q N H one zero one six”, and 9 is “niner”.</li>
   <li>When the tower gives you a clearance you must <b>read it back</b>. Sometimes one of the answers is wrong, with a different runway or QNH: if you choose it, the tower corrects you. Listen carefully!</li>
-  <li>When the tower calls you, the panel flashes and an orange prompt appears. If you do not answer, after a while the tower calls again.</li>
+  <li>When the tower calls you, the RADIO tab flashes and an orange prompt appears. If you do not answer, after a while the tower calls again.</li>
   <li>Nobody talks while someone else is transmitting: wait until the end, then press <kbd>T</kbd>.</li>
 </ul>
 <h3>A typical flight</h3>
@@ -472,14 +526,14 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   </tbody>
 </table>
 <h3>Tuning the radio (COM1)</h3>
-<p>Every airport has its own frequency, shown in the flight plan (<b>COM</b> line: departure and arrival) and in the <b>COM1</b> menu of the RADIO panel. Before calling a station you must tune its frequency: from the COM1 menu or with the <kbd>U</kbd> key, which steps through the nearest stations. If you call on the wrong frequency <b>nobody answers</b>, as in real life, and the panel tells you which frequency you need. When you leave the control zone the tower also gives you the frequency of the arrival station: read it back and then set it.</p>
+<p>Every airport has its own frequency, shown in the flight plan (<b>COM</b> line: departure and arrival) and in the <b>COM1</b> menu of the RADIO tab. Before calling a station you must tune its frequency: from the COM1 menu or with the <kbd>U</kbd> key, which steps through the nearest stations. If you call on the wrong frequency <b>nobody answers</b>, as in real life, and the radio tells you which frequency you need. When you leave the control zone the tower also gives you the frequency of the arrival station: read it back and then set it.</p>
 <p>If you do not want to think about frequencies, tick <b>Automatic tuning</b>: the game sets the right frequency when you call (you can still change it by hand). A MAYDAY is always answered, whatever the frequency, because in real life there is an emergency frequency (121.5) that is always monitored.</p>
 <p>If you take off or land without a clearance, the tower notices and tells you. If the engine stops you can declare an emergency with <b>MAYDAY</b>: the tower gives you the nearest airport, the heading and the distance.</p>
-<p>In the Piedmont world stations and frequencies are the <b>real</b> ones (from OurAirports): for example Torino Ground 121.705 and Torino Tower 118.500 at Caselle, Malpensa Tower 119.000, Cuneo Information 119.550, Bresso Radio 122.005. <b>Towers</b> give clearances; <b>Information</b> (AFIS) and <b>Radio</b> services only give information (runway in use, wind, traffic) and leave the decision to you. Where there is a <b>Ground</b> frequency, when starting from the parking area you ask Ground for taxi, and Ground hands you over to the tower at the holding point. The tuned frequency is shown at the top of the panel (COM1).</p>
+<p>In the Piedmont world stations and frequencies are the <b>real</b> ones (from OurAirports): for example Torino Ground 121.705 and Torino Tower 118.500 at Caselle, Malpensa Tower 119.000, Cuneo Information 119.550, Bresso Radio 122.005. <b>Towers</b> give clearances; <b>Information</b> (AFIS) and <b>Radio</b> services only give information (runway in use, wind, traffic) and leave the decision to you. Where there is a <b>Ground</b> frequency, when starting from the parking area you ask Ground for taxi, and Ground hands you over to the tower at the holding point. The tuned frequency is shown at the top of the RADIO tab (COM1).</p>
 <div class="attenzione">For airports without data (some small fields, and all those of Valle Azzurra) the station is <b>simulated</b> and marked as such in the COM1 menu. Procedures are simplified too: they resemble real ones but are not those published for each airport. The voice depends on the browser and the system: Windows already has English voices; if none is found, the transmissions are still written. With the AUDIO button off the radio does not speak.</div>
 
 <!-- ================================================================ -->
-<h2 id="emergenze">15. Warnings and emergencies</h2>
+<h2 id="emergenze">16. Warnings and emergencies</h2>
 <table>
   <thead><tr><th>Warning</th><th>Meaning</th><th>What to do</th></tr></thead>
   <tbody>
@@ -498,7 +552,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>You crash if you touch down faster than about 700 ft/min, end up in the water, hit the ground with a wing, the propeller or the fuselage, exceed about 183 kt, or exceed +5.7 / −2.3 g. Press <kbd>R</kbd> or <kbd>Enter</kbd> to start again.</p>
 
 <!-- ================================================================ -->
-<h2 id="numeri">16. Cessna 172 numbers</h2>
+<h2 id="numeri">17. Cessna 172 numbers</h2>
 <table>
   <thead><tr><th>Speed</th><th>Knots</th><th>Meaning</th></tr></thead>
   <tbody>
@@ -516,7 +570,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Other data: 1000 kg with pilot and fuel, 11 m wingspan, 53 US gallons of usable fuel. The flight model (6 degrees of freedom) uses the aerodynamic coefficients of the real C172: you can read and change them in <code>dati/aereo.js</code>.</p>
 
 <!-- ================================================================ -->
-<h2 id="mondi">17. Worlds and the editable map</h2>
+<h2 id="mondi">18. Worlds and the editable map</h2>
 <ul>
   <li><b>Piedmont</b>: real terrain (250 m grid), 32 airports with their real runways, lakes, towns, roads, railways, rivers, villages with buildings and the real VORs. It covers Piedmont plus parts of Lombardy, Liguria, Aosta Valley, Switzerland and France (about 219 × 287 km). The main monuments are there too, as visual landmarks: Mole Antonelliana, Superga, the Lingotto with its rooftop test track, the two Turin skyscrapers, the Palace of Venaria, Stupinigi, the Sacra di San Michele, Vicoforte, San Gaudenzio in Novara and Oropa. They are simplified models, marked on the map with a gold triangle.</li>
   <li><b>Valle Azzurra</b>: an invented world, small and simple. Everything is in the file <code>dati/mappa.js</code>, written to be edited by hand: mountains, lakes, airports and runways, towns, woods, VORs, weather and starting point. The comments in the file are in Italian.</li>

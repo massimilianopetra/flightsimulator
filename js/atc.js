@@ -134,12 +134,25 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
 
   /* ---------- pannello ---------- */
   const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  function disegnaRegistro(){
+  const rigaRadio=m=>`<div class="rl ${m.chi}"><b>${m.chi==='atc'?'ATC':L('TU','YOU')}</b><span>${esc(m.en)}`+
+    (SIM.lingua!=='en'&&m.it?`<i>${esc(m.it)}</i>`:'')+`</span></div>`;
+  function disegnaRegistro(nuova){
     const el=$('radioLog');if(!el) return;
-    el.innerHTML=registro.map(m=>`<div class="rl ${m.chi}"><b>${m.chi==='atc'?'ATC':L('TU','YOU')}</b><span>${esc(m.en)}`+
-      (SIM.lingua!=='en'&&m.it?`<i>${esc(m.it)}</i>`:'')+`</span></div>`).join('');
+    el.innerHTML=registro.map(rigaRadio).join('');
     el.scrollTop=el.scrollHeight;
+    if(nuova){ultimaVolta=Date.now();clearTimeout(timerSott);timerSott=setTimeout(sottotitolo,10500);}
+    sottotitolo();
     if(SIM.adattaDestra)SIM.adattaDestra();
+  }
+  /* striscia sotto le linguette (si vede quando la scheda RADIO è chiusa):
+     l'ultima trasmissione per 10 secondi e l'avviso su cosa fare */
+  let ultimaVolta=0,timerSott=0;
+  function sottotitolo(){
+    const el=$('radioSott');if(!el) return;
+    const m=registro[registro.length-1];
+    const h=(m&&Date.now()-ultimaVolta<10000?rigaRadio(m):'')+(avviso?`<div class="radioavviso">${esc(avviso)}</div>`:'');
+    if(el.innerHTML!==h)el.innerHTML=h;
+    el.hidden=!h;
   }
   function intestazione(){
     const el=$('radioCom');if(el)el.textContent=com?`COM1 ${com.freq} · ${com.nome}`:'COM1 —';
@@ -167,6 +180,7 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
     avviso=t;const el=$('radioAvviso');
     if(el){el.textContent=t;el.hidden=!t;}
     const p=$('radio');if(p)p.classList.toggle('chiama',!!t);
+    sottotitolo();
     if(SIM.adattaDestra)SIM.adattaDestra();
   }
 

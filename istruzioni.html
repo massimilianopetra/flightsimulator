@@ -83,6 +83,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <li><a href="#decollo">Decollo passo passo</a></li>
     <li><a href="#volo">In volo: assetto, trim, virate</a></li>
     <li><a href="#atterraggio">Atterraggio e PAPI</a></li>
+    <li><a href="#missioni">Missioni e libretto di volo</a></li>
     <li><a href="#vor">Navigare con il VOR</a></li>
     <li><a href="#ils">Avvicinamento ILS</a></li>
     <li><a href="#radio">Comunicazioni radio</a></li>
@@ -114,14 +115,15 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
       <li><b>Partenza</b>: <i>in pista</i>, pronto al decollo, oppure <i>dal parcheggio</i>, sul piazzale: si rulla fino alla pista (vedi <a href="#decollo">Decollo passo passo</a>).</li>
       <li><b>Destinazione</b>: il simulatore prepara da solo il piano di volo.</li>
       <li><b>Ora del volo</b>: giorno, tramonto o notte.</li>
+      <li><b>Missione</b>: volo libero oppure una sfida con le stelle: <i>a tempo</i>, <i>giro a tappe</i> o <i>atterraggio di precisione</i> (vedi <a href="#missioni">Missioni e libretto di volo</a>).</li>
       <li><b>Carburante</b>: dal pieno (circa 6 ore) a quasi vuoto (circa 15 minuti).</li>
     </ul>
-    <p>Poi premi <b>Decolla</b> (<kbd>Invio</kbd>) per partire fermo sulla soglia della pista, oppure <b>Prova l'atterraggio</b> per trovarti già in finale sulla pista di arrivo della destinazione, a circa 2,7 NM.</p>
+    <p>Poi premi <b>Decolla</b> (<kbd>Invio</kbd>) per partire fermo sulla soglia della pista, oppure <b>Prova l'atterraggio</b> per trovarti già in finale sulla pista di arrivo della destinazione, a circa 2,7 NM. Il pulsante <b>Libretto di volo</b> mostra i tuoi voli e i record.</p>
     <div class="nota">Il simulatore è pensato per il PC con la tastiera. Funziona anche con mouse e gamepad.</div>
   </div>
   <figure>
-    <img src="istruzioni/briefing.png" alt="Finestra del briefing di volo con i selettori di mondo, aeroporto, pista, destinazione e carburante" loading="lazy">
-    <figcaption>Il briefing: scelte iniziali e lista dei controlli prima del decollo.</figcaption>
+    <img src="istruzioni/briefing.png" alt="Finestra del briefing di volo con i selettori di mondo, aeroporto, pista, destinazione, missione e carburante" loading="lazy">
+    <figcaption>Il briefing con la missione <i>a tempo</i> da Torino-Caselle a Cuneo-Levaldigi.</figcaption>
   </figure>
 </div>
 
@@ -144,24 +146,23 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <tr><td>Tasto destro del mouse</td><td>Tieni premuto e trascina: in cabina ti guardi intorno, fuori giri attorno all'aereo. Lasciando il tasto la vista torna dritta</td></tr>
     <tr><td>Rotellina del mouse</td><td>Zoom in cabina</td></tr>
     <tr><td><kbd>N</kbd></td><td>Destinazione successiva</td></tr>
-    <tr><td><kbd>I</kbd></td><td>Mostra / nasconde il piano di volo</td></tr>
-    <tr><td><kbd>J</kbd></td><td>Mostra / nasconde la mappa</td></tr>
+    <tr><td><kbd>J</kbd> · <kbd>T</kbd> · <kbd>I</kbd> · <kbd>Y</kbd></td><td>Schede della colonna di destra: <b>mappa</b>, <b>radio</b>, <b>piano di volo</b>, <b>missione</b>. Premendo di nuovo lo stesso tasto la colonna si nasconde</td></tr>
     <tr><td><kbd>M</kbd> / <kbd>O</kbd></td><td>Scala della mappa / nord oppure prua in alto</td></tr>
     <tr><td><kbd>T</kbd></td><td>Radio: apre il menu delle frasi da dire alla torre (poi <kbd>1</kbd>…<kbd>4</kbd>)</td></tr>
     <tr><td><kbd>U</kbd></td><td>Radio COM1: sintonizza la prossima stazione vicina</td></tr>
     <tr><td><kbd>V</kbd></td><td>NAV1: sintonizza la stazione VOR o ILS successiva fra quelle ricevute (la più vicina per prima)</td></tr>
     <tr><td><kbd>L</kbd></td><td>NAV1: sintonizza l'ILS della pista di arrivo</td></tr>
     <tr><td><kbd>,</kbd> / <kbd>.</kbd></td><td>Rotta CRS del VOR −1° / +1° (con <kbd>Maiusc</kbd> ±10°)</td></tr>
-    <tr><td><kbd>H</kbd></td><td>Mostra / nasconde il riquadro dei comandi</td></tr>
-    <tr><td><kbd>P</kbd> / <kbd>R</kbd></td><td>Pausa / ricomincia</td></tr>
-    <tr><td><kbd>Esc</kbd></td><td>Torna al briefing, per cambiare aeroporto, destinazione, ora o carburante (anche dal pulsante nella pausa)</td></tr>
+    <tr><td><kbd>H</kbd></td><td>Apre / chiude la finestra dei comandi (intanto il volo è in pausa)</td></tr>
+    <tr><td><kbd>P</kbd> / <kbd>R</kbd></td><td>Pausa / ricomincia (anche la missione, da capo)</td></tr>
+    <tr><td><kbd>Esc</kbd></td><td>Chiude la finestra aperta; altrimenti torna al briefing, per cambiare aeroporto, destinazione, missione, ora o carburante (anche dal pulsante nella pausa)</td></tr>
   </tbody>
 </table>
 <div class="nota">Il gioco non usa mai il tasto <kbd>Ctrl</kbd>: con <kbd>Ctrl</kbd>+<kbd>W</kbd> il browser chiuderebbe la scheda nel mezzo di una picchiata.</div>
 
 <h3>Come si muove la cloche dalla tastiera</h3>
 <p>Tenendo premuto <kbd>W</kbd> o <kbd>S</kbd> la cloche si sposta poco alla volta. Quando lasci il tasto, normalmente <b>resta dove l'hai lasciata</b>, come un pilota che la tiene ferma. La posizione si vede nel quadratino <b>CLOCHE</b> del pannello in basso: il punto in basso significa cloche tirata.</p>
-<p>Nel riquadro <b>COMANDI</b> ci sono due regolazioni, che il gioco ricorda:</p>
+<p>Nella finestra <b>COMANDI</b> (<kbd>H</kbd> o il pulsante in alto a sinistra) ci sono due regolazioni, che il gioco ricorda:</p>
 <ul>
   <li><b>Sensibilità cloche</b> (1–10, di serie 5): più è bassa, più i comandi sono dolci vicino al centro e più lentamente i tasti muovono la cloche. A fondo corsa resta sempre tutta l'escursione.</li>
   <li><b>La cloche torna al centro quando lasci i tasti</b>: l'aereo, che è stabile, torna da solo al volo in equilibrio. Per salire o scendere a lungo si usa allora il trim.</li>
@@ -185,16 +186,17 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <!-- ================================================================ -->
 <h2 id="schermo">3. Lo schermo</h2>
 <figure>
-  <img src="istruzioni/schermo.jpg" alt="Schermata del gioco sulla pista di Torino-Caselle con i pannelli comandi, PFD, motore, mappa e piano di volo" loading="lazy">
-  <figcaption>Sulla pista 36 di Torino-Caselle, con il VOR di Caselle sintonizzato.</figcaption>
+  <img src="istruzioni/schermo.jpg" alt="Schermata del gioco sulla pista di Torino-Caselle con i pulsanti in alto a sinistra, la missione a tempo in alto al centro, la colonna a schede con la mappa, il PFD e il pannello motore" loading="lazy">
+  <figcaption>Sulla pista 36 di Torino-Caselle, con l'ILS di Caselle sintonizzato e la missione a tempo per Cuneo appena cominciata.</figcaption>
 </figure>
 <ul>
-  <li><b>COMANDI</b> (in alto a sinistra): elenco dei tasti e regolazioni della cloche. Si chiude con <kbd>H</kbd>.</li>
+  <li><b>? COMANDI</b> e <b>LIBRETTO</b> (in alto a sinistra): aprono la finestra con l'elenco dei tasti e le regolazioni della cloche (anche con <kbd>H</kbd>) e il libretto di volo. Mentre sono aperte il volo è in pausa.</li>
+  <li><b>Obiettivo della missione</b> (in alto al centro, solo se ne hai scelta una): cronometro, prossima tappa o punteggio.</li>
   <li><b>PFD</b> (in basso a sinistra): lo strumento principale, con velocità, assetto, quota, variometro e bussola.</li>
   <li><b>Pannello motore e sistemi</b> (in basso al centro): giri, flap, trim, accelerazione g, virosbandometro, carburante, cloche, manetta e pulsanti.</li>
-  <li><b>MAPPA</b> (in alto a destra): mappa mobile, destinazione, distanza, rotta, vento e radio NAV1.</li>
-  <li><b>PIANO DI VOLO</b> (sotto la mappa): le fasi del volo e la pista di arrivo.</li>
+  <li><b>Colonna a schede</b> (in alto a destra): <b>MAPPA</b> (<kbd>J</kbd>), <b>RADIO</b> (<kbd>T</kbd>), <b>PIANO</b> di volo (<kbd>I</kbd>) e <b>MISSIONE</b> (<kbd>Y</kbd>). Se ne vede una alla volta, così la scena resta libera; clic sulla linguetta o il suo tasto per cambiarla, di nuovo per nascondere la colonna. Il gioco ricorda l'ultima scelta.</li>
 </ul>
+<p>Quando la scheda RADIO non è aperta, sotto le linguette compaiono per qualche secondo l'<b>ultima trasmissione</b> e, in arancione, l'<b>avviso</b> su cosa dire alla torre; la linguetta RADIO lampeggia quando la torre aspetta una tua chiamata. Premendo <kbd>T</kbd> la radio si apre da sola e, finita la conversazione, torna la scheda di prima.</p>
 <p>Al centro in alto compaiono i <b>messaggi</b> (decollo, atterraggio, radio…) e gli <b>avvisi</b> lampeggianti (stallo, pull up…).</p>
 
 <!-- ================================================================ -->
@@ -266,8 +268,8 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <h2 id="mappa">6. Mappa e radio NAV1</h2>
 <div class="affianca">
   <figure>
-    <img src="istruzioni/mappa.png" alt="Mappa mobile su Torino con strade, aeroporti, VOR e rotta magenta" loading="lazy">
-    <figcaption>La mappa: l'aereo è la freccia arancione al centro.</figcaption>
+    <img src="istruzioni/mappa.png" alt="Scheda MAPPA: mappa mobile su Torino con strade, aeroporti, VOR e rotta magenta, sotto destinazione, distanza, vento e NAV1" loading="lazy">
+    <figcaption>La scheda MAPPA (<kbd>J</kbd>): l'aereo è la freccia arancione al centro.</figcaption>
   </figure>
   <div>
     <ul>
@@ -307,8 +309,8 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <p>Sotto ci sono i dati della <b>pista di arrivo</b>: lunghezza, fondo, quota del campo, altezza del circuito, vento rispetto alla pista. Se c'è, compaiono anche la frequenza dell'<b>ILS</b> (sintonizzalo con <kbd>L</kbd>) e il <b>VOR</b> più vicino alla destinazione. L'ultima riga cambia durante il volo e dice cosa fare adesso.</p>
   </div>
   <figure>
-    <img src="istruzioni/piano.png" alt="Riquadro del piano di volo da Torino-Caselle a Cuneo-Levaldigi con fasi, pista di arrivo, ILS e VOR" loading="lazy">
-    <figcaption>Da Torino-Caselle (LIMF) a Cuneo-Levaldigi (LIMZ).</figcaption>
+    <img src="istruzioni/piano.png" alt="Scheda PIANO: piano di volo da Torino-Caselle a Cuneo-Levaldigi con fasi, pista di arrivo, ILS e VOR" loading="lazy">
+    <figcaption>La scheda PIANO (<kbd>I</kbd>): da Torino-Caselle (LIMF) a Cuneo-Levaldigi (LIMZ).</figcaption>
   </figure>
 </div>
 
@@ -414,7 +416,59 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Quando sei fermo, l'aeroporto dove sei atterrato diventa la <b>partenza del volo successivo</b>: il piano di volo viene ricalcolato (se eri arrivato a destinazione viene proposto l'aeroporto più vicino; cambialo con <kbd>N</kbd> o il menu DEST) e la radio ti ricorda di chiedere il decollo. Rulla fino all'inizio della pista e chiedi l'autorizzazione con <kbd>T</kbd>. Carburante e posizione restano quelli che hai; da quel momento <kbd>R</kbd> riparte da questo aeroporto.</p>
 
 <!-- ================================================================ -->
-<h2 id="vor">12. Navigare con il VOR</h2>
+<h2 id="missioni">12. Missioni e libretto di volo</h2>
+<p>Nel briefing, alla voce <b>Missione</b>, puoi scegliere uno scopo per il volo. Ogni missione vale da 0 a 3 stelle. In alto al centro una striscia mostra l'obiettivo e il cronometro; la scheda <b>MISSIONE</b> (<kbd>Y</kbd>) ha tutti i dettagli. <kbd>R</kbd> fa ricominciare la missione da capo.</p>
+<div class="affianca">
+  <div>
+    <h3>A tempo</h3>
+    <p>Atterra alla destinazione scelta nel briefing entro un <b>tempo limite</b>, calcolato dalla distanza (crociera a circa 95 nodi, più qualche minuto per decollo e atterraggio, e 4 minuti in più se parti dal parcheggio). Il cronometro parte subito e si ferma quando le ruote toccano la pista.</p>
+    <ul>
+      <li>★ arrivi in tempo;</li>
+      <li>★★ e l'atterraggio è buono: sulla pista, sotto i 450 ft/min;</li>
+      <li>★★★ e ti avanza almeno un quinto del tempo.</li>
+    </ul>
+    <h3>Giro a tappe</h3>
+    <p>Il <b>giro corto</b> ha 2 tappe, il <b>giro lungo</b> 3, scelte a caso fra gli aeroporti vicini; alla fine si torna a casa. Il pulsante <b>Altro giro</b> nel briefing ne estrae un altro. Ogni tappa vale quando tocchi la sua pista: puoi fermarti oppure fare un <b>tocca e riparti</b> (dai motore appena toccato), che fa risparmiare tempo. La destinazione passa da sola alla tappa successiva.</p>
+    <ul>
+      <li>★ giro completo;</li>
+      <li>★★ e tutti gli atterraggi buoni;</li>
+      <li>★★★ e entro il <b>tempo di riferimento</b>.</li>
+    </ul>
+  </div>
+  <figure>
+    <img src="istruzioni/missione.png" alt="Colonna di destra con la scheda MISSIONE di un giro corto: prima tappa fatta, seconda in corso, tempo e riferimento" loading="lazy">
+    <figcaption>La scheda MISSIONE durante un giro corto, dopo la prima tappa.</figcaption>
+  </figure>
+</div>
+<div class="affianca">
+  <div>
+    <h3>Atterraggio di precisione</h3>
+    <p>Parti in finale per la pista di arrivo, come con <i>Prova l'atterraggio</i>. Al primo contatto il gioco dà fino a <b>100 punti</b>:</p>
+    <table>
+      <tbody>
+        <tr><td class="num">30</td><td>velocità verticale: pieni fino a 100 ft/min, zero da 600</td></tr>
+        <tr><td class="num">30</td><td>punto di contatto: entro 30 m dal <b>punto di mira</b>, all'altezza dei PAPI (300 m dopo la soglia sulle piste lunghe)</td></tr>
+        <tr><td class="num">20</td><td>linea centrale: entro 1 m</td></tr>
+        <tr><td class="num">20</td><td>velocità all'aria fra 45 e 62 nodi</td></tr>
+      </tbody>
+    </table>
+    <p>★ da 40 punti, ★★ da 65, ★★★ da 85. Fuori dalla pista la missione fallisce.</p>
+    <p>Quando l'aereo si ferma si apre la finestra del <b>risultato</b>, con il dettaglio e un consiglio per migliorare. Da lì puoi continuare a volare, riprovare (<kbd>R</kbd>), aprire il libretto o tornare al briefing.</p>
+  </div>
+  <figure>
+    <img src="istruzioni/esito.png" alt="Finestra del risultato: missione compiuta con tre stelle e la tabella dei punti" loading="lazy">
+    <figcaption>Il risultato di un atterraggio di precisione a Cuneo-Levaldigi.</figcaption>
+  </figure>
+</div>
+<h3>Il libretto di volo</h3>
+<p>Come quello dei piloti veri, il <b>libretto di volo</b> si scrive da solo: ogni volo va dal decollo a quando ti fermi dopo l'atterraggio (o all'incidente). Per ogni volo ci sono data, aeroporti di partenza e di arrivo, durata, miglia percorse, atterraggi con la velocità verticale, ora del giorno e l'eventuale missione con le stelle. In alto i totali (voli, ore, atterraggi, miglia, l'atterraggio più dolce, missioni e stelle) e i <b>record</b>: il punteggio migliore di precisione e i tempi migliori. Il libretto si apre dal pulsante <b>LIBRETTO</b>, dal briefing, dalla pausa e dalla finestra del risultato; resta nel browser, e si può svuotare.</p>
+<figure>
+  <img src="istruzioni/libretto.png" alt="Libretto di volo con i totali, i record e l'elenco dei voli" loading="lazy">
+  <figcaption>Il libretto di volo dopo qualche giorno di voli.</figcaption>
+</figure>
+
+<!-- ================================================================ -->
+<h2 id="vor">13. Navigare con il VOR</h2>
 <p>Il <b>VOR</b> è una stazione radio a terra che trasmette in tutte le direzioni. Il ricevitore di bordo capisce su quale <b>radiale</b> ti trovi, cioè in che direzione sei visto dalla stazione: sul radiale 090 sei a est della stazione. Se la stazione ha il <b>DME</b>, sai anche a quante miglia sei.</p>
 <ol class="passi">
   <li><b>Sintonizza</b>: premi <kbd>V</kbd> (più volte per passare alle altre stazioni ricevute) oppure scegli dal menu <b>NAV1</b>. La rotta CRS viene impostata dritta verso la stazione.</li>
@@ -428,7 +482,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Nel mondo Piemonte i VOR sono quelli <b>veri</b>, per esempio TOP Torino 114.50, CSL Caselle 116.75, VOG Voghera 115.50, SRN Saronno 113.70 e BLA Biella 116.10. Una differenza dalla realtà: il simulatore usa i gradi riferiti al nord geografico, mentre i VOR veri usano il nord magnetico, che in Piemonte è circa 3° più a est.</p>
 
 <!-- ================================================================ -->
-<h2 id="ils">13. Avvicinamento ILS</h2>
+<h2 id="ils">14. Avvicinamento ILS</h2>
 <p>L'<b>ILS</b> guida fino alla pista con due fasci radio:</p>
 <ul>
   <li>il <b>localizzatore</b> (LOC) dice se sei a destra o a sinistra dell'asse pista. È molto più preciso del VOR: l'ago va a fondo scala quando sei 2,5° fuori asse;</li>
@@ -445,13 +499,13 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <div class="attenzione">Gli ILS del simulatore si trovano su tutte le piste asfaltate lunghe almeno 1000 m, su entrambe le testate. Le loro <b>frequenze sono inventate</b> e non corrispondono a quelle vere.</div>
 
 <!-- ================================================================ -->
-<h2 id="radio">14. Comunicazioni radio con la torre</h2>
-<p>Le comunicazioni sono in <b>inglese</b>, con la fraseologia standard internazionale (ICAO), come nella realtà. La torre parla con una voce sintetica del browser; tu non devi parlare: premi <kbd>T</kbd>, scegli la frase con <kbd>1</kbd>…<kbd>4</kbd> e il gioco la pronuncia con la voce del pilota. Nel pannello <b>RADIO</b> (sotto la mappa) ogni trasmissione resta scritta, con la traduzione italiana sotto.</p>
+<h2 id="radio">15. Comunicazioni radio con la torre</h2>
+<p>Le comunicazioni sono in <b>inglese</b>, con la fraseologia standard internazionale (ICAO), come nella realtà. La torre parla con una voce sintetica del browser; tu non devi parlare: premi <kbd>T</kbd>, scegli la frase con <kbd>1</kbd>…<kbd>4</kbd> e il gioco la pronuncia con la voce del pilota. Nella scheda <b>RADIO</b> (<kbd>T</kbd> la apre da sola) ogni trasmissione resta scritta, con la traduzione italiana sotto.</p>
 <ul>
   <li>Il tuo nominativo è <b>I-VOLO</b> (si dice “India Victor Oscar Lima Oscar”). Dopo la prima chiamata la torre usa quello abbreviato, <b>I-LO</b>.</li>
   <li>I numeri si dicono cifra per cifra: pista 27 = “runway two seven”, QNH 1016 = “Q N H one zero one six”, e il 9 è “niner”.</li>
   <li>Quando la torre ti dà un'autorizzazione devi <b>ripeterla</b> (readback). Tra le risposte ce n'è a volte una sbagliata, con la pista o il QNH diversi: se la scegli, la torre ti corregge. Ascolta bene!</li>
-  <li>Quando la torre ti chiama, il pannello lampeggia e compare un avviso arancione. Se non rispondi, dopo un po' la torre richiama.</li>
+  <li>Quando la torre ti chiama, la linguetta RADIO lampeggia e compare un avviso arancione. Se non rispondi, dopo un po' la torre richiama.</li>
   <li>Mentre qualcuno sta trasmettendo non si parla: aspetta la fine e poi premi <kbd>T</kbd>.</li>
 </ul>
 <h3>Un volo tipico</h3>
@@ -472,14 +526,14 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   </tbody>
 </table>
 <h3>Sintonizzare la radio (COM1)</h3>
-<p>Ogni aeroporto ha la sua frequenza, scritta nel piano di volo (riga <b>COM</b>: partenza e arrivo) e nel menu <b>COM1</b> del pannello RADIO. Prima di chiamare una stazione devi sintonizzare la sua frequenza: dal menu COM1 oppure con il tasto <kbd>U</kbd>, che passa alle stazioni più vicine una dopo l'altra. Se chiami sulla frequenza sbagliata <b>nessuno risponde</b>, come nella realtà, e il pannello ti dice quale frequenza serve. Quando lasci la zona di controllo, la torre ti dice anche la frequenza della stazione di arrivo: ripetila e poi impostala.</p>
+<p>Ogni aeroporto ha la sua frequenza, scritta nel piano di volo (riga <b>COM</b>: partenza e arrivo) e nel menu <b>COM1</b> della scheda RADIO. Prima di chiamare una stazione devi sintonizzare la sua frequenza: dal menu COM1 oppure con il tasto <kbd>U</kbd>, che passa alle stazioni più vicine una dopo l'altra. Se chiami sulla frequenza sbagliata <b>nessuno risponde</b>, come nella realtà, e la radio ti dice quale frequenza serve. Quando lasci la zona di controllo, la torre ti dice anche la frequenza della stazione di arrivo: ripetila e poi impostala.</p>
 <p>Se non vuoi pensare alle frequenze, spunta <b>Sintonia automatica</b>: il gioco imposta da solo la frequenza giusta quando chiami (puoi comunque cambiarla a mano). Il MAYDAY riceve sempre risposta, qualunque sia la frequenza, perché nella realtà c'è una frequenza di emergenza (121.5) sempre ascoltata.</p>
 <p>Se decolli o atterri senza autorizzazione, la torre se ne accorge e te lo dice. Se ti si spegne il motore puoi dichiarare emergenza con il <b>MAYDAY</b>: la torre ti indica l'aeroporto più vicino, la prua e la distanza.</p>
-<p>Nel mondo Piemonte stazioni e frequenze sono quelle <b>vere</b> (da OurAirports): per esempio Torino Ground 121.705 e Torino Tower 118.500 a Caselle, Malpensa Tower 119.000, Cuneo Information 119.550, Bresso Radio 122.005. Le <b>torri</b> (“Tower”) danno le autorizzazioni; i servizi <b>Information</b> (AFIS) e <b>Radio</b> danno solo informazioni (pista in uso, vento, traffico) e lasciano a te la decisione. Dove c'è la frequenza di <b>terra</b> (“Ground”), partendo dal parcheggio il rullaggio si chiede a Terra, che al punto attesa ti passa alla torre. La frequenza sintonizzata è scritta in alto nel pannello (COM1).</p>
+<p>Nel mondo Piemonte stazioni e frequenze sono quelle <b>vere</b> (da OurAirports): per esempio Torino Ground 121.705 e Torino Tower 118.500 a Caselle, Malpensa Tower 119.000, Cuneo Information 119.550, Bresso Radio 122.005. Le <b>torri</b> (“Tower”) danno le autorizzazioni; i servizi <b>Information</b> (AFIS) e <b>Radio</b> danno solo informazioni (pista in uso, vento, traffico) e lasciano a te la decisione. Dove c'è la frequenza di <b>terra</b> (“Ground”), partendo dal parcheggio il rullaggio si chiede a Terra, che al punto attesa ti passa alla torre. La frequenza sintonizzata è scritta in alto nella scheda RADIO (COM1).</p>
 <div class="attenzione">Per gli aeroporti senza dati (alcuni campi piccoli, e tutti quelli della Valle Azzurra) la stazione è <b>simulata</b> e nel menu COM1 è indicata come tale. Anche le procedure sono semplificate: assomigliano a quelle vere ma non sono quelle pubblicate per ogni aeroporto. La voce dipende dal browser e dal sistema: su Windows ci sono già voci inglesi; se non ne trovi, le trasmissioni restano comunque scritte. Con il pulsante AUDIO spento la radio non parla.</div>
 
 <!-- ================================================================ -->
-<h2 id="emergenze">15. Avvisi ed emergenze</h2>
+<h2 id="emergenze">16. Avvisi ed emergenze</h2>
 <table>
   <thead><tr><th>Avviso</th><th>Cosa significa</th><th>Cosa fare</th></tr></thead>
   <tbody>
@@ -498,7 +552,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Si ha un incidente toccando terra a più di circa 700 ft/min, finendo in acqua, toccando il suolo con un'ala, l'elica o la fusoliera, superando circa 183 kt oppure i limiti di +5,7 / −2,3 g. Premi <kbd>R</kbd> o <kbd>Invio</kbd> per ricominciare.</p>
 
 <!-- ================================================================ -->
-<h2 id="numeri">16. Numeri del Cessna 172</h2>
+<h2 id="numeri">17. Numeri del Cessna 172</h2>
 <table>
   <thead><tr><th>Velocità</th><th>Nodi</th><th>Significato</th></tr></thead>
   <tbody>
@@ -516,7 +570,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Altri dati: 1000 kg con pilota e carburante, ala di 11 m, serbatoi da 53 galloni utilizzabili. Il modello di volo (6 gradi di libertà) usa i coefficienti aerodinamici del vero C172: si possono leggere e modificare in <code>dati/aereo.js</code>.</p>
 
 <!-- ================================================================ -->
-<h2 id="mondi">17. Mondi e mappa modificabile</h2>
+<h2 id="mondi">18. Mondi e mappa modificabile</h2>
 <ul>
   <li><b>Piemonte</b>: il rilievo vero (griglia di 250 m), 32 aeroporti con le piste vere, laghi, città, strade, ferrovie, fiumi, paesi con gli edifici e i VOR veri. Copre il Piemonte con un po' di Lombardia, Liguria, Valle d'Aosta, Svizzera e Francia (circa 219 × 287 km). Ci sono anche i principali monumenti, come riferimenti a vista: la Mole Antonelliana, Superga, il Lingotto con la pista sul tetto, i due grattacieli di Torino, la Reggia di Venaria, Stupinigi, la Sacra di San Michele, Vicoforte, San Gaudenzio a Novara e Oropa. Sono modelli semplificati e sulla mappa sono segnati con un triangolo dorato.</li>
   <li><b>Valle Azzurra</b>: un mondo inventato, piccolo e semplice. Tutto è nel file <code>dati/mappa.js</code>, scritto per essere modificato a mano: montagne, laghi, aeroporti e piste, città, boschi, VOR, meteo e punto di partenza.</li>

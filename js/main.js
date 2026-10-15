@@ -132,10 +132,14 @@ const piano=SIM.creaPiano(T,A,met,radio);
 // comunicazioni radio con la torre (js/atc.js)
 const atc=SIM.creaATC({A,T,met,audio,radio,stato:st});
 piano.impostaCom(atc.stazioneDi,atc.terraDi);
+// missioni (js/missioni.js) e libretto di volo (js/libretto.js)
+const missioni=SIM.creaMissioni(T);
+const libretto=SIM.creaLibretto();
+let daPiano=null;   // giro a tappe dopo un tocca e riparti: il piano parte dalla pista appena toccata
 const ctxATC=()=>({parcheggio:!!partenza.parcheggio&&modalita!=='finale',attesa:partenza.attesa||null,vie:partenza.vie||[],backtrack:partenza.backtrack!==false,part:partenza.ap?{ap:partenza.ap,te:partenza.te}:null,arr:piano.piano?{ap:piano.piano.arr,te:piano.piano.te}:null,finale:modalita==='finale',fin:modalita==='finale'?pistaFinale():null});
 let faseMostrata=-1;
 function ricalcolaPiano(){
-  const d=dest(),p=piano.calcola(partenza,d,d&&testataControvento(d));
+  const d=dest(),p=piano.calcola(daPiano||partenza,d,d&&testataControvento(d));
   $('pianoCorpo').innerHTML=piano.html();faseMostrata=-1;
   strum.impostaRotta(p?{punti:[{x:p.x0,z:p.z0},{x:p.faf.x,z:p.faf.z,nome:p.nomeFaf},{x:p.te.x,z:p.te.z}],prossimo:1}:null);
   aggiornaPiano();adattaDestra();
@@ -152,10 +156,12 @@ function aggiornaPiano(){
   if(rull)strum.impostaRotta({punti:rull.punti,prossimo:rull.i});
   else strum.impostaRotta({punti:[{x:p.x0,z:p.z0},{x:p.faf.x,z:p.faf.z,nome:p.nomeFaf},{x:p.te.x,z:p.te.z}],prossimo:p.prossimo+1});
 }
-/* la colonna di destra (mappa + piano) non deve finire sotto il pannello in basso: se serve, la mappa si rimpicciolisce */
+/* la colonna di destra non deve finire sotto il pannello in basso: se serve, la mappa si rimpicciolisce
+   e le altre schede (radio, piano, missione) scorrono */
 function adattaDestra(){
   const col=$('destra'),mm=$('minimap');
   mm.style.width='';
+  for(const s of document.querySelectorAll('.destra .scheda'))s.style.maxHeight='';
   let limite=innerHeight-12;
   const rc=col.getBoundingClientRect();
   for(const h of document.querySelectorAll('.basso .hud')){
@@ -164,6 +170,11 @@ function adattaDestra(){
   }
   const troppo=rc.bottom-limite;
   if(troppo>0&&mm.offsetWidth)mm.style.width=Math.max(150,mm.offsetWidth-troppo)+'px';
+  for(const s of document.querySelectorAll('.destra .scheda:not(.nav)')){
+    if(s.hidden)continue;
+    const r=s.getBoundingClientRect();
+    if(r.bottom>limite)s.style.maxHeight=Math.max(120,limite-r.top)+'px';
+  }
   strum.adatta();strum.ridisegnaMappa();
 }
 addEventListener('resize',()=>adattaDestra());
@@ -178,6 +189,8 @@ const NOMI_VISTA=[L('ESTERNA','OUTSIDE'),L('CABINA','COCKPIT'),L('TORRE','TOWER'
 
 function ricomincia(){
   centraCloche();
+  if(libretto.aperto)libretto.chiudi(st.crashed?'incidente':'interrotto');
+  if(avviato)avviaMissione();
   const p=modalita==='finale'&&pistaFinale()?puntoFinale():partenza;
   fis.reset(p);
   st.carburante=carbIniziale;
@@ -190,6 +203,8 @@ function ricomincia(){
   if(piano.piano){piano.piano.prossimo=0;aggiornaPiano();}
   atc.reset(ctxATC());
   atterratoA=null;
+  // si parte già in volo (in finale): il volo del libretto comincia subito
+  if(avviato&&modalita==='finale')libretto.decollo({mondo:window.MONDO_SCELTO,da:L('in finale','on final'),ora:oraVolo});
   if(avviato&&modalita==='finale'){const f=pistaFinale();messaggio(L(`In finale per la pista <b>${f.te.nome}</b> di <b>${f.ap.codice}</b>: segui le luci PAPI, 65 nodi, flap 30°`,`On final for runway <b>${f.te.nome}</b> at <b>${f.ap.codice}</b>: follow the PAPI lights, 65 knots, flaps 30°`),6);}
   else if(avviato) messaggioPartenza();
 }
@@ -244,51 +259,115 @@ selScala.addEventListener('change',()=>{strum.impostaZoom(+selScala.value);selSc
 $('minimap').addEventListener('wheel',e=>{e.preventDefault();if(e.deltaY<0)strum.zoomPiu();else strum.zoomMeno();},{passive:false});
 function alternaPausa(){
   if(!avviato||st.crashed) return;
+  if(pausaFinestra){pausaFinestra=false;$('pausa').hidden=false;return;}   // già fermi per una finestra: resta in pausa
   inPausa=!inPausa;$('pausa').hidden=!inPausa;atc.pausa(inPausa);
 }
-/* pannelli apribili/chiudibili (comandi e mappa); lo stato viene ricordato */
-function apriPannello(id,aperto){
-  const el=$(id),btn=el.querySelector('.testa');
-  el.classList.toggle('chiuso',!aperto);
-  btn.setAttribute('aria-expanded',String(aperto));
-  try{localStorage.setItem('volo-pannello-'+id,aperto?'1':'0');}catch(e){}
-  if(typeof adattaDestra==='function'&&$('pianoCorpo'))adattaDestra();
+/* ---------- colonna di destra a schede: MAPPA (J), RADIO (T), PIANO (I), MISSIONE (Y) ----------
+   se ne vede una alla volta; premendo di nuovo la stessa la colonna si nasconde (restano le linguette).
+   La scelta viene ricordata. Quando T apre la radio, finita la conversazione si torna alla scheda di prima. */
+const SCHEDE=['mappa','radio','piano','missione'];
+let scheda='mappa', schedaPrima=null, radioLibera=0;
+try{const s=localStorage.getItem('volo-scheda');if(s==='nessuna')scheda=null;else if(SCHEDE.includes(s)&&s!=='missione')scheda=s;}catch(e){}
+const linguetta=id=>document.querySelector(`[data-scheda="${id}"]`);
+function mostraScheda(id,ricorda=true){
+  if(id&&linguetta(id).hidden)id=null;
+  scheda=id;schedaPrima=null;
+  for(const s of SCHEDE){
+    $(s).hidden=s!==id;
+    const b=linguetta(s);b.setAttribute('aria-selected',String(s===id));b.classList.toggle('attiva',s===id);
+  }
+  $('destra').dataset.aperta=id||'';
+  if(id==='missione')$('missioneCorpo').innerHTML=missioni.pannello();
+  if(ricorda)try{localStorage.setItem('volo-scheda',id||'nessuna');}catch(e){}
+  adattaDestra();
 }
-function alternaPannello(id){apriPannello(id,$(id).classList.contains('chiuso'));}
-for(const b of document.querySelectorAll('[data-pannello]')){
-  const id=b.dataset.pannello;
-  let salvato=null;try{salvato=localStorage.getItem('volo-pannello-'+id);}catch(e){}
-  // sugli schermi piccoli i comandi partono chiusi
-  apriPannello(id,salvato!=null?salvato==='1':!(id==='aiuto'&&innerWidth<1100));
-  b.addEventListener('click',()=>{alternaPannello(id);b.blur();});
+function alternaScheda(id){mostraScheda(scheda===id?null:id);}
+for(const b of document.querySelectorAll('[data-scheda]'))b.addEventListener('click',()=>{alternaScheda(b.dataset.scheda);b.blur();});
+// la radio si apre da sola con T (menu delle frasi); poi, a conversazione finita, torna la scheda di prima
+function apriRadio(){
+  if(scheda==='radio') return;
+  const prima=scheda||'nessuna';mostraScheda('radio',false);schedaPrima=prima;radioLibera=0;
 }
-function alternaAiuto(){alternaPannello('aiuto');}
+function controllaRadio(dt){
+  linguetta('radio').classList.toggle('chiama',$('radio').classList.contains('chiama')&&scheda!=='radio');
+  if(!schedaPrima||scheda!=='radio') return;
+  if(atc.menuAperto||!atc.libero){radioLibera=0;return;}
+  radioLibera+=dt;
+  if(radioLibera>5){const p=schedaPrima;mostraScheda(p==='nessuna'?null:p,false);}
+}
+
+/* ---------- finestre: comandi (H), libretto di volo, risultato della missione ----------
+   aperte durante il volo lo mettono in pausa; chiudendole si riparte */
+const FINESTRE=['aiuto','esito','libretto'];
+let pausaFinestra=false;
+function apriFinestra(id){
+  if(id==='libretto')$('librettoCorpo').innerHTML=libretto.html();
+  $(id).hidden=false;
+  if(avviato&&!inPausa&&!st.crashed){inPausa=true;pausaFinestra=true;atc.pausa(true);}
+}
+function chiudiFinestra(id){
+  $(id).hidden=true;
+  if(pausaFinestra&&FINESTRE.every(f=>$(f).hidden)){pausaFinestra=false;inPausa=false;atc.pausa(false);}
+}
+const finestraAperta=()=>FINESTRE.slice().reverse().find(f=>!$(f).hidden)||null;
+for(const b of document.querySelectorAll('[data-chiudi]'))b.addEventListener('click',()=>{chiudiFinestra(b.dataset.chiudi);b.blur();});
+for(const id of FINESTRE)$(id).addEventListener('click',e=>{if(e.target===$(id))chiudiFinestra(id);});   // clic fuori dalla finestra
+function alternaAiuto(){if($('aiuto').hidden)apriFinestra('aiuto');else chiudiFinestra('aiuto');}
+$('btnAiuto').addEventListener('click',()=>{alternaAiuto();$('btnAiuto').blur();});
+for(const b of document.querySelectorAll('#btnLibretto,.apriLibretto'))b.addEventListener('click',()=>{apriFinestra('libretto');b.blur();});
+$('librettoSvuota').addEventListener('click',()=>{
+  if(!confirm(L('Cancellare tutti i voli del libretto?','Delete every flight in the logbook?')))return;
+  libretto.svuota();$('librettoCorpo').innerHTML=libretto.html();
+});
 function alternaAudio(){audio.avvia();const on=audio.alterna();aggiornaBtnAudio(on);}
 function aggiornaBtnAudio(on){$('btnAudio').textContent=on?'AUDIO ON':'AUDIO OFF';}
 aggiornaBtnAudio(audio.attivo);
 // torna al briefing iniziale: il volo si ferma e si possono cambiare mondo, partenza, destinazione, ora e carburante
 function apriBriefing(){
   if(!avviato) return;
-  avviato=false;inPausa=false;atc.pausa(false);
-  $('pausa').hidden=true;$('crash').hidden=true;$('msg').hidden=true;
+  for(const f of FINESTRE)$(f).hidden=true;
+  avviato=false;inPausa=false;pausaFinestra=false;atc.pausa(false);
+  $('pausa').hidden=true;$('crash').hidden=true;$('msg').hidden=true;$('obiettivo').hidden=true;
   modalita='decollo';ricomincia();
   $('brief').hidden=false;
+  preparaMissione(true);
 }
 for(const b of document.querySelectorAll('.vaiBriefing'))b.addEventListener('click',()=>{apriBriefing();b.blur();});
 function inizia(m){
   if(avviato) return;
+  if(missioni.attiva&&missioni.tipo==='precisione')m='finale';   // la precisione parte in finale
   avviato=true;$('brief').hidden=true;audio.avvia();
   if(m==='finale'){modalita='finale';ricomincia();return;}
+  avviaMissione();
   messaggioPartenza();
 }
+/* missione: si (ri)comincia da capo; nei giri a tappe la destinazione è la prima tappa */
+function avviaMissione(){
+  daPiano=null;
+  chiudiFinestra('esito');
+  if(!missioni.attiva) return;
+  missioni.avvia();
+  const p=missioni.prossima();
+  if(p&&p!==dest())impostaDest(T.aeroporti.indexOf(p));
+  $('missioneCorpo').innerHTML=missioni.pannello();
+}
+// risultato della missione: la finestra si apre quando l'aereo è fermo; va anche nel libretto
+function mostraEsito(){
+  const r=missioni.esito();
+  $('esitoTitolo').textContent=r.titolo;$('esitoTitolo').className=r.ok?'':'rosso';
+  $('esitoStelle').textContent=r.stelle;$('esitoTesto').innerHTML=r.html;
+  libretto.missione(missioni.risultato());
+  apriFinestra('esito');
+}
+$('esitoRiprova').addEventListener('click',()=>{$('esitoRiprova').blur();ricomincia();});
 
 addEventListener('keydown',e=>{
   if(BLOCCA.includes(e.code))e.preventDefault();
   if(e.ctrlKey||e.metaKey||e.altKey) return;      // non interferire con le scorciatoie del browser
   audio.avvia();
-  if(avviato&&!st.crashed&&atc.tasto(e)){   // radio: T e, a menu aperto, le cifre
+  if(avviato&&!st.crashed&&!inPausa&&atc.tasto(e)){   // radio: T e, a menu aperto, le cifre
     e.preventDefault();
-    if(atc.menuAperto&&$('radio').classList.contains('chiuso'))apriPannello('radio',true);
+    if(atc.menuAperto)apriRadio();
     return;
   }
   let nome=e.code;
@@ -311,11 +390,17 @@ addEventListener('keydown',e=>{
     case 'KeyL':navIlsArrivo();break;
     case 'KeyP':alternaPausa();break;
     case 'KeyH':alternaAiuto();break;
-    case 'KeyI':alternaPannello('piano');break;
-    case 'KeyJ':alternaPannello('mappa');break;
+    case 'KeyI':alternaScheda('piano');break;
+    case 'KeyJ':alternaScheda('mappa');break;
+    case 'KeyY':if(missioni.attiva)alternaScheda('missione');else messaggio(L('Nessuna missione: sceglila nel briefing (Esc).','No mission: choose one in the briefing (Esc).'),2.5);break;
     case 'KeyR':if(avviato)ricomincia();break;
     case 'Enter':case 'NumpadEnter':if(!avviato)inizia();else if(st.crashed)ricomincia();break;
-    case 'Escape':apriBriefing();break;   // (il menu della radio, se aperto, lo chiude prima js/atc.js)
+    case 'Escape':{   // (il menu della radio, se aperto, lo chiude prima js/atc.js)
+      const f=finestraAperta();
+      if(f&&f!=='esito')chiudiFinestra(f);   // chiude la finestra in primo piano
+      else apriBriefing();
+      break;
+    }
   }
 });
 addEventListener('keyup',e=>{tasti.delete(logico[e.code]||e.code);delete logico[e.code];});
@@ -450,6 +535,7 @@ function gestisciEventi(){
       atterratoA=null;
       if(rull){rull=null;aggiornaPiano();}
       const pv=T.pistaVicina(e.x,e.z,80);
+      libretto.decollo({mondo:window.MONDO_SCELTO,da:pv?pv.pista.ap.codice:L('fuori campo','off-field'),ora:oraVolo});
       messaggio(pv?L(`Decollo da <b>${pv.pista.ap.codice}</b>: buon volo!`,`Take-off from <b>${pv.pista.ap.codice}</b>: have a good flight!`):L('Decollo!','Take-off!'),3);
     }else if(e.tipo==='atterraggio'){
       const fpm=-e.vs*FPM;
@@ -467,12 +553,34 @@ function gestisciEventi(){
               `<br>${pv.pista.ap.codice} runway ${te.nome}: ${Math.round(dalla)} m past the threshold, ${Math.abs(pv.v).toFixed(1)} m from the centre line`);
         if(pv.pista.ap===dest()) txt+=L('<br><b>Destinazione raggiunta!</b>','<br><b>Destination reached!</b>');
       }else txt+=e.suolo==='erba'?L('<br>Fuori pista, sull\'erba','<br>Off the runway, on the grass'):L('<br>Fuori pista','<br>Off the runway');
+      // pista toccata (anche in erba): per il libretto e per la missione
+      const pr=T.pistaVicina(e.x,e.z,0);
+      libretto.atterraggio({ap:pa?pa.pista.ap.codice:'',fpm,giudizio,suPista:!!pr});
+      if(missioni.inCorso){
+        let dalla=0,lat=0,teT=null;
+        if(pr){
+          assi();
+          teT=pr.pista.testate.find(t=>t.dir.x*fwd.x+t.dir.z*fwd.z>0)||pr.pista.testate[0];
+          dalla=(e.x-teT.x)*teT.dir.x+(e.z-teT.z)*teT.dir.z;lat=Math.abs(pr.v);
+        }
+        const r=missioni.atterraggio({ap:pr?pr.pista.ap:null,suPista:!!pr,fpm,dalla,lat,W:pr?pr.pista.W:0,kt:e.ias*KT,te:teT});
+        if(r){
+          txt+='<br>'+r.msg;
+          if(r.dest){daPiano=teT?{ap:pr.pista.ap,te:teT}:null;impostaDest(T.aeroporti.indexOf(r.dest));}
+          $('missioneCorpo').innerHTML=missioni.pannello();
+        }
+      }
       messaggio(txt,8);
     }else if(e.tipo==='senzaCarburante'){
       messaggio(L('<b>Motore spento: carburante esaurito!</b><br>Tieni circa 65 nodi (miglior planata) e cerca un campo o una pista vicina.',
                 '<b>Engine stopped: out of fuel!</b><br>Hold about 65 knots (best glide) and look for a field or a nearby runway.'),10);
     }else if(e.tipo==='incidente'){
-      audio.colpo(1);mostraIncidente(e.motivo);
+      audio.colpo(1);
+      libretto.chiudi('incidente');
+      missioni.incidente();
+      mostraIncidente(e.motivo);
+      if(missioni.daMostrare()){missioni.esito();libretto.missione(missioni.risultato());
+        $('crashMsg').textContent+=' '+L('La missione è fallita: R per riprovare.','The mission failed: R to try again.');}
     }
   }
   st.eventi.length=0;
@@ -620,7 +728,28 @@ function aggiornaBriefing(){
   $('briefTesto').innerHTML=t;
   ricalcolaPiano();
   $('briefVr').textContent=A.velocita.vr;$('briefVy').textContent=A.velocita.vy;
+  if(!avviato&&typeof preparaMissione==='function')preparaMissione(true);
 }
+/* ---------- missione scelta nel briefing (ricordata) ---------- */
+const selMis=$('selMissione');
+try{const s=localStorage.getItem('volo-missione');if(s&&[...selMis.options].some(o=>o.value===s))selMis.value=s;}catch(e){}
+// stessoGiro: nei giri a tappe tiene le tappe già estratte (se la partenza è la stessa)
+function preparaMissione(stessoGiro){
+  missioni.prepara(selMis.value,{partenza,dest:dest(),finale:pistaFinale()},stessoGiro);
+  const tipo=missioni.tipo,box=$('briefMissione');
+  box.hidden=tipo==='libero';
+  box.innerHTML=missioni.descrizione()+(tipo.startsWith('tappe')&&missioni.attiva?` <button type="button" id="altroGiro" class="piccolo">${L('Altro giro','Another tour')}</button>`:'');
+  const ag=$('altroGiro');if(ag)ag.addEventListener('click',()=>{preparaMissione(false);});
+  // nei giri e nella missione a tempo la mappa e il piano puntano alla prima tappa
+  const p=missioni.attiva&&tipo!=='precisione'?missioni.prossima():null;
+  if(p&&p!==dest()){impostaDest(T.aeroporti.indexOf(p));return;}   // riscrive il briefing (e ripassa da qui)
+  $('finale').hidden=tipo!=='libero'||!pistaFinale();
+  $('inizia').innerHTML=tipo==='precisione'?L('Inizia in finale (Invio)','Start on final (Enter)'):L('Decolla (Invio)','Take off (Enter)');
+  linguetta('missione').hidden=!missioni.attiva;
+  if(!missioni.attiva&&scheda==='missione')mostraScheda('mappa');
+  $('missioneCorpo').innerHTML=missioni.pannello();
+}
+selMis.addEventListener('change',()=>{try{localStorage.setItem('volo-missione',selMis.value);}catch(e){}preparaMissione(false);selMis.blur();});
 const selMondo=$('selMondo'),selAp=$('selAeroporto'),selPista=$('selPista'),selDB=$('selDestBrief'),selD=$('selDest');
 selMondo.value=window.MONDO_SCELTO||'piemonte';
 selMondo.addEventListener('change',()=>{location.search='?mappa='+selMondo.value;});
@@ -635,7 +764,7 @@ function impostaDest(i){destIdx=i;selDB.value=selD.value=String(i);aggiornaBrief
 function sulPiazzale(){T.suolo(st.pos.x,st.pos.z);return T.tipo==='piazzale';}
 function nuovaPartenza(ap){
   let te=testataControvento(ap);
-  partenza=creaPartenza(ap,te);te=partenza.te;modalita='decollo';
+  partenza=creaPartenza(ap,te);te=partenza.te;modalita='decollo';daPiano=null;
   rull=partenza.parcheggio?{punti:partenza.percorso,i:1}:null;
   selAp.value=String(T.aeroporti.indexOf(ap));riempiPiste(ap,te);
   if(dest()===ap){ // arrivati a destinazione: si propone l'aeroporto più vicino come prossima tappa
@@ -728,11 +857,22 @@ selCarb.addEventListener('change',()=>{
   selCarb.blur();
 });
 
+/* striscia dell'obiettivo (in alto al centro) e scheda MISSIONE */
+let ultimoPannelloMis='';
+function aggiornaObiettivo(){
+  const s=avviato?missioni.striscia():'',o=$('obiettivo');
+  o.hidden=!s;if(s&&o.innerHTML!==s)o.innerHTML=s;
+  document.body.classList.toggle('con-obiettivo',!!s);
+  if(scheda==='missione'&&n%30===0){const h=missioni.pannello();if(h!==ultimoPannelloMis){ultimoPannelloMis=h;$('missioneCorpo').innerHTML=h;}}
+}
+
 /* ---------- ciclo principale ---------- */
+preparaMissione(true);
+mostraScheda(scheda);
 ricomincia();
 aggiornaVento(0);
 // scorciatoie per le prove: index.html#salta (salta il briefing), #vista=1 (cabina)
-SIM.debug={st,fis,terreno,monumenti,scene,atc,renderer,camera};  // utile dalla console del browser (F12)
+SIM.debug={st,fis,terreno,monumenti,scene,atc,renderer,camera,missioni,libretto};  // utile dalla console del browser (F12)
 if(/salta/.test(location.hash)) inizia();
 if(/finale/.test(location.hash)) inizia('finale');
 {const mv=/vista=(\d)/.exec(location.hash);if(mv)vista=(+mv[1])%3;}
@@ -747,6 +887,8 @@ function ciclo(ora){
     tempo+=dt;aggiornaVento(tempo);
     const passi=Math.max(1,Math.ceil(dt*240)),h=dt/passi;
     for(let i=0;i<passi;i++)fis.passo(h,inp,vento);
+    libretto.aggiorna(dt,st);
+    const mm=missioni.aggiorna(dt);if(mm)messaggio(mm,6);
   }
   gestisciEventi();
   aggiornaCamera(dt);
@@ -759,7 +901,11 @@ function ciclo(ora){
     }
     const alPiazzale=()=>atterratoA.rullaggioVero&&SIM.reteRullaggio?SIM.reteRullaggio.suPiazzale(st.pos.x,st.pos.z):sulPiazzale();
     if(atterratoA&&st.aTerra&&st.gs<1.5&&!st.crashed&&atc.libero&&(!daParcheggio||alPiazzale())){const ap=atterratoA;atterratoA=null;nuovaPartenza(ap);}
+    // missione finita: il risultato quando l'aereo è fermo
+    if(missioni.daMostrare()&&st.aTerra&&st.gs<1&&!st.crashed)mostraEsito();
   }
+  if(n%15===0)controllaRadio(attivo?0.25:0);
+  if(n%6===0)aggiornaObiettivo();
   mondo.aggiorna(st,camera.position,vento,attivo?dt:0,vista===1);
   notte.aggiorna(camera.position);
   if(n%2===0)ultimiStrum=aggiornaStrumenti(dt*2);

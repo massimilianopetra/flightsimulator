@@ -22,7 +22,8 @@ Code / Codice: https://github.com/massimilianopetra/flightsimulator
 
 A small flight simulator that runs in the browser, with realistic physics based on a **Cessna 172**
 and Garmin G1000 avionics. You take off from a real runway, fly with glass-cockpit instruments,
-navigate with VOR and ILS, and land following the PAPI lights.
+navigate with VOR and ILS, and land following the PAPI lights. Missions (against the clock, tours,
+precision landings) give each flight a goal, and the logbook keeps track of every flight.
 
 The game and its manual are available in **Italian and English**: choose the language in the
 briefing, or open `index.html?lang=en`. The choice is remembered.
@@ -30,7 +31,7 @@ briefing, or open `index.html?lang=en`. The choice is remembered.
 ## Screenshots
 
 <p align="center">
-  <img src="istruzioni/en/schermo.jpg" alt="The game screen on the runway at Turin-Caselle, with the controls, PFD, engine panel, map and flight plan" width="100%">
+  <img src="istruzioni/en/schermo.jpg" alt="The game screen on the runway at Turin-Caselle, with the timed mission, the tabbed column with the map, the PFD and the engine panel" width="100%">
 </p>
 
 <table>
@@ -47,8 +48,16 @@ briefing, or open `index.html?lang=en`. The choice is remembered.
     <td><img src="istruzioni/en/piano.png" alt="Flight plan from Turin-Caselle to Cuneo-Levaldigi"></td>
   </tr>
   <tr>
-    <td align="center"><sub>Moving map with roads, airports and VORs</sub></td>
-    <td align="center"><sub>Flight plan with ILS and VOR for the arrival</sub></td>
+    <td align="center"><sub>MAP tab: moving map with roads, airports and VORs</sub></td>
+    <td align="center"><sub>PLAN tab: flight plan with ILS and VOR for the arrival</sub></td>
+  </tr>
+  <tr>
+    <td><img src="istruzioni/en/missione.png" alt="MISSION tab during a short tour"></td>
+    <td><img src="istruzioni/en/esito.png" alt="Result of a precision landing with three stars"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>MISSION tab: a short tour after the first stop</sub></td>
+    <td align="center"><sub>The result of a precision landing</sub></td>
   </tr>
 </table>
 
@@ -97,8 +106,7 @@ To work on it with VS Code the *Live Server* extension is fine too.
 | right mouse button (hold and drag) | look around in the cockpit, orbit the aircraft outside |
 | mouse wheel | cockpit zoom (to read the screens) |
 | N | next destination |
-| I | open or close the flight plan |
-| J | open or close the map |
+| J · T · I · Y | right column tabs: map, radio, flight plan, mission (press again to hide the column) |
 | M (or mouse wheel over the map, or the SCALE menu) | map scale: 0.5, 1, 2, 5, 10, 20, 50, 100 NM or the whole region |
 | O (or click on the map) | map with north up or heading up |
 | T | radio: talk to the tower (then 1…4 to choose the sentence) |
@@ -106,15 +114,15 @@ To work on it with VS Code the *Live Server* extension is fine too.
 | V | NAV1 radio: next VOR or ILS in range (nearest first) |
 | L | NAV1 radio: ILS of the arrival runway |
 | , / . | VOR course (CRS) −1° / +1°, with Shift ±10° |
-| P / R | pause / restart |
-| Esc | back to the briefing |
-| H | open or close the controls panel |
+| P / R | pause / restart (the mission too) |
+| H | open or close the controls window (the flight pauses) |
+| Esc | close the open window, otherwise back to the briefing |
 
 The game never uses the Ctrl key (Ctrl+W would close the browser tab).
 
 With the mouse you can drag on the screen as if it were a control stick. With both keys and mouse the
-stick **stays in its last position** (the dot in the panel shows where it is); K centres it. The rudder
-returns to the centre by itself, like real pedals. In the CONTROLS panel you can set the **stick
+stick **stays in its last position** (the dot in the bottom panel shows where it is); K centres it. The rudder
+returns to the centre by itself, like real pedals. In the CONTROLS window (H) you can set the **stick
 sensitivity** (1–10: lower means softer controls near the centre) and make the stick **return to the
 centre** when you release the keys. A gamepad works too: left stick for the control stick, right stick
 for rudder and throttle, triggers for throttle, bumpers for flaps, A for brakes and Y for the view.
@@ -146,6 +154,30 @@ Esc takes you back to the briefing at any time.
 The full manual, with pictures of every instrument, explains the PFD, the turn coordinator,
 VOR and ILS navigation and the emergencies step by step:
 [English](https://massimilianopetra.github.io/flightsimulator/istruzioni-en.html).
+
+## The screen and the missions
+
+The screen keeps the view clear: at the **top left** two buttons open the controls window (H) and the
+**logbook**; at the **top right** a single column with four tabs, **MAP** (J), **RADIO** (T), flight
+**PLAN** (I) and **MISSION** (Y), of which only one shows at a time. When the radio tab is closed, the
+last transmission and the tower prompt appear below the tabs, and the RADIO tab flashes when the tower
+is waiting for you; T opens it by itself. At the bottom are the PFD and the engine panel.
+
+In the briefing you can choose a **mission**, worth 0 to 3 stars (the objective and clock are shown at
+the top centre):
+
+- **against the clock**: land at the destination within a time limit worked out from the distance;
+- **short / long tour**: 2 or 3 nearby airports picked at random, to touch in order (full stop or
+  touch-and-go), then back home within a reference time;
+- **precision landing**: you start on final and the touchdown is worth up to 100 points (vertical
+  speed, aiming point, centre line, speed).
+
+The **logbook** writes every flight by itself (from take-off until you stop): route, time, miles,
+landings, missions and stars, with totals and records. It stays in the browser.
+
+<p align="center">
+  <img src="istruzioni/en/libretto.png" alt="The logbook with totals, records and the list of flights" width="85%">
+</p>
 
 ## Instruments
 
@@ -268,6 +300,8 @@ The site needs no build step: it is made of static files.
 | `js/monumenti.js` | the 3D models of the monuments | |
 | `js/piano.js` | flight plan to the destination and arrival runway information | |
 | `js/audio.js` | synthesised sounds: engine, wind, stall horn | |
+| `js/missioni.js` | missions: against the clock, tours, precision landing; stars and result | |
+| `js/libretto.js` | the logbook: every flight saved in the browser, totals and records | |
 | `js/main.js` | ties everything together: controls, cameras, messages, main loop | |
 | `css/stile.css` | the look of the panels | |
 | `istruzioni.html`, `istruzioni-en.html`, `istruzioni/` | the manual in Italian and English, with pictures taken from the game | |
@@ -450,7 +484,6 @@ do not end up in the sea.
 ## Ideas for the next steps
 
 - More aircraft (a glider? a jet?): just another file like `dati/aereo.js`.
-- Missions: land at an airport within a time limit, multi-leg flights.
 
 ## Licence
 
@@ -474,7 +507,8 @@ This simulator is a game: do not use it for real navigation.
 
 Un piccolo simulatore di volo nel browser, con fisica realistica ispirata a un **Cessna 172**
 con avionica Garmin G1000: si decolla da una pista vera, si vola con strumenti da glass cockpit,
-si naviga con VOR e ILS e si atterra seguendo le luci PAPI.
+si naviga con VOR e ILS e si atterra seguendo le luci PAPI. Le missioni (a tempo, giri a tappe,
+atterraggi di precisione) danno uno scopo a ogni volo e il libretto di volo li ricorda tutti.
 
 Il gioco e il manuale sono in **italiano e in inglese**: la lingua si sceglie nel briefing, oppure
 aprendo `index.html?lang=en`. La scelta viene ricordata.
@@ -482,7 +516,7 @@ aprendo `index.html?lang=en`. La scelta viene ricordata.
 ## Immagini
 
 <p align="center">
-  <img src="istruzioni/schermo.jpg" alt="La schermata del gioco sulla pista di Torino-Caselle, con comandi, PFD, pannello motore, mappa e piano di volo" width="100%">
+  <img src="istruzioni/schermo.jpg" alt="La schermata del gioco sulla pista di Torino-Caselle, con la missione a tempo, la colonna a schede con la mappa, il PFD e il pannello motore" width="100%">
 </p>
 
 <table>
@@ -499,8 +533,16 @@ aprendo `index.html?lang=en`. La scelta viene ricordata.
     <td><img src="istruzioni/piano.png" alt="Piano di volo da Torino-Caselle a Cuneo-Levaldigi"></td>
   </tr>
   <tr>
-    <td align="center"><sub>Mappa mobile con strade, aeroporti e VOR</sub></td>
-    <td align="center"><sub>Piano di volo con ILS e VOR per l'arrivo</sub></td>
+    <td align="center"><sub>Scheda MAPPA: mappa mobile con strade, aeroporti e VOR</sub></td>
+    <td align="center"><sub>Scheda PIANO: piano di volo con ILS e VOR per l'arrivo</sub></td>
+  </tr>
+  <tr>
+    <td><img src="istruzioni/missione.png" alt="Scheda MISSIONE durante un giro corto"></td>
+    <td><img src="istruzioni/esito.png" alt="Risultato di un atterraggio di precisione con tre stelle"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Scheda MISSIONE: un giro corto dopo la prima tappa</sub></td>
+    <td align="center"><sub>Il risultato di un atterraggio di precisione</sub></td>
   </tr>
 </table>
 
@@ -551,8 +593,7 @@ Per lavorarci con VS Code va bene anche l'estensione *Live Server*.
 | tasto destro del mouse (tieni premuto e trascina) | guardarsi intorno in cabina, girare attorno all'aereo fuori |
 | rotellina del mouse | zoom in cabina (per leggere gli schermi) |
 | N | prossima destinazione |
-| I | apre o chiude il piano di volo |
-| J | apre o chiude la mappa |
+| J · T · I · Y | schede della colonna di destra: mappa, radio, piano di volo, missione (di nuovo per nascondere la colonna) |
 | M (o rotellina sopra la mappa, o il menu SCALA) | scala della mappa: 0,5, 1, 2, 5, 10, 20, 50, 100 NM o tutta la regione |
 | O (o clic sulla mappa) | mappa con il nord in alto oppure con la prua in alto |
 | T | radio: parla con la torre (poi 1…4 per scegliere la frase) |
@@ -560,15 +601,15 @@ Per lavorarci con VS Code va bene anche l'estensione *Live Server*.
 | V | radio NAV1: prossimo VOR o ILS ricevuto (il più vicino per primo) |
 | L | radio NAV1: ILS della pista di arrivo |
 | , / . | rotta del VOR (CRS) −1° / +1°, con Maiusc ±10° |
-| P / R | pausa / ricomincia |
-| Esc | torna al briefing |
-| H | apre o chiude il pannello dei comandi |
+| P / R | pausa / ricomincia (anche la missione) |
+| H | apre o chiude la finestra dei comandi (il volo va in pausa) |
+| Esc | chiude la finestra aperta, altrimenti torna al briefing |
 
 Il gioco non usa mai il tasto Ctrl (Ctrl+W chiuderebbe la scheda del browser).
 
 Col mouse si può trascinare sullo schermo come se fosse una cloche. Sia con i tasti sia col mouse la
-cloche **resta nell'ultima posizione** (il pallino nel pannello mostra dov'è); K la riporta al centro.
-Il timone invece torna al centro da solo, come i pedali veri. Nel pannello COMANDI si regolano la
+cloche **resta nell'ultima posizione** (il pallino nel pannello in basso mostra dov'è); K la riporta al centro.
+Il timone invece torna al centro da solo, come i pedali veri. Nella finestra COMANDI (H) si regolano la
 **sensibilità della cloche** (1–10: più bassa = comandi più dolci vicino al centro) e il **ritorno al
 centro** della cloche quando lasci i tasti. Funziona anche un gamepad: stick sinistro per la cloche,
 stick destro per timone e manetta, grilletti per la manetta, dorsali per i flap, A per i freni e Y per la vista.
@@ -600,6 +641,30 @@ Esc ti riporta al briefing in qualsiasi momento.
 Il manuale completo, con le immagini di tutti gli strumenti, spiega passo passo il PFD, il
 virosbandometro, la navigazione VOR e ILS e le emergenze:
 [Italiano](https://massimilianopetra.github.io/flightsimulator/istruzioni.html).
+
+## Lo schermo e le missioni
+
+Lo schermo lascia libera la vista: **in alto a sinistra** due pulsanti aprono la finestra dei comandi (H)
+e il **libretto di volo**; **in alto a destra** c'è una sola colonna con quattro schede, **MAPPA** (J),
+**RADIO** (T), **PIANO** di volo (I) e **MISSIONE** (Y), e se ne vede una alla volta. Con la radio
+chiusa, l'ultima trasmissione e l'avviso della torre compaiono sotto le linguette, e la linguetta RADIO
+lampeggia quando la torre ti aspetta; T la apre da sola. In basso restano il PFD e il pannello motore.
+
+Nel briefing si può scegliere una **missione**, che vale da 0 a 3 stelle (obiettivo e cronometro in alto
+al centro):
+
+- **a tempo**: atterrare alla destinazione entro un tempo limite calcolato dalla distanza;
+- **giro corto / lungo**: 2 o 3 aeroporti vicini scelti a caso, da toccare in ordine (atterraggio
+  completo o tocca e riparti), poi il ritorno a casa entro un tempo di riferimento;
+- **atterraggio di precisione**: si parte in finale e il contatto vale fino a 100 punti (velocità
+  verticale, punto di mira, linea centrale, velocità).
+
+Il **libretto di volo** scrive da solo ogni volo (dal decollo a quando ti fermi): rotta, durata, miglia,
+atterraggi, missioni e stelle, con i totali e i record. Resta nel browser.
+
+<p align="center">
+  <img src="istruzioni/libretto.png" alt="Il libretto di volo con i totali, i record e l'elenco dei voli" width="85%">
+</p>
 
 ## Strumenti
 
@@ -720,6 +785,8 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `js/radio.js` | radionavigazione: VOR, DME e ILS, il ricevitore NAV1 | |
 | `js/rullaggio.js` | vie di rullaggio: rete, percorso più breve dal piazzale al punto attesa, disegno | |
 | `js/atc.js` | comunicazioni radio con la torre (sintesi vocale, menu delle risposte) | |
+| `js/missioni.js` | missioni: a tempo, giri a tappe, atterraggio di precisione; stelle e risultato | |
+| `js/libretto.js` | il libretto di volo: ogni volo salvato nel browser, totali e record | |
 | `js/monumenti.js` | i modelli 3D dei monumenti | |
 | `js/piano.js` | piano di volo verso la destinazione e informazioni sulla pista di arrivo | |
 | `js/audio.js` | suoni sintetizzati: motore, vento, avvisatore di stallo | |
@@ -903,7 +970,6 @@ conviene ricontrollare che gli aeroporti non finiscano in mare.
 ## Idee per i prossimi passi
 
 - Più aerei (un aliante? un jet?): basta un altro file come `dati/aereo.js`.
-- Missioni: atterrare in un aeroporto entro un tempo, voli con più tappe.
 
 ## Licenza
 

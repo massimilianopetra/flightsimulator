@@ -31,23 +31,30 @@ body{background:#c9dceb;color:var(--ink);font-family:var(--f-ui);overflow:hidden
 .dim{color:var(--dim);font-weight:400}
 kbd{font:700 11px var(--f-num);color:var(--cyan);border:1px solid rgba(57,215,255,.35);border-radius:3px;padding:0 4px}
 
-/* comandi */
-.aiuto{top:calc(12px + env(safe-area-inset-top,0px));left:12px;font-size:12px;line-height:1.45;max-width:23rem}
-/* il riquadro dei comandi non deve coprire il PFD: se non ci sta, scorre */
-.aiuto .corpo{max-height:calc(100vh - 400px);overflow-y:auto;pointer-events:auto;scrollbar-width:thin}
-.testa{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:2px 0;border:0;background:none;
-  font:700 11px var(--f-ui);letter-spacing:.14em;text-transform:none;color:var(--ink);pointer-events:auto;cursor:pointer}
-.testa:hover{color:var(--cyan)}
-.testa .freccia{font-size:15px;line-height:1;transition:transform .15s}
-.chiuso .testa .freccia{transform:rotate(-90deg)}
-.aiuto .corpo{margin-top:6px}
-.aiuto.chiuso .corpo,.nav.chiuso #minimap,.piano.chiuso .corpo,.radiopan.chiuso .corpo{display:none}
+/* in alto a sinistra: pulsanti dell'aiuto e del libretto */
+.angolo{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:12px;display:flex;gap:6px}
+.hud-btn{background:var(--panel);border-color:rgba(57,215,255,.3);padding:7px 10px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.hud-btn kbd{margin-left:4px}
+
+/* in alto al centro: obiettivo della missione */
+.obiettivo{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);white-space:nowrap;
+  background:var(--panel);border:1px solid rgba(255,90,217,.45);border-radius:8px;padding:7px 14px;font:400 14px/1.2 var(--f-num);pointer-events:none;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);max-width:calc(100vw - 700px)}
+.obiettivo b{color:var(--magenta)}
+.obiettivo .ambra,.ambra{color:var(--amber)!important}
+.obiettivo .rosso,.rosso{color:var(--red)!important}
+.stella{color:var(--amber);letter-spacing:.05em}
+.con-obiettivo .msg{top:calc(58px + env(safe-area-inset-top,0px))}
+
+/* comandi (finestra) */
+.card.aiuto{font-size:12.5px;line-height:1.45;max-width:40rem;width:100%;max-height:calc(100vh - 32px);overflow-y:auto;scrollbar-width:thin}
+.card-testa{display:flex;justify-content:space-between;align-items:center;gap:10px}
+button.chiudi{padding:6px 9px;font-size:13px;border-color:rgba(142,166,187,.5)}
 /* radio */
 .radiopan{font-size:12px;line-height:1.35}
 .riga-com{margin-top:6px}
 .selcom{pointer-events:auto;color:#4ade80;font-size:13px;padding:3px 4px;flex:1;min-width:0}
-.radiocom{flex:1;text-align:right;font:700 10px var(--f-num);color:#4ade80;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.radiopan.chiama .testa{animation:lampeggio 1s steps(2) infinite}
+.radiocom{font:700 11px var(--f-num);color:#4ade80;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .radioavviso{margin-top:6px;color:#1b1000;background:var(--amber);border-radius:4px;padding:4px 7px;font-weight:700}
 .radiolog{max-height:110px;overflow-y:auto;margin-top:6px;pointer-events:auto;scrollbar-width:thin}
 .radiolog:empty{display:none}
@@ -69,9 +76,33 @@ a.istr{display:inline-block;margin-top:8px;color:var(--cyan);font-weight:700;poi
 .regola #sens{flex:1;min-width:0;accent-color:var(--cyan)}
 .regola #centro{accent-color:var(--cyan);margin:0}
 
-/* navigazione */
-.destra{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:320px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+/* colonna di destra a schede */
+.destra{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:320px;display:flex;flex-direction:column;gap:6px;pointer-events:none}
 .destra .hud{position:relative}
+.destra .scheda{overflow-y:auto;scrollbar-width:thin}
+.destra .scheda:not(.nav){pointer-events:auto}
+.schede{display:flex;gap:4px;pointer-events:auto}
+.schede button{flex:1 1 auto;white-space:nowrap;background:var(--panel);border-color:rgba(57,215,255,.25);padding:7px 4px;font-size:10px;letter-spacing:.04em;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.schede button kbd{font-size:9px;padding:0 3px;margin-left:2px}
+.schede button.attiva{background:rgba(22,60,84,.92);border-color:var(--cyan);color:var(--cyan)}
+.schede button.chiama{background:var(--amber);border-color:var(--amber);color:#1b1000;animation:lampeggio 1s steps(2) infinite}
+.schede button.chiama kbd{color:#1b1000;border-color:#1b1000}
+.radiosott{font-size:12px;line-height:1.35;padding:7px 10px}
+.radiosott .rl{margin:0}
+.radiosott .radioavviso{margin-top:0}
+.radiosott .rl+.radioavviso{margin-top:6px}
+.destra[data-aperta="radio"] .radiosott{display:none}
+/* missione */
+.missione{padding:8px 10px;font-size:11.5px;line-height:1.4;display:grid;gap:6px}
+.missione .corpo{display:grid;gap:6px}
+.mi-punti{margin:0;padding-left:1.2em;display:grid;gap:2px}
+.mi-punti b{font-family:var(--f-num);color:var(--cyan)}
+.mi-tab{border-collapse:collapse;width:100%;font-size:12px}
+.mi-tab td{padding:3px 6px;border-bottom:1px solid rgba(142,166,187,.2)}
+.mi-tab td:last-child{text-align:right;font-family:var(--f-num)}
+.mi-tab tr.tot td{border-bottom:0;font-size:13px}
+.mi-tab b{color:var(--cyan)}
 .nav{display:flex;flex-direction:column;gap:8px;padding:8px}
 #minimap{display:block;margin:0 auto;width:100%;height:auto;aspect-ratio:1/1;border-radius:5px;pointer-events:auto;cursor:pointer}
 .navinfo{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
@@ -132,7 +163,34 @@ button.primario:hover{background:#7fe6ff;color:#05202a}
 #knob{position:absolute;left:50%;top:50%;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;background:rgba(57,215,255,.55)}
 
 /* finestre sovrapposte */
-.overlay{position:absolute;inset:0;display:grid;place-items:center;padding:16px;background:rgba(8,16,30,.5);pointer-events:auto;overflow:auto}
+.overlay{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:rgba(8,16,30,.5);pointer-events:auto;overflow:auto}
+/* risultato della missione */
+.card.esito{text-align:center;min-width:min(26rem,100%)}
+.card.esito h2.rosso{color:var(--amber)!important}
+.stelle{font-size:40px;line-height:1;color:var(--amber);letter-spacing:.1em}
+.stelle:empty{display:none}
+.card.esito .azioni{justify-content:center}
+.card.esito .mi-tab,.card.esito .mi-punti{text-align:left}
+.card.esito .mi-punti{list-style:none;padding:0}
+/* libretto di volo */
+.card.libretto{max-width:58rem;width:100%;max-height:calc(100vh - 32px);overflow-y:auto;scrollbar-width:thin}
+.card h3{margin:4px 0 0;font:700 12px var(--f-ui);letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.tessere{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.tess{border:1px solid rgba(57,215,255,.2);border-radius:6px;padding:8px 10px;display:grid;gap:4px}
+.tess b{font:700 20px/1 var(--f-num);color:var(--cyan)}
+.tess span{font-size:11px;color:var(--dim)}
+.record{margin:0;padding-left:1.2em;display:grid;gap:3px;font-size:13px}
+.tab-libretto{max-height:42vh;overflow:auto;scrollbar-width:thin}
+.tab-libretto table{border-collapse:collapse;width:100%;font-size:12px}
+.tab-libretto th{position:sticky;top:0;background:#0b1322;text-align:left;font:700 10px var(--f-ui);letter-spacing:.1em;color:var(--dim);padding:6px}
+.tab-libretto td{padding:5px 6px;border-top:1px solid rgba(142,166,187,.15);white-space:nowrap}
+.tab-libretto td:last-child{white-space:normal}
+.tab-libretto tr.male td{color:#ffb3a8}
+/* briefing: missione */
+.brief-missione{border-left:3px solid var(--magenta);background:rgba(255,90,217,.08);padding:8px 10px;border-radius:4px;line-height:1.5}
+.brief-missione b{color:var(--magenta)}
+button.piccolo{padding:5px 8px;font-size:10px;margin-left:4px}
+.scelte .intera{grid-column:1/-1}
 .card{background:rgba(8,16,30,.92);border:1px solid rgba(57,215,255,.35);border-radius:10px;padding:22px 26px;display:grid;gap:12px;max-width:34rem}
 .card h1,.card h2{margin:0;font:700 20px/1.2 var(--f-num);letter-spacing:.12em;color:var(--cyan);text-wrap:balance}
 .card p{margin:0;line-height:1.5}
@@ -152,8 +210,8 @@ button.primario:hover{background:#7fe6ff;color:#05202a}
   .sys{width:auto}
   #pfd{width:100%;max-height:42vh}
   .pfdbox{align-self:center}
-  .destra{width:170px}
-  .piano{display:none}
+  .destra{width:min(260px,calc(100vw - 24px))}
+  .obiettivo{max-width:calc(100vw - 24px);top:calc(52px + env(safe-area-inset-top,0px))}
   .navinfo{grid-template-columns:1fr}
   .val{font-size:15px}
 }
