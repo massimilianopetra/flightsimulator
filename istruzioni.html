@@ -477,7 +477,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   <li><b>AP</b>: inserisce o stacca l'autopilota;</li>
   <li><b>HDG</b>: segue la prua scelta; premuto di nuovo passa a <b>ROL</b>, ali livellate (l'aereo va dritto dove si trova);</li>
   <li><b>ALT</b>: tiene la quota di adesso;</li>
-  <li><b>VS</b>: sale o scende verso la quota scelta alla velocità verticale scelta (serve una quota scelta diversa da quella attuale).</li>
+  <li><b>VS</b>: tiene la <b>velocità verticale</b> di adesso (arrotondata ai 100 ft/min), che poi cambi con i pulsanti VS o <kbd>Maiusc</kbd>+<kbd>S</kbd>/<kbd>W</kbd>, anche in negativo per scendere. Se la quota scelta è davanti a te, cioè sopra in salita o sotto in discesa, la aggancia da sola quando ci arrivi (<b>ALTS</b>); altrimenti continua a salire o scendere.</li>
 </ul>
 <div class="affianca">
   <div>
@@ -486,7 +486,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
       <tbody>
         <tr><td><kbd>A</kbd> / <kbd>D</kbd></td><td>prua scelta −1° / +1° (tenendo premuto corre). L'aereo vira verso di lei inclinato al massimo di 20°</td></tr>
         <tr><td><kbd>S</kbd> / <kbd>W</kbd></td><td>quota scelta +100 / −100 ft (come tirare o spingere la cloche)</td></tr>
-        <tr><td><kbd>Maiusc</kbd>+<kbd>S</kbd> / <kbd>W</kbd></td><td>velocità verticale di salita o discesa ±100 ft/min (di serie 500)</td></tr>
+        <tr><td><kbd>Maiusc</kbd>+<kbd>S</kbd> / <kbd>W</kbd></td><td>velocità verticale +100 / −100 ft/min (sotto zero si scende); da ALT passa in VS partendo da 0</td></tr>
         <tr><td><kbd>Maiusc</kbd>+<kbd>H</kbd></td><td>prua scelta = prua attuale</td></tr>
         <tr><td><kbd>Maiusc</kbd>+<kbd>A</kbd></td><td>stacca l'autopilota</td></tr>
       </tbody>

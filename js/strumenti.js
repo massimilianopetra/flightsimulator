@@ -159,7 +159,7 @@ SIM.creaStrumenti=function(A){
     if(d.ap){
       const a=d.ap,fa=Math.round(fs*0.85),yb=Math.max(2,ty-fa*1.55),hb=fa*1.35;
       g.font=`700 ${fa}px ${MONO}`;g.textBaseline='middle';
-      const pezzi=[['AP','#000','#4ade80'],[a.lat,'#4ade80'],[a.vert==='VS'?`VS ${a.vsSel}`:'ALT','#4ade80']];
+      const pezzi=[['AP','#000','#4ade80'],[a.lat,'#4ade80'],[a.vert==='VS'?`VS ${a.vsSel>0?'+':''}${a.vsSel}`:'ALT','#4ade80']];
       if(a.armato)pezzi.push([a.armato,'#fff']);
       if(a.limite)pezzi.push([a.limite==='BASSA'?Lg('VEL MIN','MIN SPD'):Lg('VEL MAX','MAX SPD'),'#fbbf24']);
       const lw=pezzi.map(p=>g.measureText(p[0]).width+fa*0.9);

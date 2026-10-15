@@ -477,7 +477,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   <li><b>AP</b>: engages or disconnects the autopilot;</li>
   <li><b>HDG</b>: follows the selected heading; press it again for <b>ROL</b>, wings level (the aircraft flies straight wherever it is pointing);</li>
   <li><b>ALT</b>: holds the current altitude;</li>
-  <li><b>VS</b>: climbs or descends to the selected altitude at the selected vertical speed (the selected altitude must differ from the current one).</li>
+  <li><b>VS</b>: holds the current <b>vertical speed</b> (rounded to 100 ft/min), which you then change with the VS buttons or <kbd>Shift</kbd>+<kbd>S</kbd>/<kbd>W</kbd>, negative to descend. If the selected altitude is ahead of you (above in a climb, below in a descent) it captures it by itself when you get there (<b>ALTS</b>); otherwise it keeps climbing or descending.</li>
 </ul>
 <div class="affianca">
   <div>
@@ -486,7 +486,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
       <tbody>
         <tr><td><kbd>A</kbd> / <kbd>D</kbd></td><td>selected heading −1° / +1° (hold to run). The aircraft turns towards it with at most 20° of bank</td></tr>
         <tr><td><kbd>S</kbd> / <kbd>W</kbd></td><td>selected altitude +100 / −100 ft (like pulling or pushing the stick)</td></tr>
-        <tr><td><kbd>Shift</kbd>+<kbd>S</kbd> / <kbd>W</kbd></td><td>climb or descent vertical speed ±100 ft/min (default 500)</td></tr>
+        <tr><td><kbd>Shift</kbd>+<kbd>S</kbd> / <kbd>W</kbd></td><td>vertical speed +100 / −100 ft/min (below zero you descend); from ALT it switches to VS starting from 0</td></tr>
         <tr><td><kbd>Shift</kbd>+<kbd>H</kbd></td><td>selected heading = current heading</td></tr>
         <tr><td><kbd>Shift</kbd>+<kbd>A</kbd></td><td>disconnect the autopilot</td></tr>
       </tbody>
