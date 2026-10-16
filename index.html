@@ -9,13 +9,21 @@
 <link rel="apple-touch-icon" href="icone/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b1322">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="css/font.css">
 <link rel="stylesheet" href="css/stile.css">
 </head>
 <body>
 <div id="app">
+  <!-- attesa: il mondo 3D si prepara (all'avvio e quando si cambia aeroporto); la nasconde main.js -->
+  <div id="carica" class="carica" role="status" aria-live="polite">
+    <div class="carica-box">
+      <div class="carica-titolo" data-en="FLIGHT SIMULATOR">SIMULATORE DI VOLO</div>
+      <div class="carica-aereo" aria-hidden="true">✈</div>
+      <div class="carica-barra" aria-hidden="true"><i></i></div>
+      <p id="caricaTesto" data-en="Loading the world, please wait…">Caricamento del mondo in corso, attendi…</p>
+      <p class="dim" data-en="The first time it can take a few seconds.">La prima volta può richiedere qualche secondo.</p>
+    </div>
+  </div>
   <canvas id="gl" aria-label="Vista 3D del volo"></canvas>
 
   <!-- in alto a sinistra: pulsanti per l'aiuto e il libretto di volo -->
@@ -239,6 +247,7 @@
         <button id="finale" type="button" data-en="Practise landing">Prova l'atterraggio</button>
         <button type="button" class="apriLibretto" data-en="Logbook">Libretto di volo</button>
         <a class="istr" href="istruzioni.html" data-en-href="istruzioni-en.html" target="_blank" rel="noopener" data-en="Full manual ↗">Istruzioni complete ↗</a>
+        <a class="istr" href="privacy.html" target="_blank" rel="noopener">Privacy ↗</a>
       </div>
     </div>
   </div>
@@ -284,8 +293,15 @@
   </div>
 </div>
 
+<!-- avviso privacy: niente cookie, solo memoria locale tecnica (vedi privacy.html) -->
+<div id="privacy" class="privacy" role="dialog" aria-label="Privacy" hidden>
+  <p data-en="This game uses <b>no cookies</b> and no tracking. It only keeps your settings and logbook <b>in your browser</b> (local storage), which is needed for the game to work. <a href=&quot;privacy.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;>Privacy notice ↗</a>">Questo gioco <b>non usa cookie</b> né sistemi di tracciamento. Salva solo le tue impostazioni e il libretto di volo <b>nel tuo browser</b> (memoria locale), cosa necessaria al funzionamento del gioco. <a href="privacy.html" target="_blank" rel="noopener">Informativa privacy ↗</a></p>
+  <button type="button" id="privacyOk" class="primario" data-en="Got it">Ho capito</button>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="js/lingua.js"></script>
+<script src="js/privacy.js"></script>
 <!-- dati modificabili: il mondo si sceglie con ?mappa=piemonte (predefinito) o ?mappa=valle -->
 <script>
 (function(){
