@@ -88,6 +88,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <li><a href="#radio">Radio communications</a></li>
     <li><a href="#emergenze">Warnings and emergencies</a></li>
     <li><a href="#numeri">Cessna 172 numbers</a></li>
+    <li><a href="#c42">The Ikarus C42 microlight</a></li>
     <li><a href="#mondi">Worlds and the editable map</a></li>
   </ol>
 </nav>
@@ -110,12 +111,13 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <ul>
       <li><b>Language</b>: Italiano or English. The game remembers your choice.</li>
       <li><b>World</b>: <i>Piedmont</i> (real: mountains, lakes, towns, roads and 32 real airports in north-west Italy) or <i>Valle Azzurra</i> (invented, small, great for learning).</li>
+      <li><b>Aircraft</b>: <i>Cessna 172</i> (with G1000 and autopilot) or the <i>Ikarus C42</i> microlight (see <a href="#c42">The Ikarus C42 microlight</a>). Changing aircraft reloads the page.</li>
       <li><b>Departure airport</b> and <b>runway</b>: the suggested runway is the one most into the wind.</li>
       <li><b>Start</b>: <i>on the runway</i>, ready for take-off, or <i>from the parking area</i>, on the apron: you taxi to the runway (see <a href="#decollo">Take-off step by step</a>).</li>
       <li><b>Destination</b>: the simulator prepares the flight plan by itself.</li>
       <li><b>Time of day</b>: day, sunset or night.</li>
       <li><b>Mission</b>: free flight or a challenge with stars: <i>against the clock</i>, <i>tour</i> or <i>precision landing</i> (see <a href="#missioni">Missions and logbook</a>).</li>
-      <li><b>Fuel</b>: from full tanks (about 6 hours) to almost empty (about 15 minutes).</li>
+      <li><b>Fuel</b>: from full tanks (about 6 hours with the Cessna, 4½ with the C42) to almost empty (about a quarter of an hour).</li>
     </ul>
     <p>Then press <b>Take off</b> (<kbd>Enter</kbd>) to start at the runway threshold, or <b>Practise landing</b> to start on final approach to the arrival runway of your destination, about 2.7 NM out. The <b>Logbook</b> button shows your flights and records.</p>
     <div class="nota">The simulator is designed for a PC with a keyboard. Mouse and gamepads work too.</div>
@@ -626,7 +628,59 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Other data: 1000 kg with pilot and fuel, 11 m wingspan, 53 US gallons of usable fuel. The flight model (6 degrees of freedom) uses the aerodynamic coefficients of the real C172: you can read and change them in <code>dati/aereo.js</code>.</p>
 
 <!-- ================================================================ -->
-<h2 id="mondi">19. Worlds and the editable map</h2>
+<h2 id="c42">19. The Ikarus C42 microlight</h2>
+<figure>
+  <img src="istruzioni/c42.jpg" alt="The Ikarus C42 on the runway: pod-shaped cabin with large windows, high wing with V struts, tubular tail boom, spring landing gear" loading="lazy">
+  <figcaption>The Ikarus C42 on the runway at Turin-Caselle.</figcaption>
+</figure>
+<p>In the briefing, under <b>Aircraft</b>, you can choose the <b>Ikarus C42</b> (Comco Ikarus, Germany) instead of the Cessna: a two-seat microlight widely used by flight schools. The game reproduces it <b>as delivered</b>: it only has what the real aircraft has.</p>
+<ul>
+  <li><b>Analogue panel</b>, no G1000 and no attitude indicator: magnetic compass, airspeed indicator in knots with coloured arcs, altimeter, vertical speed indicator, digital tachometer, slip ball and the three Rotax engine gauges (oil temperature and pressure, cylinder head temperature).</li>
+  <li><b>No autopilot</b> and <b>no NAV1 receiver</b> (VOR and ILS): you fly by hand and navigate by looking outside. If you press <kbd>Shift</kbd>+<kbd>A</kbd> or <kbd>V</kbd> the game reminds you. The <b>COM radio</b> and the transponder are there: you talk to the tower just as in the Cessna.</li>
+  <li>The <b>map</b> on the right is the tablet or portable GPS that microlight pilots take into the cockpit.</li>
+  <li><b>Day flying only</b>: in Italy microlights fly from sunrise to sunset, so night cannot be chosen in the briefing.</li>
+  <li><b>Fuel in litres</b>: 65-litre tank of car petrol, about 13 litres per hour in cruise.</li>
+  <li><b>In the cockpit</b>: a single stick in the middle, between the two seats, with the brake lever; throttle between the seats; flap lever on the roof; electric trim with a switch and an indicator.</li>
+</ul>
+<div class="affianca">
+  <figure>
+    <img src="istruzioni/en/c42-cruscotto.png" alt="C42 analogue panel: compass strip, airspeed indicator, altimeter, vertical speed indicator, digital tachometer, slip ball, oil temperature and pressure, cylinder head temperature" loading="lazy">
+    <figcaption>The analogue panel. Airspeed arcs: white = flaps (32–63 kt), green = normal (41–82), yellow = smooth air only (82–121), red line = 121. The small yellow triangle at 52 kt is the minimum approach speed.</figcaption>
+  </figure>
+  <figure>
+    <img src="istruzioni/en/c42-cabina.jpg" alt="View from the C42 cockpit: engine cowling, analogue panel, radio and transponder, windscreen posts" loading="lazy">
+    <figcaption>The cockpit view (<kbd>C</kbd>).</figcaption>
+  </figure>
+</div>
+<h3>How to fly it (from the C42 owner's manual)</h3>
+<ol>
+  <li><b>Take-off</b>: flaps 15° (<kbd>F</kbd> once), full throttle. The nose wheel lifts at about 26 knots: at <b>35 knots</b> pull gently and the aircraft lifts off at about 38 knots. Full-throttle static rpm is about 5000.</li>
+  <li><b>Climb</b> at <b>60 knots</b> with flaps 15° (about 700 ft/min). Between 150 and 200 ft retract the flaps (<kbd>G</kbd>).</li>
+  <li><b>Cruise</b>: 4500 rpm, about 83–88 knots. Maximum continuous is 5500 rpm: above it the tachometer turns yellow.</li>
+  <li><b>Landing</b>: on final at <b>55 knots</b> with full flaps (40°, <kbd>F</kbd> twice). With more than 10 knots of crosswind use only 15° of flap and fly 58 knots.</li>
+  <li><b>Engine failure</b>: glide at <b>58 knots</b>; the glide ratio is 11, so from 1000 ft you cover about 1.8 NM.</li>
+</ol>
+<div class="nota">The C42 weighs less than half as much as the Cessna (450 kg): it feels wind and gusts much more and responds faster to the controls. The landing gear is lighter too: touch down at less than 600 ft/min.</div>
+<table>
+  <thead><tr><th>Speed</th><th>Knots</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td>Vso</td><td class="num">32</td><td>stall with 40° flaps</td></tr>
+    <tr><td>Vs</td><td class="num">36</td><td>stall with 15° flaps</td></tr>
+    <tr><td>Vs1</td><td class="num">41</td><td>stall without flaps</td></tr>
+    <tr><td>Vr</td><td class="num">35</td><td>rotation (raise the nose on take-off)</td></tr>
+    <tr><td>Vx</td><td class="num">48</td><td>best angle of climb (15° flaps)</td></tr>
+    <tr><td>Approach</td><td class="num">55</td><td>final with 40° flaps (minimum 52)</td></tr>
+    <tr><td>Vy</td><td class="num">60</td><td>best rate of climb (15° flaps)</td></tr>
+    <tr><td>Vfe</td><td class="num">63</td><td>maximum with flaps</td></tr>
+    <tr><td>VA</td><td class="num">82</td><td>maximum in turbulence (end of the green arc)</td></tr>
+    <tr><td>Cruise</td><td class="num">83–90</td><td>4500 rpm</td></tr>
+    <tr><td>Vne</td><td class="num">121</td><td>never exceed</td></tr>
+  </tbody>
+</table>
+<p>Other data: 450 kg at take-off, 9.45 m wing (12.5 m²), 80 hp Rotax 912 engine (5800 rpm maximum for 5 minutes, 5500 continuous), 1.7 m three-blade propeller. The numbers come from the C42 owner's manual and can be read and changed in <code>dati/c42.js</code>.</p>
+
+<!-- ================================================================ -->
+<h2 id="mondi">20. Worlds and the editable map</h2>
 <ul>
   <li><b>Piedmont</b>: real terrain (250 m grid), 32 airports with their real runways, lakes, towns, roads, railways, rivers, villages with buildings and the real VORs. It covers Piedmont plus parts of Lombardy, Liguria, Aosta Valley, Switzerland and France (about 219 × 287 km). The main monuments are there too, as visual landmarks: Mole Antonelliana, Superga, the Lingotto with its rooftop test track, the two Turin skyscrapers, the Palace of Venaria, Stupinigi, the Sacra di San Michele, Vicoforte, San Gaudenzio in Novara and Oropa. They are simplified models, marked on the map with a gold triangle.</li>
   <li><b>Valle Azzurra</b>: an invented world, small and simple. Everything is in the file <code>dati/mappa.js</code>, written to be edited by hand: mountains, lakes, airports and runways, towns, woods, VORs, weather and starting point. The comments in the file are in Italian.</li>

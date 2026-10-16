@@ -24,7 +24,7 @@ SIM.creaLibretto=function(){
   /* decollo: si apre un volo nuovo (se ce n'è già uno aperto, per esempio dopo un tocca e riparti, continua quello) */
   function decollo(info){
     if(aperto) return;
-    aperto={data:new Date().toISOString(),mondo:info.mondo||'',da:info.da||'',a:'',durata:0,dist:0,altMax:0,
+    aperto={data:new Date().toISOString(),aereo:(window.AEREO&&window.AEREO.id)||'c172',mondo:info.mondo||'',da:info.da||'',a:'',durata:0,dist:0,altMax:0,
       atterraggi:0,migliore:null,ultimo:null,ora:info.ora||'giorno',esito:'',missione:null};
   }
   // ogni fotogramma (solo a gioco attivo): tempo, distanza e quota; il volo si chiude quando ci si ferma dopo un atterraggio
@@ -54,7 +54,7 @@ SIM.creaLibretto=function(){
     if(aperto){aperto.missione=m;return;}
     const u=voli[voli.length-1];
     if(u&&!u.missione&&Date.now()-Date.parse(u.data)-u.durata*1000<120000){u.missione=m;salva();return;}
-    voli.push({data:new Date().toISOString(),mondo:r.mondo||'',da:r.da||'',a:r.a||'',durata:0,dist:0,altMax:0,atterraggi:0,migliore:null,ultimo:null,ora:'',esito:r.riuscita?'ok':'',missione:m});
+    voli.push({data:new Date().toISOString(),aereo:(window.AEREO&&window.AEREO.id)||'c172',mondo:r.mondo||'',da:r.da||'',a:r.a||'',durata:0,dist:0,altMax:0,atterraggi:0,migliore:null,ultimo:null,ora:'',esito:r.riuscita?'ok':'',missione:m});
     salva();
   }
   function svuota(){voli=[];aperto=null;salva();}
@@ -92,14 +92,14 @@ SIM.creaLibretto=function(){
       h+=`<h3>${L('Record','Records')}</h3><ul class="record">`+righe.map(m=>`<li><b>${esc(NOMI[m.tipo]||m.nome)}</b>${m.rotta?' '+esc(m.rotta):''} · `+
         (m.tipo==='precisione'?L(`${m.punti} punti`,`${m.punti} points`):mmss(m.tempo))+` <span class="stella">${stelle(m.stelle)}</span></li>`).join('')+`</ul>`;
     }
-    h+=`<h3>${L('Voli','Flights')}</h3><div class="tab-libretto"><table><thead><tr><th>${L('Data','Date')}</th><th>${L('Da','From')}</th><th>${L('A','To')}</th><th>${L('Durata','Time')}</th><th>NM</th><th>${L('Att.','Ldg')}</th><th>${L('Note','Notes')}</th></tr></thead><tbody>`;
+    h+=`<h3>${L('Voli','Flights')}</h3><div class="tab-libretto"><table><thead><tr><th>${L('Data','Date')}</th><th>${L('Aereo','Aircraft')}</th><th>${L('Da','From')}</th><th>${L('A','To')}</th><th>${L('Durata','Time')}</th><th>NM</th><th>${L('Att.','Ldg')}</th><th>${L('Note','Notes')}</th></tr></thead><tbody>`;
     for(const v of tutti.slice().reverse()){
       const m=v.missione;
       let nota=v===aperto?L('in volo','airborne'):v.esito==='incidente'?L('incidente','crash'):v.esito==='interrotto'?L('interrotto','interrupted'):'';
       if(v.ultimo&&v.esito!=='incidente')nota=(nota?nota+' · ':'')+`${v.ultimo.fpm} ft/min`;
       if(v.ora&&v.ora!=='giorno')nota+=(nota?' · ':'')+(v.ora==='notte'?L('notte','night'):L('tramonto','sunset'));
       if(m)nota+=(nota?' · ':'')+`${esc(NOMI[m.tipo]||m.nome)} `+(m.riuscita?`<span class="stella">${stelle(m.stelle)}</span>`:L('fallita','failed'));
-      h+=`<tr class="${v.esito==='incidente'?'male':''}"><td>${data(v.data)}</td><td>${esc(v.da)||'—'}</td><td>${esc(v.a)||'—'}</td><td>${hhmm(v.durata)}</td><td>${(v.dist/NM).toFixed(1)}</td><td>${v.atterraggi}</td><td>${nota}</td></tr>`;
+      h+=`<tr class="${v.esito==='incidente'?'male':''}"><td>${data(v.data)}</td><td>${(v.aereo||'c172').toUpperCase()}</td><td>${esc(v.da)||'—'}</td><td>${esc(v.a)||'—'}</td><td>${hhmm(v.durata)}</td><td>${(v.dist/NM).toFixed(1)}</td><td>${v.atterraggi}</td><td>${nota}</td></tr>`;
     }
     return h+`</tbody></table></div>`;
   }

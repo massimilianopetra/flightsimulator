@@ -7,6 +7,10 @@
 const SIM=window.SIM, M=window.MAPPA||{}, A=window.AEREO;
 const $=id=>document.getElementById(id);
 const L=SIM.L;   // testo nella lingua scelta: L('italiano','English') (js/lingua.js)
+// cosa c'è a bordo: il Cessna ha tutto (G1000, autopilota, NAV1); il C42 solo strumenti analogici e radio COM (dati/c42.js)
+const DOT=Object.assign({g1000:true,autopilota:true,nav:true,notte:true},A.dotazioni);
+const sogg=A.soggetto||['Il '+A.nome,'The '+A.nome];   // «L'Ikarus C42 non ha…»
+const CHIAVE_CARB=A.id&&A.id!=='c172'?'volo-carburante-'+A.id:'volo-carburante';   // il carburante scelto, per ogni aereo
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const D2R=Math.PI/180, R2D=180/Math.PI, KT=1.943844, FT=3.28084, FPM=196.85;
 
@@ -31,6 +35,7 @@ if(SIM.disegnaRullaggio)SIM.disegnaRullaggio(scene);   // vie di rullaggio vere 
 const notte=SIM.creaNotte(scene,mondo,T);
 let oraVolo='giorno';
 try{const o=localStorage.getItem('volo-ora');if(o==='tramonto'||o==='notte')oraVolo=o;}catch(e){}
+if(oraVolo==='notte'&&!DOT.notte)oraVolo='giorno';   // gli ultraleggeri volano solo di giorno
 notte.imposta(oraVolo);
 camera.far=Math.max(15000,scene.fog.far*1.15);camera.updateProjectionMatrix();
 const fis=SIM.creaFisica(A,T), st=fis.st;
@@ -118,7 +123,7 @@ function pistaFinale(){
 function puntoFinale(){
   const {ap,te}=pistaFinale(), d=5000;
   return {x:te.x-te.dir.x*d,z:te.z-te.dir.z*d,y:ap.quota+fis.altRuote()+d*Math.tan(3*D2R),
-    hdg:te.hdg,v:72/KT,thr:0.35,flapSel:1};
+    hdg:te.hdg,v:((A.prestazioni&&A.prestazioni.finale)||72)/KT,thr:0.35,flapSel:1};
 }
 let modalita='decollo';
 let atterratoA=null;   // aeroporto dove si è appena atterrati: fermi lì, diventa la nuova partenza
@@ -129,9 +134,9 @@ const dest=()=>T.aeroporti[destIdx]||null;
 // radionavigazione (js/radio.js): VOR e ILS, ricevitore NAV1
 const radio=SIM.creaRadio(T);strum.impostaRadio(radio);
 const nav={staz:null,crs:0};
-const piano=SIM.creaPiano(T,A,met,radio);
+const piano=SIM.creaPiano(T,A,met,DOT.nav?radio:null);   // senza NAV1 il piano non propone ILS e VOR
 // comunicazioni radio con la torre (js/atc.js)
-const atc=SIM.creaATC({A,T,met,audio,radio,stato:st});
+const atc=SIM.creaATC({A,T,met,audio,radio:DOT.nav?radio:Object.assign(Object.create(radio),{ilsDi:()=>null}),stato:st});   // senza NAV1 niente avvicinamento ILS
 piano.impostaCom(atc.stazioneDi,atc.terraDi);
 // missioni (js/missioni.js) e libretto di volo (js/libretto.js)
 const missioni=SIM.creaMissioni(T);
@@ -185,7 +190,7 @@ SIM.adattaDestra=adattaDestra;   // la usa anche la radio (js/atc.js) quando il 
 let avviato=false, inPausa=false, vista=0, tempo=0;
 // carburante alla partenza (galloni), scelto nel briefing e ricordato
 let carbIniziale=A.carburante.capacita;
-try{const c=parseFloat(localStorage.getItem('volo-carburante'));if(c>0&&c<=A.carburante.capacita)carbIniziale=c;}catch(e){}
+try{const c=parseFloat(localStorage.getItem(CHIAVE_CARB));if(c>0&&c<=A.carburante.capacita)carbIniziale=c;}catch(e){}
 const NOMI_VISTA=[L('ESTERNA','OUTSIDE'),L('CABINA','COCKPIT'),L('TORRE','TOWER')];
 
 // schermata di attesa (#carica): il terreno vicino (con strade ed edifici) si ricostruisce tutto in una volta e
@@ -289,6 +294,9 @@ const SCHEDE=['mappa','radio','piano','ap','missione'];
 let scheda='mappa', schedaPrima=null, radioLibera=0;
 try{const s=localStorage.getItem('volo-scheda');if(s==='nessuna')scheda=null;else if(SCHEDE.includes(s)&&s!=='missione')scheda=s;}catch(e){}
 const linguetta=id=>document.querySelector(`[data-scheda="${id}"]`);
+// senza autopilota non c'è la sua scheda; senza NAV1 spariscono le righe NAV1, CRS e DME della mappa
+if(!DOT.autopilota){linguetta('ap').hidden=true;if(scheda==='ap')scheda='mappa';}
+if(!DOT.nav)for(const r of document.querySelectorAll('.riga-nav'))r.hidden=true;
 function mostraScheda(id,ricorda=true){
   if(id&&linguetta(id).hidden)id=null;
   scheda=id;schedaPrima=null;
@@ -504,8 +512,20 @@ function staccaAP(motivo){
   messaggio(L('Autopilota <b>disinserito</b>'+(motivo?': '+motivo:''),'Autopilot <b>disconnected</b>'+(motivo?': '+motivo:'')),3);
   aggiornaSchedaAP();
 }
+// l'ultraleggero non ha il ricevitore NAV1: i tasti di VOR e ILS lo spiegano
+function senzaNav(){
+  if(DOT.nav) return false;
+  messaggio(L(`${sogg[0]} ha solo la radio COM: niente VOR né ILS. Naviga guardando fuori, con la bussola e la mappa del tablet.`,
+              `${sogg[1]} only has a COM radio: no VOR or ILS. Navigate by looking outside, with the compass and the tablet map.`),3.5);
+  return true;
+}
 function tastoAutopilota(e){
   if(!avviato||st.crashed||inPausa) return false;
+  if(!DOT.autopilota){
+    if(e.shiftKey&&!e.repeat&&['KeyA','KeyN','KeyL','KeyC'].includes(e.code)){
+      messaggio(L(`${sogg[0]} non ha l'autopilota: si pilota sempre a mano.`,`${sogg[1]} has no autopilot: you always fly it by hand.`),2.5);return true;}
+    return false;
+  }
   if(e.shiftKey&&!e.repeat){
     const modo={KeyA:'ap',KeyN:'nav',KeyL:'apr'}[e.code];
     if(modo){premiModo(modo);return true;}
@@ -533,7 +553,7 @@ addEventListener('keydown',e=>{
   if(e.key==='+'||e.key==='='||e.code==='NumpadAdd'||e.code==='PageUp') nome='PIU';
   else if(e.key==='-'||e.key==='_'||e.code==='NumpadSubtract'||e.code==='PageDown') nome='MENO';
   logico[e.code]=nome;tasti.add(nome);
-  if(e.code==='Comma'||e.code==='Period'){cambiaCrs((e.code==='Period'?1:-1)*(e.shiftKey?10:1));return;}
+  if(e.code==='Comma'||e.code==='Period'){if(!e.repeat&&senzaNav())return;cambiaCrs((e.code==='Period'?1:-1)*(e.shiftKey?10:1));return;}
   if(e.repeat) return;
   const cifra=/^(Digit|Numpad)([0-9])$/.exec(e.code);
   if(cifra){const n=+cifra[2];st.thr=n===0?1:n/10;$('thr').value=Math.round(st.thr*100);return;}
@@ -545,8 +565,8 @@ addEventListener('keydown',e=>{
     case 'KeyM':strum.cambiaZoom();break;
     case 'KeyO':orientaMappa();break;
     case 'KeyK':centraCloche();break;
-    case 'KeyV':prossimaNav();break;
-    case 'KeyL':navIlsArrivo();break;
+    case 'KeyV':if(!senzaNav())prossimaNav();break;
+    case 'KeyL':if(!senzaNav())navIlsArrivo();break;
     case 'KeyP':alternaPausa();break;
     case 'KeyH':alternaAiuto();break;
     case 'KeyI':alternaScheda('piano');break;
@@ -817,7 +837,13 @@ function aggiornaStrumenti(dt){
     vs:vsFiltrata, hdg, palla:st.palla, bug, gs:st.gs*KT,
     virata:st.aTerra?0:virataFiltrata, trim:st.trim, carb:st.carburante, flusso:st.crashed?0:st.flusso,
     nav:cdi==='GPS'?misuraGPS():misuraNav(), ap:ap.stato(),
+    rpm:st.rpm, thr:st.thr, acceso:st.carburante>0&&!st.crashed,
   };
+  if(!DOT.g1000){   // cruscotto analogico: sul pannello in basso e, in cabina, sul cruscotto 3D
+    if(vista===1){const cab=mondo.aereo.cabina;strum.disegnaAnalogico(dati,cab.pannello.sup);cab.pannello.tex.needsUpdate=true;}
+    else{strum.disegnaAnalogico(dati);strum.disegnaAux(dati);}
+    return {hdg,bug};
+  }
   if(vista===1){
     // in cabina: gli strumenti vengono disegnati sugli schermi del pannello
     const cab=mondo.aereo.cabina;
@@ -887,9 +913,14 @@ function aggiornaBriefing(){
     t+=L(`Destinazione: <b>${d.codice} – ${d.nome}</b>, a ${dist.toFixed(1)} NM (quota ${Math.round(d.quota*FT)} ft). Il rombo magenta sulla bussola e la linea sulla mappa indicano la rotta.`,
          `Destination: <b>${d.codice} – ${d.nome}</b>, ${dist.toFixed(1)} NM away (elevation ${Math.round(d.quota*FT)} ft). The magenta marker on the compass and the line on the map show the way.`);
   }
+  if(!DOT.g1000)t+=L(`<br><b>${A.nome}</b>: ultraleggero con strumenti analogici e radio COM. Niente autopilota, niente VOR né ILS: si naviga guardando fuori, con la bussola e la mappa del tablet (a destra). Si vola solo di giorno.`,
+    `<br><b>${A.nome}</b>: microlight with analogue instruments and a COM radio. No autopilot, no VOR or ILS: navigate by looking outside, with the compass and the tablet map (on the right). Day flying only.`);
   $('briefTesto').innerHTML=t;
   ricalcolaPiano();
   $('briefVr').textContent=A.velocita.vr;$('briefVy').textContent=A.velocita.vy;
+  const fp=A.flap.posizioni;
+  $('briefFlapDec').textContent=fp[1];$('briefFlapAtt').textContent=fp[fp.length-1];
+  $('briefApp').textContent=A.velocita.avvicinamento;$('briefRetrai').textContent=A.flap.retraiSopraFt||500;
   if(!avviato&&typeof preparaMissione==='function')preparaMissione(true);
 }
 /* ---------- missione scelta nel briefing (ricordata) ---------- */
@@ -915,6 +946,9 @@ selMis.addEventListener('change',()=>{try{localStorage.setItem('volo-missione',s
 const selMondo=$('selMondo'),selAp=$('selAeroporto'),selPista=$('selPista'),selDB=$('selDestBrief'),selD=$('selDest');
 selMondo.value=window.MONDO_SCELTO||'piemonte';
 selMondo.addEventListener('change',()=>{location.search='?mappa='+selMondo.value;});
+const selAereo=$('selAereo');
+selAereo.value=window.AEREO_SCELTO||'c172';
+selAereo.addEventListener('change',()=>{try{localStorage.setItem('volo-aereo',selAereo.value);}catch(e){}location.search='?mappa='+(window.MONDO_SCELTO||'piemonte')+'&aereo='+selAereo.value;});
 const selLingua=$('selLingua');
 selLingua.value=SIM.lingua;
 selLingua.addEventListener('change',()=>SIM.cambiaLingua(selLingua.value));
@@ -1014,14 +1048,16 @@ const selDa=$('selPartenzaDa');
 selDa.value=daParcheggio?'parcheggio':'pista';
 selDa.addEventListener('change',()=>{daParcheggio=selDa.value==='parcheggio';try{localStorage.setItem('volo-partenza-da',selDa.value);}catch(e){}scegliPartenza();selDa.blur();});
 const selOra=$('selOra');
+if(!DOT.notte){const o=selOra.querySelector('option[value="notte"]');o.disabled=true;o.textContent+=L(' (non per gli ultraleggeri)',' (not for microlights)');}
 selOra.value=oraVolo;
 selOra.addEventListener('change',()=>{oraVolo=selOra.value;notte.imposta(oraVolo);try{localStorage.setItem('volo-ora',oraVolo);}catch(e){}selOra.blur();});
 const selCarb=$('selCarb');
+if(A.carburante.scelte)selCarb.innerHTML=A.carburante.scelte.map(([v,it,en])=>`<option value="${v}">${L(it,en)}</option>`).join('');
 if(![...selCarb.options].some(o=>+o.value===carbIniziale))carbIniziale=A.carburante.capacita;
 selCarb.value=String(carbIniziale);
 selCarb.addEventListener('change',()=>{
   carbIniziale=+selCarb.value;st.carburante=carbIniziale;
-  try{localStorage.setItem('volo-carburante',String(carbIniziale));}catch(e){}
+  try{localStorage.setItem(CHIAVE_CARB,String(carbIniziale));}catch(e){}
   selCarb.blur();
 });
 

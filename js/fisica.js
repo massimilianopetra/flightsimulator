@@ -20,6 +20,8 @@ SIM.creaFisica=function(A,terra){
   const Ix=A.inerzia.beccheggio, Iy=A.inerzia.imbardata, Iz=A.inerzia.rollio;
   const eMax=A.comandi.elevatore*D2R, aMax=A.comandi.alettoni*D2R, rMax=A.comandi.timone*D2R, nwMax=A.comandi.ruotino*D2R;
   const disco=Math.PI*Math.pow(A.motore.diametroElica/2,2);
+  const flMax=A.flap.posizioni[A.flap.posizioni.length-1];   // flap tutti giù (30° sul Cessna, 40° sul C42)
+  const kGiri=A.motore.giriMax/2700;                          // giri del motore rispetto al Cessna (il Rotax ha il riduttore)
   const altRuote=-Math.min(...A.carrello.filter(r=>!r.pattino).map(r=>r.y));
   const ruote=A.carrello.map(r=>Object.assign({},r,{p:new V3(r.x,r.y,r.z),contatto:false,comp:0}));
   const Lg=SIM.L||((it)=>it);   // lingua (js/lingua.js)
@@ -52,7 +54,7 @@ SIM.creaFisica=function(A,terra){
     st.pos.set(p.x,p.y,p.z);
     st.vel.set(0,0,-1).applyQuaternion(st.q).multiplyScalar(p.v||0);
     st.w.set(0,0,0);
-    st.thr=p.thr||0; st.rpm=p.v?2300:A.motore.giriMin;
+    st.thr=p.thr||0; st.rpm=p.v?(A.motore.giriVolo||2300):A.motore.giriMin;
     st.carburante=p.carburante!=null?p.carburante:A.carburante.capacita; st.flusso=0;
     st.flapSel=0; st.flap=0; st.trim=p.v?0.0:0; st.freno=0; st.sterzo=0;
     st.crashed=false; st.motivo=''; st.eventi.length=0;
@@ -90,7 +92,7 @@ SIM.creaFisica=function(A,terra){
     const p=-st.w.z, q=st.w.x, r=-st.w.y;      // rollio, beccheggio, imbardata (convenzione aeronautica)
     const Ve=Math.max(V,10), cb=b/(2*Ve), cc=c/(2*Ve);
     const de=clamp(inp.elev+st.trim,-1,1)*eMax, da=inp.ail*aMax, dr=inp.rud*rMax;
-    const fl=st.flap/30;
+    const fl=st.flap/flMax;
 
     /* ---- coefficiente di portanza con stallo ---- */
     const aS=(ae.alfaStallo-1.5*fl)*D2R, aN=-12*D2R, dCLf=A.flap.CL*fl;
@@ -112,7 +114,7 @@ SIM.creaFisica=function(A,terra){
     const acceso=st.carburante>0;
     const uP=Math.max(0,u);
     const giriT=acceso?Math.max(A.motore.giriMin+(A.motore.giriMax-A.motore.giriMin)*Math.pow(st.thr,0.8)*(0.82+0.18*Math.min(1,uP/60)),
-                         A.motore.giriMin+uP*12):uP*12;
+                         A.motore.giriMin+uP*12*kGiri):uP*12*kGiri;
     st.rpm+=(giriT-st.rpm)*Math.min(1,dt*2.5);
     const T=acceso?(0.03+0.97*st.thr)*A.motore.spintaStatica*Math.max(0,1-Math.max(0,u)/A.motore.velocitaMaxElica)*(rho/1.225):0;
     const cb2=A.carburante;

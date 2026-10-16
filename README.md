@@ -65,6 +65,19 @@ briefing, or open `index.html?lang=en`. The choice is remembered.
   <img src="istruzioni/en/volo.jpg" alt="The Cessna turning over the hills of Valle Azzurra" width="100%">
 </p>
 
+## The aircraft
+
+In the briefing you also choose the **aircraft**:
+
+- **Cessna 172 Skyhawk** (default) with Garmin G1000 glass cockpit, autopilot and NAV1 radio (VOR and ILS).
+- **Ikarus C42**, the two-seat microlight of many flight schools, reproduced **as delivered**: analogue
+  instruments, COM radio and transponder only; no autopilot, no VOR/ILS, day flying only, fuel in litres.
+  Speeds, flaps (0°, 15°, 40°) and performance come from its owner's manual (`dati/c42.js`).
+
+<p align="center">
+  <img src="istruzioni/c42.jpg" alt="The Ikarus C42 on the runway" width="70%">
+</p>
+
 ## The worlds
 
 In the opening briefing you choose the **world**:
@@ -322,6 +335,7 @@ The site needs no build step: it is made of static files.
 | `js/piano.js` | flight plan to the destination and arrival runway information | |
 | `js/audio.js` | synthesised sounds: engine, wind, stall horn | |
 | `js/autopilota.js` | the autopilot: heading, altitude and vertical speed, speed protection, auto-trim | |
+| `js/c42-3d.js`, `dati/c42.js` | the Ikarus C42 microlight: 3D model, cockpit and data from its owner's manual | |
 | `js/missioni.js` | missions: against the clock, tours, precision landing; stars and result | |
 | `js/libretto.js` | the logbook: every flight saved in the browser, totals and records | |
 | `js/main.js` | ties everything together: controls, cameras, messages, main loop | |
@@ -570,6 +584,19 @@ aprendo `index.html?lang=en`. La scelta viene ricordata.
 
 <p align="center">
   <img src="istruzioni/volo.jpg" alt="Il Cessna in virata sopra le colline della Valle Azzurra" width="100%">
+</p>
+
+## Gli aerei
+
+Nel briefing si sceglie anche l'**aereo**:
+
+- **Cessna 172 Skyhawk** (predefinito) con avionica Garmin G1000, autopilota e radio NAV1 (VOR e ILS).
+- **Ikarus C42**, l'ultraleggero biposto di molte scuole di volo, riprodotto **com'è di serie**: strumenti
+  analogici, solo radio COM e transponder; niente autopilota, niente VOR/ILS, si vola solo di giorno,
+  carburante in litri. Velocità, flap (0°, 15°, 40°) e prestazioni vengono dal suo manuale di volo (`dati/c42.js`).
+
+<p align="center">
+  <img src="istruzioni/c42.jpg" alt="L'Ikarus C42 sulla pista" width="70%">
 </p>
 
 ## I mondi
@@ -830,6 +857,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `js/rullaggio.js` | vie di rullaggio: rete, percorso più breve dal piazzale al punto attesa, disegno | |
 | `js/atc.js` | comunicazioni radio con la torre (sintesi vocale, menu delle risposte) | |
 | `js/autopilota.js` | l'autopilota: prua, quota e velocità verticale, protezione di velocità, trim automatico | |
+| `js/c42-3d.js`, `dati/c42.js` | l'ultraleggero Ikarus C42: modello 3D, cabina e dati dal suo manuale di volo | |
 | `js/missioni.js` | missioni: a tempo, giri a tappe, atterraggio di precisione; stelle e risultato | |
 | `js/libretto.js` | il libretto di volo: ogni volo salvato nel browser, totali e record | |
 | `js/monumenti.js` | i modelli 3D dei monumenti | |

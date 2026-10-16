@@ -88,6 +88,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <li><a href="#radio">Comunicazioni radio</a></li>
     <li><a href="#emergenze">Avvisi ed emergenze</a></li>
     <li><a href="#numeri">Numeri del Cessna 172</a></li>
+    <li><a href="#c42">L'ultraleggero Ikarus C42</a></li>
     <li><a href="#mondi">Mondi e mappa modificabile</a></li>
   </ol>
 </nav>
@@ -110,12 +111,13 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <ul>
       <li><b>Lingua</b>: italiano o inglese. Il gioco ricorda la scelta.</li>
       <li><b>Mondo</b>: <i>Piemonte</i> (reale, con montagne, laghi, città, strade e 32 aeroporti veri) oppure <i>Valle Azzurra</i> (inventata, piccola, ottima per imparare).</li>
+      <li><b>Aereo</b>: <i>Cessna 172</i> (con G1000 e autopilota) oppure l'ultraleggero <i>Ikarus C42</i> (vedi <a href="#c42">L'ultraleggero Ikarus C42</a>). Cambiando aereo la pagina si ricarica.</li>
       <li><b>Aeroporto di partenza</b> e <b>pista</b>: la pista proposta è quella più controvento.</li>
       <li><b>Partenza</b>: <i>in pista</i>, pronto al decollo, oppure <i>dal parcheggio</i>, sul piazzale: si rulla fino alla pista (vedi <a href="#decollo">Decollo passo passo</a>).</li>
       <li><b>Destinazione</b>: il simulatore prepara da solo il piano di volo.</li>
       <li><b>Ora del volo</b>: giorno, tramonto o notte.</li>
       <li><b>Missione</b>: volo libero oppure una sfida con le stelle: <i>a tempo</i>, <i>giro a tappe</i> o <i>atterraggio di precisione</i> (vedi <a href="#missioni">Missioni e libretto di volo</a>).</li>
-      <li><b>Carburante</b>: dal pieno (circa 6 ore) a quasi vuoto (circa 15 minuti).</li>
+      <li><b>Carburante</b>: dal pieno (circa 6 ore con il Cessna, 4 e mezza con il C42) a quasi vuoto (circa un quarto d'ora).</li>
     </ul>
     <p>Poi premi <b>Decolla</b> (<kbd>Invio</kbd>) per partire fermo sulla soglia della pista, oppure <b>Prova l'atterraggio</b> per trovarti già in finale sulla pista di arrivo della destinazione, a circa 2,7 NM. Il pulsante <b>Libretto di volo</b> mostra i tuoi voli e i record.</p>
     <div class="nota">Il simulatore è pensato per il PC con la tastiera. Funziona anche con mouse e gamepad.</div>
@@ -626,7 +628,59 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p>Altri dati: 1000 kg con pilota e carburante, ala di 11 m, serbatoi da 53 galloni utilizzabili. Il modello di volo (6 gradi di libertà) usa i coefficienti aerodinamici del vero C172: si possono leggere e modificare in <code>dati/aereo.js</code>.</p>
 
 <!-- ================================================================ -->
-<h2 id="mondi">19. Mondi e mappa modificabile</h2>
+<h2 id="c42">19. L'ultraleggero Ikarus C42</h2>
+<figure>
+  <img src="istruzioni/c42.jpg" alt="L'Ikarus C42 sulla pista: cabina a baccello con grandi vetri, ala alta con montanti a V, trave di coda a tubo, carrello a balestra" loading="lazy">
+  <figcaption>L'Ikarus C42 sulla pista di Torino-Caselle.</figcaption>
+</figure>
+<p>Nel briefing, alla voce <b>Aereo</b>, al posto del Cessna puoi scegliere l'<b>Ikarus C42</b> (Comco Ikarus, Germania): un ultraleggero biposto molto usato nelle scuole di volo VDS. Il gioco lo riproduce <b>com'è di serie</b>: c'è solo quello che ha l'aereo vero.</p>
+<ul>
+  <li><b>Cruscotto analogico</b>, niente G1000 e niente orizzonte artificiale: bussola magnetica, anemometro in nodi con gli archi colorati, altimetro, variometro, contagiri digitale, pallina e i tre strumenti del motore Rotax (temperatura e pressione dell'olio, temperatura delle teste).</li>
+  <li><b>Niente autopilota</b> e <b>niente ricevitore NAV1</b> (VOR e ILS): si pilota a mano e si naviga guardando fuori. Se premi <kbd>Maiusc</kbd>+<kbd>A</kbd> o <kbd>V</kbd> il gioco te lo ricorda. La <b>radio COM</b> e il transponder invece ci sono: con la torre si parla come con il Cessna.</li>
+  <li>La <b>mappa</b> a destra è quella del tablet o del GPS portatile che i piloti di ultraleggero si portano in cabina.</li>
+  <li><b>Solo di giorno</b>: in Italia gli ultraleggeri volano dall'alba al tramonto, quindi nel briefing la notte non si può scegliere.</li>
+  <li><b>Carburante in litri</b>: serbatoio da 65 litri di benzina auto, circa 13 litri all'ora in crociera.</li>
+  <li><b>In cabina</b>: una sola cloche al centro, fra i due posti, con la leva del freno; manetta fra i sedili; leva dei flap sul tetto; trim elettrico con un pulsante e un indicatore.</li>
+</ul>
+<div class="affianca">
+  <figure>
+    <img src="istruzioni/c42-cruscotto.png" alt="Cruscotto analogico del C42: bussola a striscia, anemometro, altimetro, variometro, contagiri digitale, pallina, temperatura e pressione dell'olio, temperatura delle teste" loading="lazy">
+    <figcaption>Il cruscotto analogico. Archi dell'anemometro: bianco = flap (32–63 kt), verde = normale (41–82), giallo = solo con aria calma (82–121), riga rossa = 121. Il triangolino giallo a 52 kt è la velocità minima in avvicinamento.</figcaption>
+  </figure>
+  <figure>
+    <img src="istruzioni/c42-cabina.jpg" alt="Vista dalla cabina del C42: cofano del motore, cruscotto analogico, radio e transponder, montanti del parabrezza" loading="lazy">
+    <figcaption>La vista dalla cabina (<kbd>C</kbd>).</figcaption>
+  </figure>
+</div>
+<h3>Come si pilota (dal manuale di volo del C42)</h3>
+<ol>
+  <li><b>Decollo</b>: flap a 15° (<kbd>F</kbd> una volta), manetta al 100%. Il ruotino si alza verso 26 nodi: a <b>35 nodi</b> tira dolcemente e l'aereo si stacca verso 38 nodi. Da fermo il motore fa circa 5000 giri.</li>
+  <li><b>Salita</b> a <b>60 nodi</b> con i flap a 15° (circa 700 ft/min). Fra 150 e 200 ft retrai i flap (<kbd>G</kbd>).</li>
+  <li><b>Crociera</b>: 4500 giri, circa 83–88 nodi. Il massimo continuo è 5500 giri: oltre, il contagiri diventa giallo.</li>
+  <li><b>Atterraggio</b>: in finale a <b>55 nodi</b> con i flap tutti giù (40°, <kbd>F</kbd> due volte). Con più di 10 nodi di vento al traverso usa solo i flap a 15° e tieni 58 nodi.</li>
+  <li><b>Motore piantato</b>: plana a <b>58 nodi</b>; l'efficienza è 11, cioè da 1000 ft fai circa 1,8 NM.</li>
+</ol>
+<div class="nota">Il C42 pesa meno della metà del Cessna (450 kg): risente molto di più del vento e delle raffiche e risponde più in fretta ai comandi. Anche il carrello è più leggero: al contatto stai sotto i 600 ft/min.</div>
+<table>
+  <thead><tr><th>Velocità</th><th>Nodi</th><th>Significato</th></tr></thead>
+  <tbody>
+    <tr><td>Vso</td><td class="num">32</td><td>stallo con flap 40°</td></tr>
+    <tr><td>Vs</td><td class="num">36</td><td>stallo con flap 15°</td></tr>
+    <tr><td>Vs1</td><td class="num">41</td><td>stallo senza flap</td></tr>
+    <tr><td>Vr</td><td class="num">35</td><td>rotazione (alzare il muso in decollo)</td></tr>
+    <tr><td>Vx</td><td class="num">48</td><td>miglior angolo di salita (flap 15°)</td></tr>
+    <tr><td>Avvicinamento</td><td class="num">55</td><td>finale con flap 40° (minimo 52)</td></tr>
+    <tr><td>Vy</td><td class="num">60</td><td>miglior rateo di salita (flap 15°)</td></tr>
+    <tr><td>Vfe</td><td class="num">63</td><td>massima con i flap</td></tr>
+    <tr><td>VA</td><td class="num">82</td><td>massima con aria turbolenta (fine dell'arco verde)</td></tr>
+    <tr><td>Crociera</td><td class="num">83–90</td><td>4500 giri</td></tr>
+    <tr><td>Vne</td><td class="num">121</td><td>da non superare mai</td></tr>
+  </tbody>
+</table>
+<p>Altri dati: 450 kg al decollo, ala di 9,45 m (12,5 m²), motore Rotax 912 da 80 CV (5800 giri al massimo per 5 minuti, 5500 continui), elica tripala da 1,7 m. I numeri vengono dal manuale di volo del C42 e si possono leggere e modificare in <code>dati/c42.js</code>.</p>
+
+<!-- ================================================================ -->
+<h2 id="mondi">20. Mondi e mappa modificabile</h2>
 <ul>
   <li><b>Piemonte</b>: il rilievo vero (griglia di 250 m), 32 aeroporti con le piste vere, laghi, città, strade, ferrovie, fiumi, paesi con gli edifici e i VOR veri. Copre il Piemonte con un po' di Lombardia, Liguria, Valle d'Aosta, Svizzera e Francia (circa 219 × 287 km). Ci sono anche i principali monumenti, come riferimenti a vista: la Mole Antonelliana, Superga, il Lingotto con la pista sul tetto, i due grattacieli di Torino, la Reggia di Venaria, Stupinigi, la Sacra di San Michele, Vicoforte, San Gaudenzio a Novara e Oropa. Sono modelli semplificati e sulla mappa sono segnati con un triangolo dorato.</li>
   <li><b>Valle Azzurra</b>: un mondo inventato, piccolo e semplice. Tutto è nel file <code>dati/mappa.js</code>, scritto per essere modificato a mano: montagne, laghi, aeroporti e piste, città, boschi, VOR, meteo e punto di partenza.</li>

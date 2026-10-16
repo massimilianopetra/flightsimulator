@@ -11,7 +11,10 @@
    ===================================================================== */
 
 window.AEREO = {
+  id: "c172",
   nome: "Cessna 172 Skyhawk",
+  tipoRadio: { d: "Cessna 172", s: "Cessna one seven two" },  // come si presenta alla radio
+  prestazioni: { salita: 74, rateoSalita: 550, crociera: 100, discesa: 105, rateoDiscesa: 500, finale: 72 },   // nodi, ft/min (piano di volo)
   registrazione: "I-VOLO",     // marche (nominativo radio: India Victor Oscar Lima Oscar)
 
   massa: 1000,                 // kg (aereo + pilota + carburante)

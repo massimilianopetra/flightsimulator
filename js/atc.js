@@ -23,7 +23,7 @@ const NATO={A:'Alfa',B:'Bravo',C:'Charlie',D:'Delta',E:'Echo',F:'Foxtrot',G:'Gol
   M:'Mike',N:'November',O:'Oscar',P:'Papa',Q:'Quebec',R:'Romeo',S:'Sierra',T:'Tango',U:'Uniform',V:'Victor',W:'Whiskey',X:'X-ray',Y:'Yankee',Z:'Zulu'};
 const cifre=s=>String(s).split('').map(c=>c==='.'?'decimal':NUM[+c]!=null&&/\d/.test(c)?NUM[+c]:'').filter(Boolean).join(' ');
 const tre=n=>String(Math.round(((n%360)+360)%360)%360||360).padStart(3,'0');
-const lettere=s=>s.replace(/[^A-Z]/gi,'').toUpperCase().split('').map(c=>NATO[c]).join(' ');
+const lettere=s=>s.replace(/[^A-Z0-9]/gi,"").toUpperCase().split("").map(c=>/\d/.test(c)?NUM[+c]:NATO[c]).join(" ");   // lettere e cifre (marche VDS: I-A742)
 function piedi(ft){
   ft=Math.max(0,Math.round(ft/100)*100);
   const k=Math.floor(ft/1000),h=Math.round((ft%1000)/100);
@@ -43,7 +43,8 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
   const $=id=>document.getElementById(id);
   /* ---------- nominativo dell'aereo ---------- */
   const REG=(A.registrazione||'I-VOLO').toUpperCase();
-  const lett=REG.replace(/[^A-Z]/g,'');
+  const lett=REG.replace(/[^A-Z0-9]/g,"");
+  const TIPO=A.tipoRadio||{d:"Cessna 172",s:"Cessna one seven two"};   // tipo di aereo detto alla radio
   const CS={d:REG,s:lettere(REG)};                                         // completo
   const CSB={d:lett[0]+'-'+lett.slice(-2),s:lettere(lett[0]+lett.slice(-2))};  // abbreviato
   /* ---------- stazioni: una per aeroporto, più la "terra" (Ground) dove esiste ----------
@@ -258,9 +259,9 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
   // al parcheggio: richiesta di rullaggio fino al punto attesa
   function richiestaRullaggio(){
     const te=ctx.part.te,dest=ctx.arr&&ctx.arr.ap!==ctx.part.ap?ctx.arr.ap:null;
-    const f=frase(nomeStaz(),', ',CS,', Cessna ',{d:'172',s:'one seven two'},' at the apron',
+    const f=frase(nomeStaz(),', ',CS,', ',TIPO,' at the apron',
       dest?', VFR to '+dest.nome.replace(/-/g,' '):', VFR local flight',', request taxi');
-    const it=`${staz.nome}, ${REG}, Cessna 172 al piazzale, VFR ${dest?'per '+dest.nome:'locale'}, chiediamo di rullare.`;
+    const it=`${staz.nome}, ${REG}, ${TIPO.d} al piazzale, VFR ${dest?'per '+dest.nome:'locale'}, chiediamo di rullare.`;
     const tw=staz.terra?stazioni.get(ctx.part.ap):null;   // dalla terra si passa alla torre
     const poi=tw?frase(', at holding point contact ',tw.parla,' ',freqF(tw.freq)):'', poiRb=tw?frase(', ',freqF(tw.freq)):'';
     const poiIt=tw?`, al punto attesa contattate ${tw.nome} su ${tw.freq}`:'', poiRbIt=tw?`, ${tw.freq}`:'';
@@ -320,9 +321,9 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
   function richiestaDecollo(){
     if(ctx.parcheggio) return decolloDaAttesa();
     const te=ctx.part.te,dest=ctx.arr&&ctx.arr.ap!==ctx.part.ap?ctx.arr.ap:null;
-    const f=frase(nomeStaz(),', ',CS,', Cessna ',{d:'172',s:'one seven two'},' at the holding point ',pistaF(te),
+    const f=frase(nomeStaz(),', ',CS,', ',TIPO,' at the holding point ',pistaF(te),
       dest?', VFR to '+dest.nome.replace(/-/g,' '):', VFR local flight',', ready for departure');
-    const it=`${staz.nome}, ${REG}, Cessna 172 al punto attesa pista ${te.nome}, VFR ${dest?'per '+dest.nome:'locale'}, pronto per la partenza.`;
+    const it=`${staz.nome}, ${REG}, ${TIPO.d} al punto attesa pista ${te.nome}, VFR ${dest?'per '+dest.nome:'locale'}, pronto per la partenza.`;
     return {f,it,fai:()=>{
       pilotaDice(f,it);attendi(1200);
       const altra=te.pista.testate.find(t=>t!==te), sbPista=!!altra&&Math.random()<0.5;
@@ -344,8 +345,8 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
   }
   function chiamataArrivo(ils){
     const ap=ctx.arr.ap,te=ctx.arr.te,s2=stazioni.get(ap),pos=posizioneDa(ap),q=piedi(st.pos.y*FT);
-    const f=frase(s2.parla,', ',CS,', Cessna ',{d:'172',s:'one seven two'},', ',pos.f,', ',q,', inbound for landing',ils?', request ILS approach '+'':'',ils?pistaF(te):'');
-    const it=`${s2.nome}, ${REG}, Cessna 172, ${pos.it}, ${Math.round(st.pos.y*FT/100)*100} piedi, in arrivo per l'atterraggio${ils?`, chiediamo avvicinamento ILS pista ${te.nome}`:''}.`;
+    const f=frase(s2.parla,', ',CS,', ',TIPO,', ',pos.f,', ',q,', inbound for landing',ils?', request ILS approach '+'':'',ils?pistaF(te):'');
+    const it=`${s2.nome}, ${REG}, ${TIPO.d}, ${pos.it}, ${Math.round(st.pos.y*FT/100)*100} piedi, in arrivo per l'atterraggio${ils?`, chiediamo avvicinamento ILS pista ${te.nome}`:''}.`;
     return {f,it,etichettaIt:ils?L('(arrivo con avvicinamento ILS)','(arrival with ILS approach)'):L('(arrivo a vista)','(visual arrival)'),fai:()=>{
       staz=s2;pilotaDice(f,it);attendi(1300);
       const r=rispettoPista(te),allineato=r.avanti>0&&Math.abs(r.ang)<30;
