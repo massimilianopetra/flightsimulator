@@ -86,7 +86,7 @@ the **start** (on the runway, or from the parking area with taxiing and ground r
 ## How to start
 
 Open `index.html` with a double click (Chrome, Edge or Firefox). An Internet connection is needed,
-because the 3D library (three.js) and the fonts are downloaded from the Internet.
+because the 3D library (three.js) is downloaded from the Internet (the fonts are in the `font/` folder).
 
 To work on it with VS Code the *Live Server* extension is fine too.
 
@@ -595,8 +595,8 @@ pannello della mappa.
 ## Come si avvia
 
 Apri `index.html` con un doppio clic (Chrome, Edge o Firefox).
-Serve la connessione a Internet, perché la libreria 3D (three.js) e i font
-vengono scaricati da Internet.
+Serve la connessione a Internet, perché la libreria 3D (three.js) viene scaricata
+da Internet (i caratteri sono nella cartella `font/`).
 
 Per lavorarci con VS Code va bene anche l'estensione *Live Server*.
 
@@ -1029,5 +1029,9 @@ ma **senza alcuna garanzia**. Il testo completo è nel file [LICENSE](LICENSE).
 I dati reali del Piemonte contenuti nei file `dati/piemonte*.js`
 mantengono le licenze delle loro fonti: OurAirports (pubblico dominio),
 © OpenStreetMap contributors (ODbL), Mapzen Terrain Tiles (vedi le fonti sopra).
+I caratteri B612 e B612 Mono nella cartella `font/` sono sotto SIL Open Font License 1.1 (`font/OFL.txt`).
+
+Privacy: il gioco non usa cookie né tracciamento; tiene impostazioni e libretto solo nel
+localStorage del browser. Informativa completa in [privacy.html](privacy.html).
 
 Questo simulatore è un gioco: non usarlo per la navigazione reale.

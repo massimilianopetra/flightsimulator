@@ -188,7 +188,25 @@ let carbIniziale=A.carburante.capacita;
 try{const c=parseFloat(localStorage.getItem('volo-carburante'));if(c>0&&c<=A.carburante.capacita)carbIniziale=c;}catch(e){}
 const NOMI_VISTA=[L('ESTERNA','OUTSIDE'),L('CABINA','COCKPIT'),L('TORRE','TOWER')];
 
-function ricomincia(){
+// schermata di attesa (#carica): il terreno vicino (con strade ed edifici) si ricostruisce tutto in una volta e
+// la pagina resta ferma qualche istante; prima si mostra l'avviso, poi si fa il lavoro, poi l'avviso sparisce
+let caricamento=true, caricaFino=2, caricaAttesa=false;   // all'avvio: via dopo i primi due fotogrammi
+function attesa(fn){
+  if(caricaAttesa) return;
+  const c=$('carica');
+  $('caricaTesto').textContent=L('Preparo la zona di volo, attendi…','Preparing the flying area, please wait…');
+  c.classList.add('leggera');c.classList.remove('via');c.hidden=false;
+  caricamento=true;caricaAttesa=true;caricaFino=Infinity;
+  // requestAnimationFrame + setTimeout: il lavoro parte dopo che l'avviso è stato disegnato
+  requestAnimationFrame(()=>setTimeout(()=>{caricaAttesa=false;fn();caricaFino=n+2;},0));
+}
+function fineCaricamento(){
+  caricamento=false;
+  const c=$('carica');c.classList.add('via');
+  setTimeout(()=>{if(!caricamento)c.hidden=true;},450);
+}
+function ricomincia(){attesa(ricominciaSubito);}
+function ricominciaSubito(){
   ap.disinserisci();
   centraCloche();
   if(libretto.aperto)libretto.chiudi(st.crashed?'incidente':'interrotto');
@@ -503,6 +521,7 @@ function tastoAutopilota(e){
 addEventListener('keydown',e=>{
   if(BLOCCA.includes(e.code))e.preventDefault();
   if(e.ctrlKey||e.metaKey||e.altKey) return;      // non interferire con le scorciatoie del browser
+  if(caricamento) return;                          // si sta ancora caricando: i tasti non contano
   audio.avvia();
   if(avviato&&!st.crashed&&!inPausa&&atc.tasto(e)){   // radio: T e, a menu aperto, le cifre
     e.preventDefault();
@@ -1018,7 +1037,7 @@ function aggiornaObiettivo(){
 /* ---------- ciclo principale ---------- */
 preparaMissione(true);
 mostraScheda(scheda);
-ricomincia();
+ricominciaSubito();
 aggiornaVento(0);
 // scorciatoie per le prove: index.html#salta (salta il briefing), #vista=1 (cabina)
 SIM.debug={st,fis,terreno,monumenti,scene,atc,renderer,camera,missioni,libretto};  // utile dalla console del browser (F12)
@@ -1031,7 +1050,7 @@ function ciclo(ora){
   const dt=Math.min(0.1,Math.max(0,(ora-ultimo)/1000));ultimo=ora;
   leggiGamepad(dt);
   comandi(dt);
-  const attivo=avviato&&!inPausa;
+  const attivo=avviato&&!inPausa&&!caricamento;
   if(attivo&&!st.crashed){
     tempo+=dt;aggiornaVento(tempo);
     if(ap.attivo){   // l'autopilota comanda equilibratore e alettoni (il timone resta al pilota)
@@ -1068,6 +1087,7 @@ function ciclo(ora){
   audio.aggiorna(st,!attivo);
   renderer.render(scene,camera);
   n++;
+  if(caricamento&&n>=caricaFino)fineCaricamento();
 }
 requestAnimationFrame(ciclo);
 })();
