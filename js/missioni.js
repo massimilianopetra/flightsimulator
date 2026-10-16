@@ -23,8 +23,10 @@ const stelle=n=>'★'.repeat(n)+'☆'.repeat(3-n);
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 // punto di mira dopo la soglia, dove stanno i PAPI (come in js/mondo.js)
 const mira=pi=>pi.L>=1200?300:pi.L>=800?250:150;
-// minuti stimati per una tratta: crociera a 95 kt più 6 minuti tra decollo, salita, circuito e atterraggio
-const stima=(a,b)=>dist(a,b)/NM/95*60+6;
+// velocità dell'aereo scelto: crociera stimata (95 kt per il Cessna) e velocità buona al contatto nella precisione
+const AE=window.AEREO||{}, VCROC=AE.prestazioni?AE.prestazioni.crociera-5:95, VC=(AE.velocita&&AE.velocita.contatto)||[45,62];
+// minuti stimati per una tratta: crociera più 6 minuti tra decollo, salita, circuito e atterraggio
+const stima=(a,b)=>dist(a,b)/NM/VCROC*60+6;
 
 SIM.creaMissioni=function(T){
   let m=null;   // missione scelta (preparata nel briefing, attiva in volo)
@@ -83,8 +85,8 @@ SIM.creaMissioni=function(T){
     if(m.errore) return `<b>${m.nome}</b>: ${m.errore}`;
     if(m.tipo==='tempo') return L(`<b>A tempo</b>: atterra a <b>${m.tappe[0].codice} – ${m.tappe[0].nome}</b> entro <b>${mmss(m.limite)}</b> minuti. Il cronometro parte subito; vale il momento in cui le ruote toccano la pista. ★ in tempo · ★★ e atterraggio buono · ★★★ e con un quinto del tempo di margine.`,
       `<b>Against the clock</b>: land at <b>${m.tappe[0].codice} – ${m.tappe[0].nome}</b> within <b>${mmss(m.limite)}</b> minutes. The clock starts right away; it stops when the wheels touch the runway. ★ in time · ★★ and a good landing · ★★★ and a fifth of the time to spare.`);
-    if(m.tipo==='precisione') return L(`<b>Atterraggio di precisione</b> sulla pista <b>${m.te.nome}</b> di <b>${m.tappe[0].codice}</b>: parti in finale. Tocca vicino al punto di mira (<b>${m.mira} m</b> dopo la soglia, all'altezza dei PAPI), sulla linea centrale, piano e a 45–62 nodi. Fino a 100 punti: ★ da 40, ★★ da 65, ★★★ da 85.`,
-      `<b>Precision landing</b> on runway <b>${m.te.nome}</b> at <b>${m.tappe[0].codice}</b>: you start on final. Touch down near the aiming point (<b>${m.mira} m</b> past the threshold, abeam the PAPI), on the centre line, gently and at 45–62 knots. Up to 100 points: ★ from 40, ★★ from 65, ★★★ from 85.`);
+    if(m.tipo==='precisione') return L(`<b>Atterraggio di precisione</b> sulla pista <b>${m.te.nome}</b> di <b>${m.tappe[0].codice}</b>: parti in finale. Tocca vicino al punto di mira (<b>${m.mira} m</b> dopo la soglia, all'altezza dei PAPI), sulla linea centrale, piano e a ${VC[0]}–${VC[1]} nodi. Fino a 100 punti: ★ da 40, ★★ da 65, ★★★ da 85.`,
+      `<b>Precision landing</b> on runway <b>${m.te.nome}</b> at <b>${m.tappe[0].codice}</b>: you start on final. Touch down near the aiming point (<b>${m.mira} m</b> past the threshold, abeam the PAPI), on the centre line, gently and at ${VC[0]}–${VC[1]} knots. Up to 100 points: ★ from 40, ★★ from 65, ★★★ from 85.`);
     const elenco=m.tappe.map((a,i)=>`<b>${a.codice}</b>${i===m.tappe.length-1?L(' (casa)',' (home)'):''}`).join(' ▸ ');
     return L(`<b>${m.nome}</b>: ${elenco}. Tocca ogni pista nell'ordine (atterraggio completo o tocca e riparti), poi torna a casa. Tempo di riferimento <b>${mmss(m.rif)}</b>. ★ giro completo · ★★ e tutti gli atterraggi buoni · ★★★ e entro il tempo di riferimento.`,
       `<b>${m.nome}</b>: ${elenco}. Touch each runway in order (full stop or touch-and-go), then fly home. Reference time <b>${mmss(m.rif)}</b>. ★ tour completed · ★★ and every landing good · ★★★ and within the reference time.`);
@@ -114,7 +116,7 @@ SIM.creaMissioni=function(T){
       const pVs=30*lin(a.fpm,100,600);
       const pMira=a.dalla<0?0:30*lin(Math.abs(a.dalla-m.mira),30,330);
       const pAsse=20*lin(a.lat,1,Math.max(2,a.W/2));
-      const fuori=a.kt<45?45-a.kt:a.kt>62?a.kt-62:0;
+      const fuori=a.kt<VC[0]?VC[0]-a.kt:a.kt>VC[1]?a.kt-VC[1]:0;
       const pVel=20*lin(fuori,0,15);
       m.punti=Math.round(pVs+pMira+pAsse+pVel);
       m.dettaglio={pVs:Math.round(pVs),pMira:Math.round(pMira),pAsse:Math.round(pAsse),pVel:Math.round(pVel),fpm:Math.round(a.fpm),dalla:Math.round(a.dalla),lat:a.lat,kt:Math.round(a.kt)};
@@ -165,7 +167,7 @@ SIM.creaMissioni=function(T){
     let h=`<div class="pv-testa"><b>${m.nome}</b><span>${m.stato==='riuscita'?stelle(m.stelle):''}</span></div>`;
     if(m.tipo==='precisione'){
       h+=`<div>${L(`Pista <b>${m.te.nome}</b> di ${m.tappe[0].codice} · punto di mira a <b>${m.mira} m</b> dalla soglia (PAPI)`,`Runway <b>${m.te.nome}</b> at ${m.tappe[0].codice} · aiming point <b>${m.mira} m</b> past the threshold (PAPI)`)}</div>`;
-      h+=`<ul class="mi-punti"><li><b>30</b> ${L('velocità verticale (≤ 100 ft/min)','vertical speed (≤ 100 ft/min)')}</li><li><b>30</b> ${L('punto di contatto (± 30 m dalla mira)','touchdown point (± 30 m from the aim)')}</li><li><b>20</b> ${L('linea centrale (≤ 1 m)','centre line (≤ 1 m)')}</li><li><b>20</b> ${L('velocità 45–62 kt','speed 45–62 kt')}</li></ul>`;
+      h+=`<ul class="mi-punti"><li><b>30</b> ${L('velocità verticale (≤ 100 ft/min)','vertical speed (≤ 100 ft/min)')}</li><li><b>30</b> ${L('punto di contatto (± 30 m dalla mira)','touchdown point (± 30 m from the aim)')}</li><li><b>20</b> ${L('linea centrale (≤ 1 m)','centre line (≤ 1 m)')}</li><li><b>20</b> ${L('velocità '+VC[0]+'–'+VC[1]+' kt','speed '+VC[0]+'–'+VC[1]+' kt')}</li></ul>`;
       if(m.dettaglio)h+=dettaglioPrecisione();
     }else{
       h+=`<ol class="pv-tappe">`+m.tappe.map((a,i)=>{

@@ -302,10 +302,11 @@ SIM.creaStrumenti=function(A){
     const pw=Math.round(w*dpr),ph=Math.round(h*dpr);
     if(aux.width!==pw||aux.height!==ph){aux.width=pw;aux.height=ph;}
     const c=aux.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);
-    const R=h/2-3;
-    virosbandometro(c,R+3,h/2,R,d.virata,d.palla);
+    // l'ultraleggero non ha il virosbandometro (la pallina è sul cruscotto analogico)
+    const senzaViro=A.dotazioni&&A.dotazioni.g1000===false, R=h/2-3;
+    if(!senzaViro)virosbandometro(c,R+3,h/2,R,d.virata,d.palla);
     // trim: in alto picchia, in basso cabra (come la cloche: tirata = in basso)
-    const tx=2*R+24, t0=18, t1=h-16, tm=(t0+t1)/2;
+    const tx=senzaViro?14:2*R+24, t0=18, t1=h-16, tm=(t0+t1)/2;
     c.font=`700 10px ${MONO}`;c.textBaseline='middle';c.textAlign='left';c.fillStyle='#8ea6bb';
     c.fillText('TRIM',tx-6,7);
     c.fillStyle='#2b3445';c.fillRect(tx,t0,7,t1-t0);
@@ -318,19 +319,143 @@ SIM.creaStrumenti=function(A){
     c.font=`700 11px ${MONO}`;c.fillText((tr>0?'+':'')+tr,tx+17,clamp(yt,t0+12,t1-12));
     // carburante
     const fx=tx+50, fw=w-fx-2, cap=A.carburante.capacita, carb=d.carb;
-    const col=carb<5?'#ef4444':carb<10?'#fbbf24':'#e8eef4';
+    const un=A.carburante.unita==='l'?'l':'gal', poco=cap*0.1;   // rosso sotto il 10%, giallo sotto il 20%
+    const col=carb<poco?'#ef4444':carb<poco*2?'#fbbf24':'#e8eef4';
     c.fillStyle='#8ea6bb';c.font=`700 10px ${MONO}`;c.fillText(Lg('CARBURANTE','FUEL'),fx,7);
     c.fillStyle=col;c.font=`700 18px ${MONO}`;c.fillText(carb.toFixed(1),fx,27);
     const wn=c.measureText(carb.toFixed(1)).width;
-    c.font=`700 10px ${MONO}`;c.fillText('gal',fx+wn+4,29);
+    c.font=`700 10px ${MONO}`;c.fillText(un,fx+wn+4,29);
     c.fillStyle='#2b3445';c.fillRect(fx,40,fw,6);
-    c.fillStyle=carb<5?'#ef4444':'#22c55e';c.fillRect(fx,40,fw*clamp(carb/cap,0,1),6);
+    c.fillStyle=carb<poco?'#ef4444':'#22c55e';c.fillRect(fx,40,fw*clamp(carb/cap,0,1),6);
     c.fillStyle='#e8eef4';c.font=`700 11px ${MONO}`;
-    c.fillText(d.flusso.toFixed(1)+' gal/h',fx,58);
+    c.fillText(d.flusso.toFixed(1)+' '+un+'/h',fx,58);
     const aut=d.flusso>0?carb/d.flusso:0;
     c.fillStyle='#8ea6bb';c.font=`700 10px ${MONO}`;c.fillText(Lg('AUTONOMIA','ENDURANCE'),fx,74);
     c.fillStyle=col;c.font=`700 11px ${MONO}`;
     c.fillText(d.flusso>0?Math.floor(aut)+'h '+String(Math.floor((aut%1)*60)).padStart(2,'0')+'m':Lg('MOTORE SPENTO','ENGINE OUT'),fx,88);
+  }
+
+  /* ---------- CRUSCOTTO ANALOGICO (ultraleggero, es. Ikarus C42) ----------
+     Sul pannello PFD (o sulla superficie sup della cabina 3D) disegna gli strumenti di serie:
+     bussola magnetica a striscia, anemometro, altimetro, variometro, contagiri digitale,
+     pallina e i tre strumenti del Rotax (temperatura e pressione dell'olio, temperatura delle teste).
+     d = come per disegnaPFD, più rpm, thr, acceso. Niente orizzonte artificiale: si vola guardando fuori. */
+  const motore={olio:85,teste:95,t:0};   // temperature (°C) che cambiano piano piano
+  function disegnaAnalogico(d,sup){
+    if(sup){const v=[g,W,H,dpr];g=sup.g;W=sup.W;H=sup.H;dpr=1;try{disegnaAnalogico(d);}finally{[g,W,H,dpr]=v;}return;}
+    if(!W) adatta();
+    if(!W) return;
+    const c=g;
+    c.setTransform(dpr,0,0,dpr,0,0);
+    // pannello grigio scuro
+    c.fillStyle='#24272c';c.fillRect(0,0,W,H);
+    // temperature del motore: salgono con la manetta, scendono con la velocità (aria di raffreddamento)
+    const ora=performance.now()/1000,dtm=motore.t?Math.min(1,ora-motore.t):0;motore.t=ora;
+    const acc=d.acceso&&d.rpm>800;
+    const tOlio=acc?72+32*d.thr-0.06*d.ias:20, tTeste=acc?78+52*d.thr-0.12*d.ias:20;
+    motore.olio+=(tOlio-motore.olio)*dtm*0.02;motore.teste+=(tTeste-motore.teste)*dtm*0.04;
+    const pOlio=acc?clamp(1.6+3.2*d.rpm/A.motore.giriMax,0,7):0;
+
+    const R=H*0.235;                       // raggio dei tre strumenti grandi
+    const yC=H*0.17+R+H*0.02;              // centro della fila
+    const cxs=[W/6,W/2,W*5/6];
+    const fs=v=>`700 ${Math.round(v)}px ${MONO}`;
+    function quadrante(x,y,r){
+      c.fillStyle='#0a0a0a';c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();
+      c.strokeStyle='#5d636b';c.lineWidth=r*0.07;c.beginPath();c.arc(x,y,r*1.035,0,Math.PI*2);c.stroke();
+      // viti di fissaggio
+      c.fillStyle='#3a3f46';for(const a of [0.25,0.75,1.25,1.75]){c.beginPath();c.arc(x+Math.cos(a*Math.PI)*r*1.2,y+Math.sin(a*Math.PI)*r*1.2,r*0.045,0,Math.PI*2);c.fill();}
+    }
+    function lancetta(x,y,a,l,w,col){
+      c.strokeStyle=col||'#fff';c.lineWidth=w;c.lineCap='round';
+      c.beginPath();c.moveTo(x-Math.cos(a)*l*0.15,y-Math.sin(a)*l*0.15);c.lineTo(x+Math.cos(a)*l,y+Math.sin(a)*l);c.stroke();c.lineCap='butt';
+      c.fillStyle='#2b2b2b';c.beginPath();c.arc(x,y,Math.max(2,w*1.3),0,Math.PI*2);c.fill();
+    }
+    function tacca(x,y,a,r0,r1,w,col){c.strokeStyle=col||'#fff';c.lineWidth=w;c.beginPath();c.moveTo(x+Math.cos(a)*r0,y+Math.sin(a)*r0);c.lineTo(x+Math.cos(a)*r1,y+Math.sin(a)*r1);c.stroke();}
+    function scritta(t,x,y,f,col){c.fillStyle=col||'#fff';c.font=f;c.textAlign='center';c.textBaseline='middle';c.fillText(t,x,y);}
+
+    /* -- anemometro (nodi): archi bianco, verde, giallo e riga rossa come nel manuale -- */
+    {const x=cxs[0],y=yC,r=R,VMAX=140,a0=-Math.PI/2+0.25,a1=a0+Math.PI*1.75,kA=v=>a0+(a1-a0)*clamp(v,0,VMAX)/VMAX;
+     quadrante(x,y,r);
+     const arco=(v0,v1,col,rr,w)=>{c.strokeStyle=col;c.lineWidth=w;c.beginPath();c.arc(x,y,r*rr,kA(v0),kA(v1));c.stroke();};
+     arco(V.vso,V.vfe,'#f4f6f8',0.74,r*0.06);arco(V.vs1,V.vno,'#22c55e',0.86,r*0.09);arco(V.vno,V.vne,'#eab308',0.86,r*0.09);
+     tacca(x,y,kA(V.vne),r*0.8,r*0.95,r*0.05,'#ef4444');
+     if(V.minAvvicinamento){const a=kA(V.minAvvicinamento);c.fillStyle='#eab308';c.beginPath();c.moveTo(x+Math.cos(a)*r*0.97,y+Math.sin(a)*r*0.97);
+       c.lineTo(x+Math.cos(a-0.06)*r*1.1,y+Math.sin(a-0.06)*r*1.1);c.lineTo(x+Math.cos(a+0.06)*r*1.1,y+Math.sin(a+0.06)*r*1.1);c.closePath();c.fill();}
+     for(let v=0;v<=VMAX;v+=5){const a=kA(v);tacca(x,y,a,r*(v%10?0.84:0.78),r*0.92,v%10?1:2);
+       if(v%20===0&&v>=20)scritta(v,x+Math.cos(a)*r*0.6,y+Math.sin(a)*r*0.6,fs(r*0.17));}
+     scritta(Lg('NODI','KNOTS'),x,y+r*0.3,fs(r*0.12),'#cbd5e1');
+     lancetta(x,y,kA(d.ias),r*0.86,Math.max(2,r*0.05));}
+
+    /* -- altimetro: lancetta lunga = centinaia di piedi, corta = migliaia; finestrella 1013 -- */
+    {const x=cxs[1],y=yC,r=R;quadrante(x,y,r);
+     for(let i=0;i<50;i++){const a=-Math.PI/2+i/50*Math.PI*2;tacca(x,y,a,r*(i%5?0.84:0.76),r*0.92,i%5?1:2);
+       if(i%5===0)scritta(i/5,x+Math.cos(a)*r*0.62,y+Math.sin(a)*r*0.62,fs(r*0.2));}
+     c.fillStyle='#000';c.strokeStyle='#5d636b';c.lineWidth=1;c.fillRect(x+r*0.12,y-r*0.1,r*0.42,r*0.2);c.strokeRect(x+r*0.12,y-r*0.1,r*0.42,r*0.2);
+     scritta('1013',x+r*0.33,y,fs(r*0.13));
+     scritta('ALT',x,y-r*0.32,fs(r*0.12),'#cbd5e1');scritta('FT',x,y+r*0.32,fs(r*0.11),'#cbd5e1');
+     const alt=Math.max(0,d.alt);
+     lancetta(x,y,-Math.PI/2+(alt%10000)/10000*Math.PI*2,r*0.5,Math.max(3,r*0.08));
+     lancetta(x,y,-Math.PI/2+(alt%1000)/1000*Math.PI*2,r*0.86,Math.max(2,r*0.045));}
+
+    /* -- variometro: ±1000 ft/min, zero a sinistra come gli strumenti veri -- */
+    {const x=cxs[2],y=yC,r=R,kV=v=>Math.PI+clamp(v,-1000,1000)/1000*Math.PI*0.9;
+     quadrante(x,y,r);
+     for(let v=-1000;v<=1000;v+=100){const a=kV(v);tacca(x,y,a,r*(v%500?0.82:0.74),r*0.92,v%500?1:2);}
+     for(const v of [-1000,-500,0,500,1000])scritta(Math.abs(v/100),x+Math.cos(kV(v))*r*0.58,y+Math.sin(kV(v))*r*0.58,fs(r*0.18));
+     scritta(Lg('SALE','UP'),x+r*0.12,y-r*0.42,fs(r*0.11),'#cbd5e1');scritta(Lg('SCENDE','DOWN'),x+r*0.12,y+r*0.42,fs(r*0.11),'#cbd5e1');
+     scritta('FT/MIN ×100',x-r*0.3,y+r*0.2,fs(r*0.1),'#cbd5e1');
+     lancetta(x,y,kV(d.vs),r*0.86,Math.max(2,r*0.05));}
+
+    /* -- bussola magnetica a striscia (in alto, sopra il cruscotto) -- */
+    {const bw=W*0.34,bh=H*0.13,bx=W/2-bw/2,by=H*0.015;
+     c.fillStyle='#111';c.fillRect(bx-4,by-2,bw+8,bh+4);
+     c.save();c.beginPath();c.rect(bx,by,bw,bh);c.clip();
+     c.fillStyle='#e9e2c8';c.fillRect(bx,by,bw,bh);
+     const pd=bw/70, card={0:'N',90:'E',180:'S',270:Lg('O','W')};
+     for(let h=Math.floor((d.hdg-40)/5)*5;h<=d.hdg+40;h+=5){
+       const xx=W/2+(h-d.hdg)*pd,hh=((h%360)+360)%360;
+       c.strokeStyle='#111';c.lineWidth=1.5;c.beginPath();c.moveTo(xx,by+bh*0.62);c.lineTo(xx,by+bh*(hh%10?0.78:0.95));c.stroke();
+       if(hh%30===0)scritta(card[hh]||String(hh/10|0),xx,by+bh*0.33,fs(bh*(card[hh]?0.48:0.4)),card[hh]?'#b91c1c':'#111');
+     }
+     c.restore();
+     c.strokeStyle='#f97316';c.lineWidth=2;c.beginPath();c.moveTo(W/2,by);c.lineTo(W/2,by+bh);c.stroke();}
+
+    /* -- fila in basso: contagiri digitale, pallina, motore -- */
+    const yB=H*0.835, hB=H*0.17;
+    // contagiri digitale (schermo LCD)
+    {const lx=W*0.03,lw=W*0.27,ly=yB-hB/2;
+     c.fillStyle='#111';c.fillRect(lx-3,ly-3,lw+6,hB+6);
+     c.fillStyle=acc?'#9fc9a4':'#4b5c4e';c.fillRect(lx,ly,lw,hB);
+     const rosso=d.rpm>=(A.motore.rosso||A.motore.giriMax), giallo=d.rpm>=(A.motore.giallo||A.motore.giriMax);
+     c.fillStyle=rosso?'#7f1d1d':'#14281a';c.font=fs(hB*0.5);c.textAlign='right';c.textBaseline='middle';
+     c.fillText(d.rpm>50?String(Math.round(d.rpm/10)*10):'0',lx+lw*0.74,ly+hB*0.42);
+     c.font=fs(hB*0.2);c.textAlign='left';c.fillText('RPM',lx+lw*0.77,ly+hB*0.42);
+     // barra dei giri
+     const fr=clamp(d.rpm/A.motore.giriMax,0,1);
+     c.fillStyle='rgba(20,40,26,.25)';c.fillRect(lx+lw*0.06,ly+hB*0.76,lw*0.88,hB*0.12);
+     c.fillStyle=giallo?(rosso?'#7f1d1d':'#854d0e'):'#14281a';c.fillRect(lx+lw*0.06,ly+hB*0.76,lw*0.88*fr,hB*0.12);}
+    // pallina (inclinometro): se scappa da un lato, "pesta la pallina" col pedale da quel lato
+    {const px=W*0.43,pw=W*0.16,rt=pw*2.2,cy2=yB-rt+hB*0.1,da=Math.asin(pw/2/rt),a0=Math.PI/2;
+     c.fillStyle='#111';c.fillRect(px-pw/2-6,yB-hB/2,pw+12,hB);
+     c.lineCap='round';c.strokeStyle='#d8d2b0';c.lineWidth=hB*0.32;c.beginPath();c.arc(px,cy2,rt,a0-da,a0+da);c.stroke();c.lineCap='butt';
+     c.strokeStyle='#333';c.lineWidth=1.5;for(const s of [-1,1]){const a=a0+s*da*0.25;c.beginPath();c.moveTo(px+Math.cos(a)*(rt-hB*0.17),cy2+Math.sin(a)*(rt-hB*0.17));c.lineTo(px+Math.cos(a)*(rt+hB*0.17),cy2+Math.sin(a)*(rt+hB*0.17));c.stroke();}
+     const ab=a0-clamp(d.palla,-1,1)*da*0.85;
+     c.fillStyle='#111';c.beginPath();c.arc(px+Math.cos(ab)*rt,cy2+Math.sin(ab)*rt,hB*0.12,0,Math.PI*2);c.fill();}
+    // tre strumenti piccoli del Rotax
+    {const r=hB*0.5,ys=yB,xs=[W*0.635,W*0.78,W*0.925];
+     const piccolo=(x,nome,val,min,max,verde0,verde1,rossoDa,testo)=>{
+       quadrante(x,ys,r);
+       const a0=Math.PI*0.75,a1=Math.PI*2.25,k=v=>a0+(a1-a0)*clamp((v-min)/(max-min),0,1);
+       c.strokeStyle='#22c55e';c.lineWidth=r*0.14;c.beginPath();c.arc(x,ys,r*0.8,k(verde0),k(verde1));c.stroke();
+       c.strokeStyle='#ef4444';c.beginPath();c.arc(x,ys,r*0.8,k(rossoDa),k(max));c.stroke();
+       scritta(nome,x,ys+r*0.47,fs(r*0.3),'#cbd5e1');
+       scritta(testo,x,ys-r*0.38,fs(r*0.32));
+       lancetta(x,ys,k(val),r*0.8,Math.max(1.5,r*0.08));
+     };
+     piccolo(xs[0],Lg('OLIO °C','OIL °C'),motore.olio,40,150,90,110,130,String(Math.round(motore.olio)));
+     piccolo(xs[1],Lg('OLIO bar','OIL bar'),pOlio,0,8,2,5,7,pOlio.toFixed(1));
+     piccolo(xs[2],'CHT °C',motore.teste,40,160,80,135,150,String(Math.round(motore.teste)));}
   }
 
   /* ---------- minimappa ---------- */
@@ -707,7 +832,7 @@ SIM.creaStrumenti=function(A){
   }
 
   return {
-    disegnaPFD, disegnaMappa, disegnaMFD, disegnaRiserva, disegnaAux, adatta,
+    disegnaAnalogico, disegnaPFD, disegnaMappa, disegnaMFD, disegnaRiserva, disegnaAux, adatta,
     cambiaZoom(){impostaZoom((zoom+1)%scale.length);},
     zoomPiu(){impostaZoom(zoom-1);},     // più dettaglio
     zoomMeno(){impostaZoom(zoom+1);},    // più zona visibile

@@ -147,7 +147,7 @@ SIM.creaNotte=function(scene,mondo,T){
     L.matVetro.emissive.setHex(c.vetroE);
     if(c.luci&&!cittaFatte)costruisciCitta();
     luciPiste.visible=c.luci;if(luciCitta){luciCitta.visible=c.luci;luciCitta.material.opacity=k==='tramonto'?0.4:1;}stelle.visible=c.stelle;
-    faro.intensity=c.faro;
+    faro.intensity=window.AEREO&&window.AEREO.id==='c42'?0:c.faro;   // il C42 di serie non ha il faro di atterraggio
     for(const l of mondo.aereo.luciNav)l.scale.setScalar(c.luci?2.2:1);
   }
   return {

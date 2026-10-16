@@ -17,12 +17,14 @@ const nm=m=>(m/NM).toFixed(1);
 const Lg=(it,en)=>SIM.L?SIM.L(it,en):it;   // lingua (js/lingua.js)
 const rotta=(ax,az,bx,bz)=>((Math.atan2(bx-ax,-(bz-az))/D2R)+360)%360;
 
-// velocità e ratei del C172 nel simulatore (vedi le prove in CLAUDE.md)
-const V_SALITA=74, RATEO_SALITA=550, V_CROCIERA=100, V_DISCESA=105, RATEO_DISCESA=500, V_FINALE=70;
+// velocità e ratei dell'aereo (A.prestazioni; questi sono quelli del C172, vedi le prove in CLAUDE.md)
+let V_SALITA=74, RATEO_SALITA=550, V_CROCIERA=100, V_DISCESA=105, RATEO_DISCESA=500, V_FINALE=70;
 const FINALE=5*NM;            // punto di finale a 5 NM dalla soglia
 const PENDENZA=3*D2R;         // sentiero di discesa di 3°
 
 SIM.creaPiano=function(T,A,met,radio){
+  const pr=A.prestazioni;
+  if(pr){V_SALITA=pr.salita;RATEO_SALITA=pr.rateoSalita;V_CROCIERA=pr.crociera;V_DISCESA=pr.discesa;RATEO_DISCESA=pr.rateoDiscesa;V_FINALE=pr.finale-2;}
   let piano=null, comDi=null, terraDi=null;   // comDi(ap) -> stazione radio (js/atc.js)
 
   // componenti del vento sulla pista: frontale (+) e traverso (+ = da destra)

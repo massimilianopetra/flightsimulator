@@ -96,8 +96,8 @@
       <div class="row riga-scala"><span class="lbl" data-en="SCALE">SCALA</span><select id="selScala" class="selscala" aria-label="Scala della mappa" data-en-aria="Map scale"></select></div>
       <div class="row"><span class="lbl" data-en="WIND">VENTO</span><span id="vento" class="val sm">270/6</span></div>
       <div class="row riga-nav"><span class="lbl">NAV1</span><select id="selNav" class="selnav" aria-label="Radioaiuto sintonizzato (NAV1)" data-en-aria="Tuned navaid (NAV1)"></select></div>
-      <div class="row"><span class="lbl">CRS</span><span id="crs" class="val verde">---</span><span class="unit">°</span></div>
-      <div class="row"><span class="lbl">DME</span><span id="dme" class="val verde sm">--.-</span><span class="unit">NM</span></div>
+      <div class="row riga-nav"><span class="lbl">CRS</span><span id="crs" class="val verde">---</span><span class="unit">°</span></div>
+      <div class="row riga-nav"><span class="lbl">DME</span><span id="dme" class="val verde sm">--.-</span><span class="unit">NM</span></div>
     </div>
   </section>
   <section id="radio" class="hud radiopan scheda" role="tabpanel" aria-label="Radio">
@@ -198,6 +198,12 @@
             <option value="valle" data-en="Valle Azzurra (invented)">Valle Azzurra (inventata)</option>
           </select>
         </label>
+        <label><span data-en="Aircraft">Aereo</span>
+          <select id="selAereo">
+            <option value="c172" data-en="Cessna 172 (G1000, autopilot)">Cessna 172 (G1000, autopilota)</option>
+            <option value="c42" data-en="Ikarus C42 (microlight)">Ikarus C42 (ultraleggero)</option>
+          </select>
+        </label>
         <label><span data-en="Departure airport">Aeroporto di partenza</span> <select id="selAeroporto"></select></label>
         <label><span data-en="Runway">Pista</span> <select id="selPista"></select></label>
         <label><span data-en="Start">Partenza</span>
@@ -236,11 +242,11 @@
       <p id="briefTesto"></p>
       <p id="crediti" class="crediti" hidden data-en="Real data: airports, VORs and radio frequencies © OurAirports (public domain) · lakes, towns, urban areas, roads, railways and rivers © OpenStreetMap contributors (ODbL) · terrain Mapzen Terrain Tiles (SRTM); ILS stations and their frequencies are simulated.">Dati reali: aeroporti, VOR e frequenze radio © OurAirports (pubblico dominio) · laghi, città, aree urbane, strade, ferrovie e fiumi © OpenStreetMap contributors (ODbL) · rilievo Mapzen Terrain Tiles (SRTM); gli ILS e le loro frequenze sono simulati.</p>
       <ol class="check">
-        <li data-en="Flaps <b>10°</b> with <kbd>F</kbd>.">Flap a <b>10°</b> con <kbd>F</kbd>.</li>
+        <li data-en="Flaps <b><span id=&quot;briefFlapDec&quot;>10</span>°</b> with <kbd>F</kbd>.">Flap a <b><span id="briefFlapDec">10</span>°</b> con <kbd>F</kbd>.</li>
         <li data-en="Throttle <b>100%</b> with <kbd>0</kbd> (or hold <kbd>+</kbd>); stay on the centre line with <kbd>Q</kbd>/<kbd>E</kbd>.">Manetta al <b>100%</b> con <kbd>0</kbd> (oppure tieni premuto <kbd>+</kbd>); resta sulla linea centrale con <kbd>Q</kbd>/<kbd>E</kbd>.</li>
         <li data-en="At <b id=&quot;briefVr&quot;>55</b> knots pull gently (<kbd>S</kbd>): the nose rises and the aircraft lifts off. <span id=&quot;briefCloche&quot;></span> Sensitivity and stick centring are in the CONTROLS window (<kbd>H</kbd>).">A <b id="briefVr">55</b> nodi tira dolcemente (<kbd>S</kbd>): il muso si alza e l'aereo decolla. <span id="briefCloche">La cloche <b>resta dove la lasci</b>: correggi con <kbd>W</kbd>/<kbd>S</kbd> o centrala con <kbd>K</kbd>.</span> Sensibilità e ritorno al centro si regolano nella finestra COMANDI (<kbd>H</kbd>).</li>
-        <li data-en="Climb at about <b id=&quot;briefVy&quot;>74</b> knots; above 500 ft retract the flaps (<kbd>G</kbd>).">Sali a circa <b id="briefVy">74</b> nodi; sopra 500 ft retrai i flap (<kbd>G</kbd>).</li>
-        <li data-en="To land: about <b>65 knots</b>, flaps 30°, and follow the PAPI lights on the left of the runway: <span class=&quot;papi&quot;><i class=&quot;w&quot;></i><i class=&quot;w&quot;></i><i class=&quot;r&quot;></i><i class=&quot;r&quot;></i></span> = correct slope.">Per atterrare: circa <b>65 nodi</b>, flap 30°, e segui le luci PAPI a sinistra della pista: <span class="papi"><i class="w"></i><i class="w"></i><i class="r"></i><i class="r"></i></span> = giusta pendenza.</li>
+        <li data-en="Climb at about <b id=&quot;briefVy&quot;>74</b> knots; above <span id=&quot;briefRetrai&quot;>500</span> ft retract the flaps (<kbd>G</kbd>).">Sali a circa <b id="briefVy">74</b> nodi; sopra <span id="briefRetrai">500</span> ft retrai i flap (<kbd>G</kbd>).</li>
+        <li data-en="To land: about <b><span id=&quot;briefApp&quot;>65</span> knots</b>, flaps <span id=&quot;briefFlapAtt&quot;>30</span>°, and follow the PAPI lights on the left of the runway: <span class=&quot;papi&quot;><i class=&quot;w&quot;></i><i class=&quot;w&quot;></i><i class=&quot;r&quot;></i><i class=&quot;r&quot;></i></span> = correct slope.">Per atterrare: circa <b><span id="briefApp">65</span> nodi</b>, flap <span id="briefFlapAtt">30</span>°, e segui le luci PAPI a sinistra della pista: <span class="papi"><i class="w"></i><i class="w"></i><i class="r"></i><i class="r"></i></span> = giusta pendenza.</li>
       </ol>
       <div class="azioni">
         <button id="inizia" type="button" class="primario" data-en="Take off (Enter)">Decolla (Invio)</button>
@@ -308,11 +314,16 @@
 (function(){
   var MONDI={piemonte:["dati/piemonte-rilievo.js","dati/piemonte-vie.js","dati/piemonte-abitati.js","dati/piemonte.js","dati/piemonte-radio.js","dati/piemonte-monumenti.js","dati/piemonte-rullaggio.js"], valle:["dati/mappa.js"]};
   var m=/[?&]mappa=(\w+)/.exec(location.search), scelta=(m&&MONDI[m[1]])?m[1]:"piemonte";
+  // aereo: ?aereo=c172 (Cessna, predefinito) o ?aereo=c42 (Ikarus C42); la scelta viene ricordata
+  var AEREI={c172:"dati/aereo.js",c42:"dati/c42.js"}, ma=/[?&]aereo=(\w+)/.exec(location.search), ricordato=null;
+  try{ricordato=localStorage.getItem("volo-aereo");if(ma&&AEREI[ma[1]])localStorage.setItem("volo-aereo",ma[1]);}catch(e){}
+  var aereo=(ma&&AEREI[ma[1]])?ma[1]:(AEREI[ricordato]?ricordato:"c172");
+  window.AEREO_SCELTO=aereo;
+  document.write('<script src="'+AEREI[aereo]+'"><\/script>');
   window.MONDO_SCELTO=scelta;
   MONDI[scelta].forEach(function(f){document.write('<script src="'+f+'"><\/script>');});
 })();
 </script>
-<script src="dati/aereo.js"></script>
 <!-- motore del simulatore -->
 <script src="js/terreno.js"></script>
 <script src="js/rullaggio.js"></script>
@@ -322,6 +333,7 @@
 <script src="js/autopilota.js"></script>
 <script src="js/cabina.js"></script>
 <script src="js/aereo3d.js"></script>
+<script src="js/c42-3d.js"></script>
 <script src="js/mondo.js"></script>
 <script src="js/notte.js"></script>
 <script src="js/strumenti.js"></script>
