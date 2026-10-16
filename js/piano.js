@@ -12,6 +12,21 @@
 const SIM=window.SIM=window.SIM||{};
 const D2R=Math.PI/180, FT=3.28084, NM=1852;
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+
+/* ---------- carburante negli aeroporti ----------
+   c'è dove OpenStreetMap segna il distributore (aeroway=fuel, controllato il 16/10/2026), dove c'è una torre
+   o un servizio informazioni (AFIS), o dove c'è una pista asfaltata di almeno 800 m; mai negli aeroporti militari.
+   Nelle mappe fatte a mano si può decidere aeroporto per aeroporto con  carburante: true / false. */
+const CARB_OSM=['LIMF','LIMA','LILI','LILM','LSGS','LFNC'];
+SIM.haCarburante=function(ap){
+  if(!ap) return false;
+  if(ap.carburante!=null) return !!ap.carburante;
+  if(/militare|military/i.test(ap.nome)) return false;
+  if(CARB_OSM.includes(ap.codice)) return true;
+  const com=(window.RADIO&&window.RADIO.com)||[];
+  if(com.some(c=>c.ap===ap.codice&&(c.tipo==='TWR'||c.tipo==='INFO'))) return true;
+  return ap.piste.some(p=>!p.erba&&p.L>=800);
+};
 const tre=n=>String(Math.round(((n%360)+360)%360)%360).padStart(3,'0');
 const nm=m=>(m/NM).toFixed(1);
 const Lg=(it,en)=>SIM.L?SIM.L(it,en):it;   // lingua (js/lingua.js)
@@ -132,7 +147,7 @@ SIM.creaPiano=function(T,A,met,radio){
       tappe+=riga(3,Lg('DIS','DES'),Lg(`a ${nm(p.dDiscesa)} NM da ${p.nomeFaf}, −${RATEO_DISCESA} ft/min`,`${nm(p.dDiscesa)} NM before ${p.nomeFaf}, −${RATEO_DISCESA} ft/min`));
     }
     tappe+=riga(4,p.nomeFaf,Lg(`finale 5 NM · rotta ${tre(te.hdg)}° · <em>${p.qFaf} ft</em>`,`final 5 NM · course ${tre(te.hdg)}° · <em>${p.qFaf} ft</em>`));
-    tappe+=riga(5,Lg('ATT','LDG'),Lg(`pista ${te.nome} · ${A.velocita.avvicinamento} kt · flap 30°`,`runway ${te.nome} · ${A.velocita.avvicinamento} kt · flaps 30°`));
+    tappe+=riga(5,Lg('ATT','LDG'),Lg(`pista ${te.nome} · ${A.velocita.avvicinamento} kt · flap ${A.flap.posizioni[A.flap.posizioni.length-1]}°`,`runway ${te.nome} · ${A.velocita.avvicinamento} kt · flaps ${A.flap.posizioni[A.flap.posizioni.length-1]}°`));
     const lato=v.traverso>0.5?Lg('da destra','from the right'):v.traverso<-0.5?Lg('da sinistra','from the left'):'';
     const vento=(met.ventoNodi||0)<1?Lg('calmo','calm'):
       `${Math.round(Math.abs(v.fronte))} kt ${v.fronte>=0?Lg('frontale','headwind'):Lg('in coda','tailwind')}`+(lato?` · ${Math.round(Math.abs(v.traverso))} kt ${lato}`:'');
@@ -142,9 +157,18 @@ SIM.creaPiano=function(T,A,met,radio){
       `<ol class="pv-tappe">${tappe}</ol>`+
       `<div class="pv-pista"><div><span class="lbl">${Lg('PISTA','RWY')}</span><b>${te.nome}</b> ${pi.L}×${pi.W} m · ${pi.erba?Lg('erba','grass'):Lg('asfalto','asphalt')} · QFU ${tre(te.hdg)}°</div>`+
       `<div><span class="lbl">${Lg('CAMPO','FIELD')}</span>${Math.round(p.qCampo)} ft · ${Lg('circuito','pattern')} ${Math.ceil((p.qCampo+1000)/100)*100} ft${altre?` · ${Lg('altre','others')}: ${altre}`:''}</div>`+
-      `<div><span class="lbl">${Lg('VENTO','WIND')}</span>${vento}</div>`+radioHtml(p)+`</div>`+
+      `<div><span class="lbl">${Lg('VENTO','WIND')}</span>${vento}</div>`+carbHtml(p)+radioHtml(p)+`</div>`+
       (p.alta?`<div class="pv-nota">${Lg('Montagne alte sulla rotta: valuta un giro più lungo per le valli.','High mountains on the route: consider a longer way through the valleys.')}</div>`:'')+
       `<div class="pv-fase" id="pvFase"></div>`;
+  }
+  // carburante: quanto ne serve per il volo (più 30 minuti di riserva) e se all'arrivo si può fare rifornimento
+  function carbHtml(p){
+    const cb=A.carburante,un=cb.unita==='l'?'l':'gal',m=A.motore;
+    const flusso=cb.consumoMin+(cb.consumoMax-cb.consumoMin)*Math.pow((m.giriVolo||2400)/m.giriMax,3);   // in crociera
+    const volo=flusso*p.minuti/60,ris=flusso*0.5,f=v=>un==='l'?Math.ceil(v):Math.ceil(v*2)/2;
+    const si=SIM.haCarburante(p.arr);
+    return `<div><span class="lbl">${Lg('CARB','FUEL')}</span>${Lg(`serve circa <em>${f(volo)} ${un}</em> + ${f(ris)} di riserva (30 min)`,`about <em>${f(volo)} ${un}</em> needed + ${f(ris)} reserve (30 min)`)}`+
+      ` · ${si?Lg(`rifornimento a ${p.arr.codice}`,`fuel at ${p.arr.codice}`):Lg(`<b class="rosso">niente carburante a ${p.arr.codice}</b>`,`<b class="rosso">no fuel at ${p.arr.codice}</b>`)}</div>`;
   }
   // radioaiuti utili all'arrivo: ILS della pista e VOR più vicino alla destinazione
   function radioHtml(p){

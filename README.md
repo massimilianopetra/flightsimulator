@@ -111,7 +111,8 @@ To work on it with VS Code the *Live Server* extension is fine too.
 | A / D | roll |
 | Q / E | rudder (on the ground it steers the nose wheel) |
 | + / − | throttle; keys 1…9 set it to 10…90%, 0 to 100% |
-| F / G | flaps down / up (0°, 10°, 20°, 30°) |
+| F / G | flaps down / up (Cessna 0°, 10°, 20°, 30°; C42 0°, 15°, 40°) |
+| Shift+F | refuel (stopped at an airport with fuel, off the runway, throttle at idle) |
 | Z / X | trim nose up / nose down |
 | B or Space | brakes (hold) |
 | C | view: outside, cockpit, tower |
@@ -636,7 +637,8 @@ Per lavorarci con VS Code va bene anche l'estensione *Live Server*.
 | A / D | rollio |
 | Q / E | timone (a terra sterza il ruotino anteriore) |
 | + / − | manetta; i tasti 1…9 la mettono al 10…90%, 0 al 100% |
-| F / G | flap giù / su (0°, 10°, 20°, 30°) |
+| F / G | flap giù / su (Cessna 0°, 10°, 20°, 30°; C42 0°, 15°, 40°) |
+| Maiusc+F | rifornimento (fermo in un aeroporto con carburante, fuori pista, manetta al minimo) |
 | Z / X | trim cabra / picchia |
 | B o Spazio | freni (tieni premuto) |
 | C | vista: esterna, cabina, torre |

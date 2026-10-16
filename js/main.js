@@ -212,6 +212,7 @@ function fineCaricamento(){
 }
 function ricomincia(){attesa(ricominciaSubito);}
 function ricominciaSubito(){
+  rifornendo=false;
   ap.disinserisci();
   centraCloche();
   if(libretto.aperto)libretto.chiudi(st.crashed?'incidente':'interrotto');
@@ -558,7 +559,7 @@ addEventListener('keydown',e=>{
   const cifra=/^(Digit|Numpad)([0-9])$/.exec(e.code);
   if(cifra){const n=+cifra[2];st.thr=n===0?1:n/10;$('thr').value=Math.round(st.thr*100);return;}
   switch(e.code){
-    case 'KeyF':flap(1);break;
+    case 'KeyF':if(e.shiftKey)rifornimento();else flap(1);break;
     case 'KeyG':flap(-1);break;
     case 'KeyC':cambiaVista();break;
     case 'KeyN':prossimaDest();break;
@@ -651,7 +652,7 @@ $('thr').addEventListener('input',()=>{st.thr=$('thr').value/100;});
 for(const b of document.querySelectorAll('[data-azione]')){
   b.addEventListener('click',()=>{
     audio.avvia();
-    ({centra:centraCloche,flapsu:()=>flap(-1),flapgiu:()=>flap(1),vista:cambiaVista,audio:alternaAudio,reset:()=>{if(avviato)ricomincia();}})[b.dataset.azione]();
+    ({centra:centraCloche,flapsu:()=>flap(-1),flapgiu:()=>flap(1),vista:cambiaVista,audio:alternaAudio,reset:()=>{if(avviato)ricomincia();},rifornimento})[b.dataset.azione]();
     b.blur();
   });
 }
@@ -958,6 +959,41 @@ function impostaDest(i){destIdx=i;selDB.value=selD.value=String(i);aggiornaBrief
 /* fermi dopo un atterraggio: l'aeroporto diventa la partenza del volo successivo (si continua lo stesso volo:
    carburante e posizione restano; R da qui in poi riparte da questo aeroporto) */
 function sulPiazzale(){T.suolo(st.pos.x,st.pos.z);return T.tipo==='piazzale';}
+/* ---------- rifornimento ----------
+   fermi in un aeroporto, fuori dalla pista e con la manetta al minimo (nella realtà a motore spento):
+   pulsante RIFORNIMENTO o Maiusc+F. Il serbatoio si riempie qualche volta più in fretta che nella realtà
+   (pieno del Cessna in circa 2 minuti, del C42 in meno di uno); premendo di nuovo ci si ferma. */
+const VEL_RIF=A.carburante.unita==='l'?1.5:0.5;   // litri o galloni al secondo
+let rifornendo=false;
+function aeroportoQui(){
+  let best=null,bd=Infinity;
+  for(const ap of T.aeroporti){const d=Math.hypot(ap.x-st.pos.x,ap.z-st.pos.z);if(d<bd){bd=d;best=ap;}}
+  return bd<3000?best:null;
+}
+function puoiRifornire(){
+  if(!avviato||st.crashed||!st.aTerra||st.gs*KT>1||st.thr>0.1) return false;
+  T.suolo(st.pos.x,st.pos.z);if(T.tipo==='pista') return false;
+  return !!aeroportoQui();
+}
+const unCarb=A.carburante.unita==='l'?'l':'gal', fmtCarb=v=>v.toFixed(1).replace('.',L(',','.'));
+function rifornimento(){
+  if(rifornendo){rifornendo=false;messaggio(L(`Rifornimento interrotto: <b>${fmtCarb(st.carburante)} ${unCarb}</b>`,`Refuelling stopped: <b>${fmtCarb(st.carburante)} ${unCarb}</b>`),3);return;}
+  const ap=aeroportoQui();
+  if(!puoiRifornire()){messaggio(L('Per il rifornimento fermati in un aeroporto, fuori dalla pista, con la manetta al minimo.','To refuel, stop at an airport, off the runway, with the throttle at idle.'),3.5);return;}
+  if(!SIM.haCarburante(ap)){messaggio(L(`A <b>${ap.codice}</b> ${ap.nome} non c'è carburante: serve un aeroporto più attrezzato (lo dice il piano di volo).`,`There is no fuel at <b>${ap.codice}</b> ${ap.nome}: you need a better-equipped airport (the flight plan tells you).`),4);return;}
+  if(st.carburante>=A.carburante.capacita-0.05){messaggio(L('Il serbatoio è già pieno.','The tank is already full.'),2);return;}
+  rifornendo=true;
+}
+function aggiornaRifornimento(dt){
+  const b=$('btnRifornimento'),ok=puoiRifornire();
+  if(b){b.hidden=!ok&&!rifornendo;b.classList.toggle('attivo',rifornendo);}
+  if(!rifornendo) return;
+  if(!ok){rifornendo=false;messaggio(L('Rifornimento interrotto: l\'aereo si è mosso.','Refuelling stopped: the aircraft moved.'),3);return;}
+  st.carburante=Math.min(A.carburante.capacita,st.carburante+VEL_RIF*dt);
+  const pieno=st.carburante>=A.carburante.capacita-0.01;
+  messaggio(L(`${pieno?'Pieno fatto':'Rifornimento'}: <b>${fmtCarb(st.carburante)} / ${A.carburante.capacita} ${unCarb}</b>`,`${pieno?'Tank full':'Refuelling'}: <b>${fmtCarb(st.carburante)} / ${A.carburante.capacita} ${unCarb}</b>`),pieno?3:1);
+  if(pieno)rifornendo=false;
+}
 function nuovaPartenza(ap){
   let te=testataControvento(ap);
   partenza=creaPartenza(ap,te);te=partenza.te;modalita='decollo';daPiano=null;
@@ -1114,6 +1150,7 @@ function ciclo(ora){
     if(missioni.daMostrare()&&st.aTerra&&st.gs<1&&!st.crashed)mostraEsito();
   }
   if(n%15===0)controllaRadio(attivo?0.25:0);
+  if(n%15===0)aggiornaRifornimento(attivo?dt*15:0);
   if(n%15===0&&scheda==='ap')aggiornaSchedaAP();
   if(n%6===0)aggiornaObiettivo();
   mondo.aggiorna(st,camera.position,vento,attivo?dt:0,vista===1);
