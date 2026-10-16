@@ -32,7 +32,7 @@ SIM.creaModelloC42=function(opz){
   }
   const v3=(x,y,z)=>new THREE.Vector3(x,y,z);
 
-  /* ---------- baccello della cabina: sezioni superellisse lungo z (come in js/aereo3d.js) ---------- */
+  /* ---------- baccello della cabina: sezioni superellisse lungo z (come in js/c172-3d.js) ---------- */
   //  z      sopra   sotto  mezza larg. esponente
   const ST=[
     [-2.08, 0.14, -0.18, 0.20, 2.2],

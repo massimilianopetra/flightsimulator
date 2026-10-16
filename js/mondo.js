@@ -307,13 +307,13 @@ SIM.creaMondo=function(scene,renderer){
     },
   };
 
-  /* modello 3D del Cessna (js/aereo3d.js): muso verso -z, superfici di comando animate */
+  /* modello 3D del Cessna (js/c172-3d.js): muso verso -z, superfici di comando animate */
   function creaAereo(){
-    // modello e cabina dell'aereo scelto: Cessna 172 (js/aereo3d.js, js/cabina.js) o Ikarus C42 (js/c42-3d.js)
+    // modello e cabina dell'aereo scelto: Cessna 172 (js/c172-3d.js, js/c172-cabina.js) o Ikarus C42 (js/c42-3d.js)
     const c42=window.AEREO&&window.AEREO.id==='c42';
     const m=(c42?SIM.creaModelloC42:SIM.creaModelloAereo)({registrazione:(window.AEREO&&window.AEREO.registrazione)||'I-VOLO'});
     const gr=m.gruppo,fus=m.fus,{elev,tim,alS,alD,flS,flD,pale,disco,strobo,beacon,luciNav}=m;
-    // interno della cabina (js/cabina.js), visibile solo dalla vista in cabina
+    // interno della cabina (js/c172-cabina.js), visibile solo dalla vista in cabina
     const cab=(c42?SIM.creaCabinaC42:SIM.creaCabina)();gr.add(cab.gruppo);
     const cabina=cab.gruppo;
     const ombra=creaOmbra(gr,[cabina,m.pale,disco,m.strobo]);
