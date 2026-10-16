@@ -131,6 +131,7 @@ window.MAPPA = {
     {nome: "Borgomanero",x: 40382,y: 49616,raggio: 1554,edifici: 90},
     {nome: "Acqui Terme",x: 40632,y: -63654,raggio: 1491,edifici: 84},
     {nome: "Ciriè",x: -27893,y: -3278,raggio: 1457,edifici: 81},
+    {nome: "San Maurizio Canavese",x: -24985,y: -3685,raggio: 1164,edifici: 59},
     {nome: "Domodossola",x: 26806,y: 95674,raggio: 1457,edifici: 81},
     {nome: "Valenza",x: 54520,y: -26008,raggio: 1457,edifici: 81},
     {nome: "Saluzzo",x: -35720,y: -62550,raggio: 1423,edifici: 79},

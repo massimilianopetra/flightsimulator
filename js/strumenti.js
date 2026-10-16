@@ -662,6 +662,7 @@ SIM.creaStrumenti=function(A){
     if(SIM.listaMonumenti&&range<=40000){
       mg.font=`700 9px ${MONO}`;mg.textAlign='left';mg.textBaseline='middle';
       for(const m of SIM.listaMonumenti){
+        if(m.dati.mappa===false) continue;
         const [x,y]=P(m.x,m.z);
         if(x<-60||x>MW+20||y<-10||y>MH+10) continue;
         mg.fillStyle='#ffd27a';mg.strokeStyle='#3b2a06';mg.lineWidth=1;

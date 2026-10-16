@@ -7,6 +7,7 @@
      lat, lon   posizione (gradi)
      rotta      direzione dell'asse principale dell'edificio (gradi bussola)
      altezza    altezza vera in metri (solo informativa: la usa la mappa)
+     mappa      false = non compare sulla mappa (né simbolo né nome)
    Questo file si può modificare a mano: per esempio spostare un monumento
    cambiando lat e lon, o toglierlo cancellando la sua riga.
    Dati © OpenStreetMap contributors (ODbL).
@@ -23,4 +24,7 @@ window.MONUMENTI = [
   { tipo: "vicoforte",  nome: "Santuario di Vicoforte",           nomeEn: "Sanctuary of Vicoforte",         lat: 44.36359, lon: 7.86287, rotta: 150, altezza: 75 },
   { tipo: "gaudenzio",  nome: "Basilica di San Gaudenzio",        nomeEn: "Basilica of San Gaudenzio",      lat: 45.44875, lon: 8.61943, rotta: 91,  altezza: 121 },
   { tipo: "oropa",      nome: "Santuario di Oropa",               nomeEn: "Sanctuary of Oropa",             lat: 45.62895, lon: 7.97788, rotta: 133, altezza: 80 },
+  { tipo: "campanileSM", nome: "Campanile di San Maurizio",        nomeEn: "San Maurizio bell tower",        lat: 45.21903, lon: 7.63199, rotta: 20,  altezza: 62 },
+  { tipo: "chiesaSM",    nome: "Chiesa di San Maurizio Martire",   nomeEn: "Church of San Maurizio",         lat: 45.21921, lon: 7.63198, rotta: 21,  altezza: 17, mappa: false },
+  { tipo: "villetta",    nome: "",                                 nomeEn: "",                               lat: 45.21039, lon: 7.63542, rotta: 350, altezza: 9,  mappa: false },
 ];
