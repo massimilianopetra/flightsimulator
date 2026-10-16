@@ -151,6 +151,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <tr><td><kbd>M</kbd> / <kbd>O</kbd></td><td>Map scale / north up or heading up</td></tr>
     <tr><td><kbd>T</kbd></td><td>Radio: opens the menu of sentences to say to the tower (then <kbd>1</kbd>…<kbd>4</kbd>)</td></tr>
     <tr><td><kbd>U</kbd></td><td>Radio COM1: tune the next nearest station</td></tr>
+    <tr><td><kbd>Shift</kbd>+<kbd>T</kbd></td><td>Transponder: type the 4-digit code (see <a href="#radio">Radio communications</a>)</td></tr>
     <tr><td><kbd>V</kbd></td><td>NAV1: tune the next VOR or ILS station in range (nearest first)</td></tr>
     <tr><td><kbd>L</kbd></td><td>NAV1: tune the ILS of the arrival runway</td></tr>
     <tr><td><kbd>,</kbd> / <kbd>.</kbd></td><td>VOR course CRS −1° / +1° (with <kbd>Shift</kbd> ±10°)</td></tr>
@@ -562,7 +563,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <ul>
   <li>Your callsign is <b>I-VOLO</b> (“India Victor Oscar Lima Oscar”). After the first call the tower uses the abbreviated one, <b>I-LO</b>.</li>
   <li>Numbers are said digit by digit: runway 27 = “runway two seven”, QNH 1016 = “Q N H one zero one six”, and 9 is “niner”.</li>
-  <li>When the tower gives you a clearance you must <b>read it back</b>. Sometimes one of the answers is wrong, with a different runway or QNH: if you choose it, the tower corrects you. Listen carefully!</li>
+  <li>When the tower gives you a clearance you must <b>read it back</b>. Sometimes one of the answers is wrong, with a different runway, QNH or transponder code: if you choose it, the tower corrects you. Listen carefully!</li>
   <li>When the tower calls you, the RADIO tab flashes and an orange prompt appears. If you do not answer, after a while the tower calls again.</li>
   <li>Nobody talks while someone else is transmitting: wait until the end, then press <kbd>T</kbd>.</li>
 </ul>
@@ -586,6 +587,15 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <h3>Tuning the radio (COM1)</h3>
 <p>Every airport has its own frequency, shown in the flight plan (<b>COM</b> line: departure and arrival) and in the <b>COM1</b> menu of the RADIO tab. Before calling a station you must tune its frequency: from the COM1 menu or with the <kbd>U</kbd> key, which steps through the nearest stations. If you call on the wrong frequency <b>nobody answers</b>, as in real life, and the radio tells you which frequency you need. When you leave the control zone the tower also gives you the frequency of the arrival station: read it back and then set it.</p>
 <p>If you do not want to think about frequencies, tick <b>Automatic tuning</b>: the game sets the right frequency when you call (you can still change it by hand). A MAYDAY is always answered, whatever the frequency, because in real life there is an emergency frequency (121.5) that is always monitored.</p>
+<h3>The transponder</h3>
+<p>The <b>transponder</b> replies to the controller's radar with a <b>4-digit code</b> (digits 0 to 7 only) and, in ALT mode, with your altitude too. You find it in the RADIO tab (<b>XPDR</b> row), at the bottom right of the Cessna PFD and on the radio in the C42 cockpit.</p>
+<ul>
+  <li><b>Changing the code</b>: press <kbd>Shift</kbd>+<kbd>T</kbd> (or click the code) and type the 4 digits; while you type, the numbers do not move the throttle. <kbd>Esc</kbd> cancels.</li>
+  <li><b>Modes</b>: <b>STBY</b> = on but not replying (on the ground, at the parking area); <b>ON</b> = replies with the code only; <b>ALT</b> = code and altitude, used in flight (select it before entering the runway). <b>IDENT</b> makes your aircraft “flash” on the radar: press it only when the controller asks.</li>
+  <li><b>7000</b> is the code for visual flight (VFR) in Italy: it is the one you start with. <b>Towers</b> assign you a code (“squawk 4521”) with the taxi or take-off clearance and when you arrive; read it back and set it. When you leave the control zone the tower puts you back on 7000.</li>
+  <li>If you don't set the code, after about thirty seconds the tower asks you to check it (“check squawk”); if you are flying near the field without ALT mode, it reminds you (“squawk mode Charlie”).</li>
+  <li>In an emergency you set <b>7700</b>: after a MAYDAY the tower asks you to, if you haven't already.</li>
+</ul>
 <p>If you take off or land without a clearance, the tower notices and tells you. If the engine stops you can declare an emergency with <b>MAYDAY</b>: the tower gives you the nearest airport, the heading and the distance.</p>
 <p>In the Piedmont world stations and frequencies are the <b>real</b> ones (from OurAirports): for example Torino Ground 121.705 and Torino Tower 118.500 at Caselle, Malpensa Tower 119.000, Cuneo Information 119.550, Bresso Radio 122.005. <b>Towers</b> give clearances; <b>Information</b> (AFIS) and <b>Radio</b> services only give information (runway in use, wind, traffic) and leave the decision to you. Where there is a <b>Ground</b> frequency, when starting from the parking area you ask Ground for taxi, and Ground hands you over to the tower at the holding point. The tuned frequency is shown at the top of the RADIO tab (COM1).</p>
 <div class="attenzione">For airports without data (some small fields, and all those of Valle Azzurra) the station is <b>simulated</b> and marked as such in the COM1 menu. Procedures are simplified too: they resemble real ones but are not those published for each airport. The voice depends on the browser and the system: Windows already has English voices; if none is found, the transmissions are still written. With the AUDIO button off the radio does not speak.</div>

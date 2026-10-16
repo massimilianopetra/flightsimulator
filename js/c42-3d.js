@@ -251,15 +251,19 @@ SIM.creaCabinaC42=function(){
   const pan=new THREE.Mesh(new THREE.PlaneGeometry(0.75,0.45),new THREE.MeshBasicMaterial({map:tex,toneMapped:false}));
   pan.position.set(-0.17,-0.05,ZP+0.002);gr.add(pan);
   const pannello={canvas:cv,tex,sup:{g:cv.getContext('2d'),W:cv.width,H:cv.height}};
-  // radio COM e transponder (a destra), con le cifre verdi
-  for(const [y,t] of [[0.08,'COM 122.500'],[-0.02,'XPDR 7000']]){
+  // radio COM e transponder (a destra): display con le cifre verdi, aggiornati da main.js (radio())
+  const displays=[0.08,-0.02].map(y=>{
     box(0.22,0.06,0.03,M.nero,0.4,y,ZP+0.01);
-    const c2=document.createElement('canvas');c2.width=256;c2.height=64;const g=c2.getContext('2d');
-    g.fillStyle='#061008';g.fillRect(0,0,256,64);g.fillStyle='#57e389';g.font='700 34px "B612 Mono", monospace';g.textBaseline='middle';g.fillText(t,12,34);
-    const p=new THREE.Mesh(new THREE.PlaneGeometry(0.15,0.035),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c2),toneMapped:false}));
-    p.position.set(0.38,y,ZP+0.027);gr.add(p);
+    const c2=document.createElement('canvas');c2.width=256;c2.height=64;
+    const t2=new THREE.CanvasTexture(c2);
+    const p=new THREE.Mesh(new THREE.PlaneGeometry(0.14,0.035),new THREE.MeshBasicMaterial({map:t2,toneMapped:false}));
+    p.position.set(0.4,y,ZP+0.027);gr.add(p);
     for(const sx of [-1,1]){const k=cil(0.012,0.02,M.grigio,0.4+sx*0.09,y,ZP+0.03);k.rotation.x=PI/2;}
-  }
+    let ora='';
+    return t=>{if(t===ora)return;ora=t;const g=c2.getContext('2d');
+      g.fillStyle='#061008';g.fillRect(0,0,256,64);g.fillStyle='#57e389';g.font='700 30px "B612 Mono", monospace';g.textBaseline='middle';g.textAlign='center';g.fillText(t,128,34);t2.needsUpdate=true;};
+  });
+  displays[0]('COM ---.---');displays[1]('XPDR 7000 SBY');
   // interruttori (accensione, pompa, master) e pulsante del trim
   for(let i=0;i<5;i++)box(0.012,0.025,0.012,M.bianco,0.3+i*0.04,-0.2,ZP+0.02);
   box(0.02,0.04,0.015,M.nero,0.5,-0.12,ZP+0.02);   // trim elettrico (bilanciere)
@@ -303,6 +307,8 @@ SIM.creaCabinaC42=function(){
   const fl=(window.AEREO&&window.AEREO.flap.posizioni)||[0,15,40];
   return {
     gruppo:gr, pannello, occhio,
+    // display della radio: frequenza COM1 e transponder (codice e modo)
+    radio(freq,x){displays[0]('COM '+(freq||'---.---'));if(x)displays[1](`XPDR ${x.codice} ${x.ident?'IDT':x.modo==='STBY'?'SBY':x.modo}`);},
     aggiorna(s){
       const c=s.comandi;
       clocheP.rotation.x=Math.max(-1,Math.min(1,c.elev))*0.22;   // tirare = verso il pilota

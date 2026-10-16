@@ -53,6 +53,14 @@ button.chiudi{padding:6px 9px;font-size:13px;border-color:rgba(142,166,187,.5)}
 /* radio */
 .radiopan{font-size:12px;line-height:1.35}
 .riga-com{margin-top:6px}
+/* transponder */
+.riga-xpdr{margin-top:6px;align-items:center;flex-wrap:wrap;gap:6px}
+.xp-codice{pointer-events:auto;font:700 15px var(--f-num);color:#4ade80;background:#061008;border:1px solid #2c4a33;border-radius:4px;padding:3px 8px;letter-spacing:.12em;min-width:5.2em}
+.xp-codice.digita{color:#fbbf24;border-color:#fbbf24}
+.xp-modi{display:flex;gap:3px;pointer-events:auto}
+.xp-modi button{padding:3px 6px;font-size:10px}
+.xp-modi button.attivo{background:#14532d;border-color:#4ade80;color:#bbf7d0}
+.xp-modi button.ident{background:#854d0e;border-color:#fbbf24;color:#fff}
 .selcom{pointer-events:auto;color:#4ade80;font-size:13px;padding:3px 4px;flex:1;min-width:0}
 .radiocom{font:700 11px var(--f-num);color:#4ade80;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .radioavviso{margin-top:6px;color:#1b1000;background:var(--amber);border-radius:4px;padding:4px 7px;font-weight:700}
