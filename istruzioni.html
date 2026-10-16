@@ -30,6 +30,7 @@ header{margin-bottom:28px}
 h1{font-size:34px;line-height:1.2;margin:0 0 8px}
 h2{font-size:24px;margin:56px 0 12px;padding-top:12px;border-top:1px solid var(--riga)}
 h3{font-size:18px;margin:28px 0 8px;color:var(--cyan)}
+h4{font-size:16px;margin:24px 0 8px}
 p,li{max-width:72ch}
 .sotto{color:var(--dim);margin:0}
 .progetto{font:700 13px var(--f-ui);letter-spacing:.14em;color:var(--cyan);margin:0 0 6px}
@@ -596,6 +597,26 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
   <li>Se non imposti il codice, dopo una trentina di secondi la torre ti chiede di verificarlo (“check squawk”); se sei in volo vicino al campo senza il modo ALT, te lo ricorda (“squawk mode Charlie”).</li>
   <li>In emergenza si mette il <b>7700</b>: dopo il MAYDAY la torre te lo chiede, se non l'hai già fatto.</li>
 </ul>
+<h4>Come funziona, in breve</h4>
+<p>Il radar “primario” vede solo un'eco, senza sapere chi sei. Il radar “secondario” invece interroga il transponder, che risponde con il suo codice (e la quota): così sullo schermo del controllore accanto al tuo puntino compaiono il codice, la quota e, con i transponder moderni, il nominativo. Il codice è un numero <b>ottale</b>: ogni cifra va da 0 a 7, quindi le combinazioni sono 8 × 8 × 8 × 8 = <b>4096</b>. Per questo l'8 e il 9 non si possono digitare.</p>
+<table>
+  <thead><tr><th>Modo</th><th>Cosa trasmette</th><th>Quando si usa</th></tr></thead>
+  <tbody>
+    <tr><td><b>STBY</b></td><td>niente: è acceso e scaldato, ma non risponde</td><td>al parcheggio e a terra; così non si riempiono di echi il radar e gli strumenti anticollisione (TCAS) degli altri aerei</td></tr>
+    <tr><td><b>ON</b></td><td>solo il codice (“modo A”)</td><td>quasi mai: solo se il controllore chiede di togliere la quota perché è sbagliata</td></tr>
+    <tr><td><b>ALT</b></td><td>codice e quota (“modo C”); i transponder “modo S”, come quelli del Cessna e del C42, mandano anche il nominativo</td><td>in volo, sempre: si inserisce prima di entrare in pista per il decollo</td></tr>
+    <tr><td><b>IDENT</b></td><td>per circa 18 secondi il tuo puntino si evidenzia sul radar, poi torna normale da solo</td><td>solo quando il controllore lo chiede (“squawk ident”), per riconoscerti fra gli altri</td></tr>
+  </tbody>
+</table>
+<p>In un volo tipico: <b>STBY</b> al parcheggio e durante il rullaggio, <b>ALT</b> quando entri in pista, il codice che ti dà la torre finché sei con lei, di nuovo <b>7000</b> quando lasci la zona di controllo, il codice dell'arrivo quando chiami la torre di destinazione, <b>STBY</b> dopo aver liberato la pista. (In alcuni grandi aeroporti, se lo dicono le procedure, il transponder resta acceso anche durante il rullaggio, perché lì c'è un radar per le vie a terra.)</p>
+<div class="nota"><b>Codici speciali</b>, da conoscere a memoria:
+  <ul>
+    <li><b>7000</b>: volo a vista (VFR) senza un codice assegnato, in Italia e in quasi tutta Europa (negli Stati Uniti è 1200).</li>
+    <li><b>7700</b>: emergenza. Sul radar di tutti i controllori l'aereo diventa subito evidenziato. Nel gioco si usa con il MAYDAY.</li>
+    <li><b>7600</b>: guasto alla radio (non si riesce più a parlare con la torre).</li>
+    <li><b>7500</b>: interferenza illecita (dirottamento). Non si usa mai per gioco: nella realtà fa scattare l'allarme.</li>
+  </ul>
+  Quando cambi codice, fai attenzione a non passare per sbaglio da questi numeri mentre digiti. Nel gioco esistono solo 7000, i codici assegnati dalle torri e 7700.</div>
 <p>Se decolli o atterri senza autorizzazione, la torre se ne accorge e te lo dice. Se ti si spegne il motore puoi dichiarare emergenza con il <b>MAYDAY</b>: la torre ti indica l'aeroporto più vicino, la prua e la distanza.</p>
 <p>Nel mondo Piemonte stazioni e frequenze sono quelle <b>vere</b> (da OurAirports): per esempio Torino Ground 121.705 e Torino Tower 118.500 a Caselle, Malpensa Tower 119.000, Cuneo Information 119.550, Bresso Radio 122.005. Le <b>torri</b> (“Tower”) danno le autorizzazioni; i servizi <b>Information</b> (AFIS) e <b>Radio</b> danno solo informazioni (pista in uso, vento, traffico) e lasciano a te la decisione. Dove c'è la frequenza di <b>terra</b> (“Ground”), partendo dal parcheggio il rullaggio si chiede a Terra, che al punto attesa ti passa alla torre. La frequenza sintonizzata è scritta in alto nella scheda RADIO (COM1).</p>
 <div class="attenzione">Per gli aeroporti senza dati (alcuni campi piccoli, e tutti quelli della Valle Azzurra) la stazione è <b>simulata</b> e nel menu COM1 è indicata come tale. Anche le procedure sono semplificate: assomigliano a quelle vere ma non sono quelle pubblicate per ogni aeroporto. La voce dipende dal browser e dal sistema: su Windows ci sono già voci inglesi; se non ne trovi, le trasmissioni restano comunque scritte. Con il pulsante AUDIO spento la radio non parla.</div>
