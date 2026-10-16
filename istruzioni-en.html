@@ -141,7 +141,8 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <tr><td><kbd>Q</kbd> / <kbd>E</kbd></td><td>Rudder left / right; on the ground it steers the nose wheel</td></tr>
     <tr><td><kbd>+</kbd> / <kbd>−</kbd></td><td>Throttle up / down (hold)</td></tr>
     <tr><td><kbd>1</kbd> … <kbd>9</kbd>, <kbd>0</kbd></td><td>Throttle at 10 … 90%, <kbd>0</kbd> = 100%</td></tr>
-    <tr><td><kbd>F</kbd> / <kbd>G</kbd></td><td>Flaps down / up (0°, 10°, 20°, 30°)</td></tr>
+    <tr><td><kbd>F</kbd> / <kbd>G</kbd></td><td>Flaps down / up (Cessna 0°, 10°, 20°, 30°; C42 0°, 15°, 40°)</td></tr>
+    <tr><td><kbd>Shift</kbd>+<kbd>F</kbd></td><td>Refuel, stopped at an airport with fuel (see <a href="#pannello">Fuel</a>)</td></tr>
     <tr><td><kbd>Z</kbd> / <kbd>X</kbd></td><td>Trim nose up / nose down</td></tr>
     <tr><td><kbd>B</kbd> or <kbd>Space</kbd></td><td>Brakes (hold)</td></tr>
     <tr><td><kbd>C</kbd></td><td>Change view: outside, cockpit, tower</td></tr>
@@ -261,7 +262,8 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <h3>Trim</h3>
     <p>The trim takes the effort off the stick. The blue pointer goes down (<b>UP</b>, nose up) or up (<b>DN</b>, nose down); the green band is the take-off setting.</p>
     <h3>Fuel</h3>
-    <p>Shows the US gallons left (1 gallon = 3.8 litres), the consumption in gal/h and the <b>endurance</b> at the current consumption. The engine burns about 1.5 gal/h at idle, 8.5 in cruise and 11.5 at full throttle. The number turns yellow below 10 gallons and red below 5.</p>
+    <p>Shows the US gallons left (1 gallon = 3.8 litres), the consumption in gal/h and the <b>endurance</b> at the current consumption. Fuel flow depends on <b>rpm</b>: the Cessna burns about 1.5 gal/h at idle, 8.5 at 2400 rpm and 11.5 at maximum; a little less at altitude. The number turns yellow below 20% of the tank and red below 10%. The C42 counts in litres.</p>
+    <p><b>Refuelling.</b> The tank does not fill up by itself when you land: the flight continues with what you have left. To fill up, stop at an airport, <b>off the runway</b> (at the parking area or on the apron), with the <b>throttle at idle</b> (in real life with the engine off), and press <b>REFUEL</b> (it appears among the buttons) or <kbd>Shift</kbd>+<kbd>F</kbd>. The fuel goes up a few times faster than in real life; press again to stop before the tank is full. Not every airport has a fuel station: there is one where OpenStreetMap marks it, where there is a tower or an information service, or an asphalt runway of at least 800 m; there is none at grass airstrips, short altiports and military airports. The flight plan (<b>FUEL</b> line) tells you how much fuel you need to get there, plus 30 minutes of reserve, and whether you can refuel at the destination.</p>
   </div>
   <figure>
     <img src="istruzioni/en/pannello.png" alt="Engine panel with RPM, flaps, trim, g-load, turn coordinator, trim indicator, fuel, stick, throttle and buttons" loading="lazy">

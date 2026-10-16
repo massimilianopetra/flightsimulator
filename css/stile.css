@@ -165,6 +165,9 @@ a.istr{display:inline-block;margin-top:8px;color:var(--cyan);font-weight:700;poi
 .manetta{display:flex;align-items:center;gap:8px}
 #thr{flex:1;min-width:0;accent-color:var(--cyan)}
 .bottoni{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.bottoni .rifornimento{grid-column:1/-1;background:#14532d;border-color:#4ade80;color:#dcfce7}
+.bottoni .rifornimento.attivo{background:#854d0e;border-color:#fbbf24}
+.pv-pista .rosso{color:#f87171}
 button{font:700 11px/1 var(--f-ui);letter-spacing:.06em;text-transform:uppercase;background:transparent;color:var(--ink);
   border:1px solid var(--dim);border-radius:4px;padding:9px 4px;cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none}
 button:hover{border-color:var(--cyan);color:var(--cyan)}
