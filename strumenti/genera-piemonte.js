@@ -209,7 +209,7 @@ const CITTA=[
   ['Verbania','Verbania',30000],['Alba','Alba, Cuneo',31000],['Bra','Bra, Cuneo',29000],['Carmagnola','Carmagnola',28000],
   ['Chivasso','Chivasso',27000],['Novi Ligure','Novi Ligure',27000],['Tortona','Tortona',25000],['Fossano','Fossano',24000],
   ['Ivrea','Ivrea',23000],['Mondovì','Mondovì',22000],['Savigliano','Savigliano',21000],['Borgomanero','Borgomanero',21000],
-  ['Acqui Terme','Acqui Terme',19000],['Ciriè','Ciriè',18000],['Domodossola','Domodossola',18000],['Valenza','Valenza',18000],
+  ['Acqui Terme','Acqui Terme',19000],['Ciriè','Ciriè',18000],['San Maurizio Canavese','San Maurizio Canavese',10300],['Domodossola','Domodossola',18000],['Valenza','Valenza',18000],
   ['Saluzzo','Saluzzo',17000],['Omegna','Omegna',15000],['Arona','Arona',14000],['Avigliana','Avigliana',12000],
   ['Susa','Susa, Torino',6500],['Aosta','Aosta',33000],['Savona','Savona',59000],['Varese','Varese',80000],
   ['Busto Arsizio','Busto Arsizio',83000],['Gallarate','Gallarate',53000],['Lugano','Lugano, Svizzera',63000],

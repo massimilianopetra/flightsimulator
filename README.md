@@ -87,7 +87,7 @@ In the opening briefing you choose the **world**:
   There are also the lakes with their real shorelines (Maggiore, Orta, Viverone, Avigliana, Lugano,
   Como…), towns and villages with their buildings, motorways, roads, railways and rivers, and the real
   VOR radio beacons. From altitude you can see the Alps up to 70 km away.
-  The main **monuments** are there as visual landmarks: Mole Antonelliana, Superga, the Lingotto with its rooftop test track, the two Turin skyscrapers, the Palace of Venaria, Stupinigi, the Sacra di San Michele, Vicoforte, San Gaudenzio in Novara and Oropa (simplified models, marked on the map).
+  The main **monuments** are there as visual landmarks: Mole Antonelliana, Superga, the Lingotto with its rooftop test track, the two Turin skyscrapers, the Palace of Venaria, Stupinigi, the Sacra di San Michele, Vicoforte, San Gaudenzio in Novara, Oropa and the bell tower of San Maurizio Canavese (simplified models, marked on the map).
 - **Valle Azzurra (invented)**: the procedural world in `dati/mappa.js`, easy to edit by hand.
 
 You can open a world directly from the address: `index.html?mappa=piemonte` or `index.html?mappa=valle`.
@@ -608,7 +608,7 @@ Nel briefing iniziale si sceglie il **mondo**:
   larghezza, erba o asfalto). Ci sono anche i laghi con il loro contorno (Maggiore, Orta,
   Viverone, Avigliana, Lugano, Como…), città e paesi con i loro edifici, autostrade, strade,
   ferrovie e fiumi, e i radiofari VOR veri. Dall'alto si vedono le Alpi fino a 70 km di distanza.
-  Ci sono anche i principali **monumenti**, utili come riferimento a vista: la Mole Antonelliana, Superga, il Lingotto con la pista sul tetto, i due grattacieli di Torino, la Reggia di Venaria, Stupinigi, la Sacra di San Michele, Vicoforte, San Gaudenzio a Novara e Oropa (modelli semplificati, segnati sulla mappa).
+  Ci sono anche i principali **monumenti**, utili come riferimento a vista: la Mole Antonelliana, Superga, il Lingotto con la pista sul tetto, i due grattacieli di Torino, la Reggia di Venaria, Stupinigi, la Sacra di San Michele, Vicoforte, San Gaudenzio a Novara, Oropa e il campanile di San Maurizio Canavese (modelli semplificati, segnati sulla mappa).
 - **Valle Azzurra (inventata)**: il mondo procedurale di `dati/mappa.js`, comodo da modificare a mano.
 
 Si può aprire direttamente un mondo dall'indirizzo: `index.html?mappa=piemonte` oppure `index.html?mappa=valle`.

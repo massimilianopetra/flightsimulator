@@ -1,7 +1,7 @@
 /* =====================================================================
    MONUMENTI 3D (solo mondo reale): Mole Antonelliana, Superga, Lingotto,
    grattacieli di Torino, Venaria, Stupinigi, Sacra di San Michele,
-   Vicoforte, San Gaudenzio, Oropa.
+   Vicoforte, San Gaudenzio, Oropa, campanile e chiesa di San Maurizio Canavese.
    Ogni monumento è una lista di "pezzi" semplici (blocchi, cilindri,
    cupole, guglie, tetti) in coordinate locali:
      x = a destra, y = in su, z = indietro (l'asse "rotta" è verso -z),
@@ -19,6 +19,7 @@ const COLORI={
   pietra:0xd2c3a2, pietraScura:0x9b8b73, ocra:0xdcc08e, chiaro:0xe8e0cc, bianco:0xf0eee8,
   tegole:0xa0533b, ardesia:0x6b6e72, piombo:0x8e959a, rame:0x6f9c8b, bronzo:0x6b5233,
   vetro:0x86a3bb, vetroChiaro:0xbfd3e0, asfalto:0x4a4b4d, tetto:0x8d8b86,
+  mattone:0xa4583a, mattoneScuro:0x7e4129, intonaco:0xece2cc, scuro:0x2b2622,
 };
 
 /* ---------- pezzi ----------
@@ -112,6 +113,28 @@ const MODELLI={
     return [B(30,33,80,0,-10,0,'pietra'),T(30,80,7,0,23,0,'tegole'),B(54,23,70,0,-10,0,'pietra'),
       B(22,20,22,0,23,z,'chiaro'),C(10,18,0,43,z,'bianco',{seg:20}),C(8.5,6,0,61,z,'bianco',{seg:20}),U(8.5,12,0,67,z,'piombo'),
       C(4,10,0,79,z,'bianco',{seg:12}),C(2.6,10,0,89,z,'bianco',{seg:12}),K(2.6,18,0,99,z,'piombo',12),K(0.5,4,0,117,z,'bronzo',6)];
+  },
+  campanileSM(){ // campanile di San Maurizio Canavese: 62 m; fusto romanico in mattoni (XI secolo), cima rialzata nel Settecento
+    const p=[B(6.4,44,6.4,0,-6,0,'mattone')];
+    for(const sx of [-1,1])for(const sz of [-1,1])p.push(B(0.9,44,0.9,sx*3,-6,sz*3,'mattoneScuro'));   // lesene agli spigoli
+    for(const y of [10,20,30])p.push(B(6.8,0.5,6.8,0,y,0,'mattoneScuro'));                              // cornici dei piani
+    // cella delle campane: pilastri agli angoli, finestroni scuri in mezzo
+    p.push(B(7,0.8,7,0,38,0,'intonaco'),B(5.4,8,5.4,0,38.8,0,'scuro'));
+    for(const sx of [-1,1])for(const sz of [-1,1])p.push(B(1.6,8,1.6,sx*2.6,38.8,sz*2.6,'intonaco'));
+    p.push(B(7.2,1,7.2,0,46.8,0,'intonaco'),
+      C(2.8,5,0,47.8,0,'intonaco',{seg:8}),C(3.1,0.6,0,52.8,0,'intonaco',{seg:8}),   // tamburo ottagonale
+      U(2.9,3.6,0,53.4,0,'piombo'),C(0.6,2.2,0,56.8,0,'intonaco',{seg:8}),K(0.8,2,0,59,0,'piombo',8),   // cupola e lanterna
+      B(0.12,1.6,0.12,0,61,0,'bronzo'),B(0.8,0.12,0.12,0,61.9,0,'bronzo'));            // croce
+    return p;
+  },
+  chiesaSM(){ // chiesa di San Maurizio Martire: navata con facciata a capanna, navatelle e abside
+    return [...corpo(0,0,0,30,12,13,'intonaco','tegole',4),
+      B(5,7,26,-8.5,-3,0,'intonaco'),T(5,26,2,-8.5,4,0,'tegole'),B(5,7,26,8.5,-3,0,'intonaco'),T(5,26,2,8.5,4,0,'tegole'),
+      C(5.5,10,0,-3,-15,'intonaco',{seg:16}),U(5.5,3,0,7,-15,'tegole')];
+  },
+  villetta(){ // villetta a due piani con pianta a L e tetti a falde
+    return [B(15,6.3,10.1,2.3,-0.5,-3.3,'chiaro'),T(11.3,16.2,2.6,2.3,5.8,-3.3,'tegole',90),
+      B(14.6,6.3,13.1,-2.3,-0.5,3.3,'chiaro'),T(15.8,14.3,3.2,-2.3,5.8,3.3,'tegole')];
   },
   oropa(){ // Basilica Superiore di Oropa: grande cupola verde
     return [B(45,40,70,0,-20,0,'pietra'),C(22,18,0,20,0,'pietra',{seg:32}),U(22,28,0,38,0,'rame'),
