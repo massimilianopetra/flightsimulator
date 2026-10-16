@@ -85,8 +85,7 @@ the **start** (on the runway, or from the parking area with taxiing and ground r
 
 ## How to start
 
-Open `index.html` with a double click (Chrome, Edge or Firefox). An Internet connection is needed,
-because the 3D library (three.js) is downloaded from the Internet (the fonts are in the `font/` folder).
+Open `index.html` with a double click (Chrome, Edge or Firefox). No Internet connection is needed: the 3D library (three.js) is in the `lib/` folder and the fonts in `font/`.
 
 To work on it with VS Code the *Live Server* extension is fine too.
 
@@ -595,8 +594,8 @@ pannello della mappa.
 ## Come si avvia
 
 Apri `index.html` con un doppio clic (Chrome, Edge o Firefox).
-Serve la connessione a Internet, perché la libreria 3D (three.js) viene scaricata
-da Internet (i caratteri sono nella cartella `font/`).
+Non serve la connessione a Internet: la libreria 3D (three.js) è nella cartella `lib/`
+e i caratteri nella cartella `font/`.
 
 Per lavorarci con VS Code va bene anche l'estensione *Live Server*.
 
@@ -1029,6 +1028,7 @@ ma **senza alcuna garanzia**. Il testo completo è nel file [LICENSE](LICENSE).
 I dati reali del Piemonte contenuti nei file `dati/piemonte*.js`
 mantengono le licenze delle loro fonti: OurAirports (pubblico dominio),
 © OpenStreetMap contributors (ODbL), Mapzen Terrain Tiles (vedi le fonti sopra).
+La libreria three.js r128 nella cartella `lib/` è sotto licenza MIT (`lib/three-LICENSE.txt`).
 I caratteri B612 e B612 Mono nella cartella `font/` sono sotto SIL Open Font License 1.1 (`font/OFL.txt`).
 
 Privacy: il gioco non usa cookie né tracciamento; tiene impostazioni e libretto solo nel
