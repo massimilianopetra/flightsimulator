@@ -118,7 +118,10 @@ SIM.creaFisica=function(A,terra){
     st.rpm+=(giriT-st.rpm)*Math.min(1,dt*2.5);
     const T=acceso?(0.03+0.97*st.thr)*A.motore.spintaStatica*Math.max(0,1-Math.max(0,u)/A.motore.velocitaMaxElica)*(rho/1.225):0;
     const cb2=A.carburante;
-    st.flusso=acceso?cb2.consumoMin+(cb2.consumoMax-cb2.consumoMin)*st.thr:0;
+    // consumo: con l'elica a passo fisso la potenza (e quindi la benzina) va col cubo dei giri;
+    // in quota l'aria è più rada e il motore ne brucia meno (rapporto di densità)
+    const pot=Math.min(1,Math.pow(Math.max(0,st.rpm)/A.motore.giriMax,3)*(rho/1.225));
+    st.flusso=acceso?cb2.consumoMin+(cb2.consumoMax-cb2.consumoMin)*pot:0;
     if(acceso){
       st.carburante=Math.max(0,st.carburante-st.flusso*dt/3600);
       if(st.carburante===0) st.eventi.push({tipo:'senzaCarburante'});

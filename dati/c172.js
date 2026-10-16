@@ -36,7 +36,7 @@ window.AEREO = {
   carburante: {                // galloni USA (1 gal = 3,785 litri), come sul G1000
     capacita: 53,              // utilizzabili, nei due serbatoi delle ali
     consumoMin: 1.5,           // gal/h al minimo
-    consumoMax: 11.5,          // gal/h a tutta manetta (in crociera al 65% circa 8,5)
+    consumoMax: 11.5,          // gal/h al massimo dei giri, al livello del mare (a 2400 giri circa 8,5)
   },
 
   // velocità di riferimento in NODI (colori del tachimetro e briefing)

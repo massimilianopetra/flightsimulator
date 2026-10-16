@@ -47,12 +47,12 @@ window.AEREO = {
     unita: "l",
     capacita: 65,              // utilizzabili (serbatoio da 65 l)
     consumoMin: 2.5,           // l/h al minimo
-    consumoMax: 20,            // l/h a tutta manetta (crociera a 4500 giri circa 13)
+    consumoMax: 24,            // l/h a 5800 giri al livello del mare (Rotax 912 UL); a 4500 giri circa 12,5 (manuale: 12,7)
     scelte: [                  // nel briefing: [litri, testo, testo inglese]
-      [65, "Pieno: 65 l (circa 4 ore e mezza)", "Full: 65 l (about 4½ hours)"],
-      [32.5, "Metà: 32,5 l (circa 2 ore)", "Half: 32.5 l (about 2 hours)"],
-      [10, "Riserva: 10 l (circa 40 minuti)", "Reserve: 10 l (about 40 minutes)"],
-      [3, "Quasi vuoto: 3 l (circa 12 minuti)", "Almost empty: 3 l (about 12 minutes)"],
+      [65, "Pieno: 65 l (circa 5 ore)", "Full: 65 l (about 5 hours)"],
+      [32.5, "Metà: 32,5 l (circa 2 ore e mezza)", "Half: 32.5 l (about 2½ hours)"],
+      [10, "Riserva: 10 l (circa 45 minuti)", "Reserve: 10 l (about 45 minutes)"],
+      [3, "Quasi vuoto: 3 l (circa 15 minuti)", "Almost empty: 3 l (about 15 minutes)"],
     ],
   },
 
