@@ -315,7 +315,7 @@ The site needs no build step: it is made of static files.
 | `dati/piemonte-radio.js` | the real VORs and airport radio frequencies (generated) | no |
 | `dati/piemonte-rullaggio.js` | the real taxiways and aprons of 18 airports (generated) | no |
 | `dati/piemonte-monumenti.js` | position and orientation of the monuments | yes |
-| `dati/aereo.js` | the aircraft data: weight, engine, fuel, wing, aerodynamic coefficients, landing gear | yes, to experiment |
+| `dati/c172.js` | the Cessna 172 data: weight, engine, fuel, wing, aerodynamic coefficients, landing gear | yes, to experiment |
 | `strumenti/genera-piemonte.js` | the script that downloads the real data and creates the Piedmont files | |
 | `strumenti/genera-radio.js` | the script that creates the list of real VORs and airport frequencies | |
 | `strumenti/genera-rullaggio.js` | the script that extracts the taxiways and aprons from OpenStreetMap | |
@@ -324,7 +324,7 @@ The site needs no build step: it is made of static files.
 | `js/terreno.js` | computes the terrain height and builds the mesh that follows the aircraft | |
 | `js/paesaggio.js` | draws roads, rivers and towns on the terrain and generates the buildings (real map only) | |
 | `js/fisica.js` | the flight physics (forces, moments, landing gear, stall, ground effect, fuel) | |
-| `js/cabina.js` | the 3D G1000-style cockpit: PFD and MFD screens, standby instruments, yokes, throttle | |
+| `js/c172-cabina.js` | the 3D G1000-style cockpit: PFD and MFD screens, standby instruments, yokes, throttle | |
 | `js/mondo.js` | 3D graphics: sky, runways with markings, PAPI, hangars, trees, houses, aircraft and its shadow near the ground | |
 | `js/notte.js` | time of day: sky and light colours, runway, town and landing lights, stars | |
 | `js/strumenti.js` | PFD, turn coordinator, fuel and trim indicators, MFD and the map | |
@@ -519,7 +519,7 @@ do not end up in the sea.
 
 ## Ideas for the next steps
 
-- More aircraft (a glider? a jet?): just another file like `dati/aereo.js`.
+- Other aircraft (a glider? a jet?): another data file like `dati/c42.js`, plus its 3D model.
 
 ## Licence
 
@@ -840,7 +840,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `dati/piemonte-radio.js` | i VOR veri e le frequenze radio degli aeroporti (generato) | no |
 | `dati/piemonte-rullaggio.js` | le vie di rullaggio e i piazzali veri di 18 aeroporti (generato) | no |
 | `dati/piemonte-monumenti.js` | posizione e orientamento dei monumenti | sì |
-| `dati/aereo.js` | i dati dell'aereo: peso, motore, carburante, ala, coefficienti aerodinamici, carrello | sì, per sperimentare |
+| `dati/c172.js` | i dati del Cessna 172: peso, motore, carburante, ala, coefficienti aerodinamici, carrello | sì, per sperimentare |
 | `strumenti/genera-piemonte.js` | lo script che scarica i dati reali e crea i file del Piemonte | |
 | `strumenti/genera-radio.js` | lo script che crea l'elenco dei VOR veri e delle frequenze degli aeroporti | |
 | `strumenti/genera-rullaggio.js` | lo script che estrae vie di rullaggio e piazzali da OpenStreetMap | |
@@ -849,7 +849,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `js/terreno.js` | calcola l'altezza del terreno e costruisce la mesh che segue l'aereo | |
 | `js/paesaggio.js` | disegna strade, fiumi e paesi sul terreno e genera gli edifici (solo mappa reale) | |
 | `js/fisica.js` | la fisica del volo (forze, momenti, carrello, stallo, effetto suolo, carburante) | |
-| `js/cabina.js` | la cabina 3D in stile G1000: schermi PFD e MFD, strumenti di riserva, cloche, manetta | |
+| `js/c172-cabina.js` | la cabina 3D in stile G1000: schermi PFD e MFD, strumenti di riserva, cloche, manetta | |
 | `js/mondo.js` | grafica 3D: cielo, piste con segnaletica, PAPI, hangar, alberi, case, aereo e la sua ombra vicino al suolo | |
 | `js/notte.js` | ora del volo: colori di cielo e luce, luci di piste e città, faro di atterraggio, stelle | |
 | `js/strumenti.js` | il PFD, virosbandometro, carburante e trim, l'MFD e la mappa | |
@@ -1042,7 +1042,7 @@ conviene ricontrollare che gli aeroporti non finiscano in mare.
 
 ## Idee per i prossimi passi
 
-- Più aerei (un aliante? un jet?): basta un altro file come `dati/aereo.js`.
+- Altri aerei (un aliante? un jet?): un altro file di dati come `dati/c42.js`, più il suo modello 3D.
 
 ## Licenza
 

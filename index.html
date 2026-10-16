@@ -315,7 +315,7 @@
   var MONDI={piemonte:["dati/piemonte-rilievo.js","dati/piemonte-vie.js","dati/piemonte-abitati.js","dati/piemonte.js","dati/piemonte-radio.js","dati/piemonte-monumenti.js","dati/piemonte-rullaggio.js"], valle:["dati/mappa.js"]};
   var m=/[?&]mappa=(\w+)/.exec(location.search), scelta=(m&&MONDI[m[1]])?m[1]:"piemonte";
   // aereo: ?aereo=c172 (Cessna, predefinito) o ?aereo=c42 (Ikarus C42); la scelta viene ricordata
-  var AEREI={c172:"dati/aereo.js",c42:"dati/c42.js"}, ma=/[?&]aereo=(\w+)/.exec(location.search), ricordato=null;
+  var AEREI={c172:"dati/c172.js",c42:"dati/c42.js"}, ma=/[?&]aereo=(\w+)/.exec(location.search), ricordato=null;
   try{ricordato=localStorage.getItem("volo-aereo");if(ma&&AEREI[ma[1]])localStorage.setItem("volo-aereo",ma[1]);}catch(e){}
   var aereo=(ma&&AEREI[ma[1]])?ma[1]:(AEREI[ricordato]?ricordato:"c172");
   window.AEREO_SCELTO=aereo;
@@ -331,8 +331,8 @@
 <script src="js/paesaggio.js"></script>
 <script src="js/fisica.js"></script>
 <script src="js/autopilota.js"></script>
-<script src="js/cabina.js"></script>
-<script src="js/aereo3d.js"></script>
+<script src="js/c172-cabina.js"></script>
+<script src="js/c172-3d.js"></script>
 <script src="js/c42-3d.js"></script>
 <script src="js/mondo.js"></script>
 <script src="js/notte.js"></script>

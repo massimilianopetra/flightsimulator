@@ -3,7 +3,7 @@
    ---------------------------------------------------------------------
    Dati dal manuale di volo del C42 (Owner's Manual, Rotax 912 da 80 CV,
    peso massimo 450 kg): velocità, flap, carburante, prestazioni.
-   Stesse unità e stessi assi di dati/aereo.js (x destra, y su, z coda).
+   Stesse unità e stessi assi di dati/c172.js (x destra, y su, z coda).
    Dotazioni come la versione di serie: strumenti analogici, radio COM e
    transponder; NIENTE autopilota, NIENTE ricevitore VOR/ILS, niente
    orizzonte artificiale (gli ultraleggeri volano solo a vista e di giorno).
