@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="it" data-en-title="Privacy · Flight Simulator">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy · Simulatore di Volo</title>
+<link rel="icon" href="icone/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icone/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="stylesheet" href="css/font.css">
+<style>
+:root{
+  --fondo:#0b1322; --riga:#22324a; --ink:#e8f1f8; --dim:#8ea6bb; --cyan:#39d7ff;
+  --f-ui:"B612",system-ui,sans-serif; --f-num:"B612 Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--ink);font:16px/1.6 var(--f-ui)}
+a{color:var(--cyan)}
+main{max-width:46rem;margin:0 auto;padding:32px 16px 80px}
+.progetto{font:700 13px var(--f-ui);letter-spacing:.14em;color:var(--cyan);margin:0 0 6px}
+h1{font-size:30px;line-height:1.2;margin:0 0 8px}
+h2{font-size:20px;margin:40px 0 10px;padding-top:12px;border-top:1px solid var(--riga)}
+.dim{color:var(--dim)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:6px 8px;border-top:1px solid var(--riga);vertical-align:top}
+th{font:700 11px var(--f-ui);letter-spacing:.1em;color:var(--dim)}
+code{font:14px var(--f-num);color:var(--cyan)}
+.tab{overflow-x:auto}
+</style>
+</head>
+<body>
+<main>
+<p class="progetto" data-en="FLIGHT SIMULATOR">SIMULATORE DI VOLO</p>
+<h1 data-en="Privacy and cookies">Privacy e cookie</h1>
+<p class="dim" data-en="Last updated: 16 October 2026">Ultimo aggiornamento: 16 ottobre 2026</p>
+
+<p data-en="In short: the game <b>uses no cookies</b>, has <b>no ads, no statistics and no tracking</b>, and the author <b>collects no personal data</b>. Your settings and logbook stay in your own browser.">In breve: il gioco <b>non usa cookie</b>, non ha <b>pubblicità, statistiche né tracciamento</b> e l’autore <b>non raccoglie dati personali</b>. Impostazioni e libretto di volo restano nel tuo browser.</p>
+
+<h2 data-en="Who is responsible">Chi è il responsabile</h2>
+<p data-en='Flight Simulator is a free, open-source hobby and school project by Massimiliano Petra (GPL-3.0 licence). For any question you can open an issue on <a href="https://github.com/massimilianopetra/flightsimulator/issues">GitHub</a>.'>Il Simulatore di Volo è un progetto libero e gratuito, scolastico e amatoriale, di Massimiliano Petra (licenza GPL-3.0). Per qualsiasi domanda puoi aprire una segnalazione su <a href="https://github.com/massimilianopetra/flightsimulator/issues">GitHub</a>.</p>
+
+<h2 data-en="Cookies">Cookie</h2>
+<p data-en="The game sets <b>no cookies</b>, neither its own nor third-party ones.">Il gioco <b>non imposta alcun cookie</b>, né propri né di terze parti.</p>
+
+<h2 data-en="What stays in your browser (local storage)">Cosa resta nel tuo browser (memoria locale)</h2>
+<p data-en="To remember your choices between one game and the next, the game uses your browser’s <i>local storage</i>. These are <b>technical data</b>, needed for the game to work as you asked: they are never sent to the author or to anyone else, and the game works the same if your browser blocks them (it just forgets your choices).">Per ricordare le tue scelte da una partita all’altra il gioco usa la <i>memoria locale</i> (localStorage) del browser. Sono <b>dati tecnici</b>, necessari a far funzionare il gioco come hai chiesto: non vengono mai inviati all’autore né ad altri, e se il browser li blocca il gioco funziona lo stesso (semplicemente non ricorda le scelte).</p>
+<div class="tab"><table>
+<tr><th data-en="NAME">NOME</th><th data-en="WHAT IT KEEPS">COSA CONTIENE</th></tr>
+<tr><td><code>volo-libretto</code></td><td data-en="your logbook: date, airports, duration and result of the last 300 flights">il libretto di volo: data, aeroporti, durata ed esito degli ultimi 300 voli</td></tr>
+<tr><td><code>volo-lingua</code></td><td data-en="language (Italian or English)">lingua (italiano o inglese)</td></tr>
+<tr><td><code>volo-missione</code>, <code>volo-ora</code>, <code>volo-carburante</code>, <code>volo-partenza-da</code></td><td data-en="the last choices made in the briefing">le ultime scelte fatte nel briefing</td></tr>
+<tr><td><code>volo-sens</code>, <code>volo-centro</code></td><td data-en="control stick sensitivity and centring">sensibilità e ritorno al centro della cloche</td></tr>
+<tr><td><code>volo-scheda</code>, <code>volo-mappa-orient</code>, <code>volo-com-auto</code>, <code>volo-audio</code></td><td data-en="open panel, map orientation, automatic radio tuning, sound on or off">scheda aperta, orientamento della mappa, sintonia automatica della radio, audio sì o no</td></tr>
+<tr><td><code>volo-privacy</code></td><td data-en="that you have read the privacy notice (so it is not shown again)">che hai letto l’avviso sulla privacy (per non mostrarlo di nuovo)</td></tr>
+</table></div>
+<p data-en="To delete them: “Clear the logbook” in the LOGBOOK window, or delete this site’s data from your browser settings.">Per cancellarli: «Svuota il libretto» nella finestra LIBRETTO, oppure cancella i dati di questo sito dalle impostazioni del browser.</p>
+
+<h2 data-en="Outside services">Servizi esterni</h2>
+<p data-en="To work, the page is loaded from a few outside services. As for any web page, they receive your IP address and the usual technical data of the request (browser, time), only to deliver the files:">Per funzionare la pagina viene caricata da alcuni servizi esterni. Come per qualsiasi pagina web, questi ricevono il tuo indirizzo IP e i normali dati tecnici della richiesta (browser, ora), solo per consegnare i file:</p>
+<ul>
+<li data-en='<b>GitHub Pages</b> (GitHub, Inc.) hosts the site — <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub privacy statement</a>.'><b>GitHub Pages</b> (GitHub, Inc.) ospita il sito — <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">informativa di GitHub</a>.</li>
+<li data-en='<b>cdnjs</b> (Cloudflare, Inc.) delivers the three.js 3D graphics library — <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare privacy policy</a>.'><b>cdnjs</b> (Cloudflare, Inc.) consegna la libreria di grafica 3D three.js — <a href="https://www.cloudflare.com/privacypolicy/">informativa di Cloudflare</a>.</li>
+</ul>
+<p data-en="The fonts are served by the site itself (no Google Fonts). The radio voices use your browser’s speech synthesis: some browsers (for example Chrome with its online voices) send the text of the radio messages to their own servers to turn it into speech; those texts are game phrases and contain no personal data.">I caratteri sono serviti dal sito stesso (niente Google Fonts). Le voci della radio usano la sintesi vocale del browser: alcuni browser (per esempio Chrome con le voci online) inviano il testo dei messaggi radio ai propri server per trasformarlo in voce; sono frasi del gioco e non contengono dati personali.</p>
+
+<h2 data-en="Your rights">I tuoi diritti</h2>
+<p data-en='The author holds no data about you. If you think your rights under the GDPR have been violated, you can complain to the Italian data protection authority, the <a href="https://www.garanteprivacy.it/">Garante per la protezione dei dati personali</a>.'>L’autore non conserva alcun dato su di te. Se ritieni che i tuoi diritti previsti dal GDPR siano stati violati puoi rivolgerti al <a href="https://www.garanteprivacy.it/">Garante per la protezione dei dati personali</a>.</p>
+
+<p style="margin-top:40px"><a href="index.html" data-en="← Back to the game">← Torna al gioco</a></p>
+</main>
+<script src="js/lingua.js"></script>
+</body>
+</html>
