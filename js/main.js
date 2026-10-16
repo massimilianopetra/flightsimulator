@@ -837,10 +837,10 @@ function aggiornaStrumenti(dt){
     vs:vsFiltrata, hdg, palla:st.palla, bug, gs:st.gs*KT,
     virata:st.aTerra?0:virataFiltrata, trim:st.trim, carb:st.carburante, flusso:st.crashed?0:st.flusso,
     nav:cdi==='GPS'?misuraGPS():misuraNav(), ap:ap.stato(),
-    rpm:st.rpm, thr:st.thr, acceso:st.carburante>0&&!st.crashed,
+    rpm:st.rpm, thr:st.thr, acceso:st.carburante>0&&!st.crashed, xpdr:atc.xpdr,
   };
   if(!DOT.g1000){   // cruscotto analogico: sul pannello in basso e, in cabina, sul cruscotto 3D
-    if(vista===1){const cab=mondo.aereo.cabina;strum.disegnaAnalogico(dati,cab.pannello.sup);cab.pannello.tex.needsUpdate=true;}
+    if(vista===1){const cab=mondo.aereo.cabina;strum.disegnaAnalogico(dati,cab.pannello.sup);cab.pannello.tex.needsUpdate=true;if(cab.radio)cab.radio(atc.comFreq,dati.xpdr);}
     else{strum.disegnaAnalogico(dati);strum.disegnaAux(dati);}
     return {hdg,bug};
   }

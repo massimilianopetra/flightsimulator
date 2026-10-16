@@ -55,6 +55,7 @@
       <dt>J · T · I · Y</dt><dd data-en="right column tabs: map, radio, flight plan, mission (press again to hide); AP tab with the mouse">schede a destra: mappa, radio, piano di volo, missione (di nuovo per nasconderle); la scheda AP col mouse</dd>
       <dt>T</dt><dd data-en="radio: talk to the tower (then 1…4 to choose the sentence)">radio: parla con la torre (poi 1…4 per scegliere la frase)</dd>
       <dt>U</dt><dd data-en="radio COM1: next nearest station">radio COM1: prossima stazione vicina</dd>
+      <dt data-en="Shift+T">Maiusc+T</dt><dd data-en="transponder: type the 4-digit code (0…7); STBY / ON / ALT / IDENT in the RADIO tab">transponder: digita il codice di 4 cifre (0…7); STBY / ON / ALT / IDENT nella scheda RADIO</dd>
       <dt>V</dt><dd data-en="NAV1: next VOR/ILS in range (nearest first)">NAV1: prossimo VOR/ILS ricevuto (il più vicino per primo)</dd>
       <dt>L</dt><dd data-en="NAV1: ILS of the arrival runway">NAV1: ILS della pista di arrivo</dd>
       <dt>, / .</dt><dd data-en="VOR course CRS −1° / +1° (with Shift ±10°)">rotta CRS del VOR −1° / +1° (con Maiusc ±10°)</dd>
@@ -104,6 +105,8 @@
     <div id="radioCorpo" class="corpo">
       <div id="radioCom" class="radiocom"></div>
       <div class="row riga-com"><span class="lbl">COM1</span><select id="selCom" class="selcom" aria-label="Frequenza della radio COM1" data-en-aria="COM1 radio frequency"></select></div>
+      <!-- transponder: codice (clic o Maiusc+T, poi 4 cifre da 0 a 7) e modi -->
+      <div class="row riga-xpdr"><span class="lbl">XPDR</span><button type="button" id="xpCodice" class="xp-codice" title="Cambia il codice (Maiusc+T, poi 4 cifre da 0 a 7)" data-en-title="Change the code (Shift+T, then 4 digits from 0 to 7)">7000</button><span class="xp-modi"><button type="button" data-xp="STBY" title="In attesa: acceso ma non risponde (a terra)" data-en-title="Standby: on but not replying (on the ground)">STBY</button><button type="button" data-xp="ON" title="Risponde con il codice (modo A)" data-en-title="Replies with the code (mode A)">ON</button><button type="button" data-xp="ALT" title="Risponde con il codice e la quota (modo C): in volo" data-en-title="Replies with the code and altitude (mode C): in flight">ALT</button><button type="button" data-xp="IDENT" title="Fa lampeggiare il tuo aereo sul radar del controllore (quando te lo chiede)" data-en-title="Makes your aircraft flash on the controller's radar (when asked)">IDENT</button></span></div>
       <label class="regola" title="Il gioco imposta da solo la frequenza giusta quando chiami" data-en-title="The game sets the right frequency when you call"><input id="comAuto" type="checkbox"> <span data-en="Automatic tuning">Sintonia automatica</span></label>
       <div id="radioAvviso" class="radioavviso" hidden></div>
       <div id="radioLog" class="radiolog"></div>

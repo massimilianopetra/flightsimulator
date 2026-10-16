@@ -206,6 +206,13 @@ SIM.creaStrumenti=function(A){
     g.fillStyle='#fff';g.font=`700 ${Math.round(fs*1.15)}px ${MONO}`;g.textAlign='center';
     g.fillText(String(Math.round(d.hdg)%360).padStart(3,'0')+'°',cx,AH+HB/2+1);
     g.fillStyle='#ffb020';g.beginPath();g.moveTo(cx,AH-1);g.lineTo(cx-6,AH-9);g.lineTo(cx+6,AH-9);g.closePath();g.fill();
+    if(d.xpdr){ // transponder, in basso a destra come sul G1000: codice e modo (IDNT mentre lampeggia)
+      const t=`XPDR ${d.xpdr.codice} ${d.xpdr.ident?'IDNT':d.xpdr.modo}`;
+      g.font=`700 ${Math.round(fs*0.85)}px ${MONO}`;g.textAlign='right';
+      const tw=g.measureText(t).width+10;
+      g.fillStyle='#000';g.fillRect(W-tw-2,AH+2,tw,HB-4);
+      g.fillStyle=d.xpdr.modo==='STBY'?'#e8eef4':'#4ade80';g.fillText(t,W-7,AH+HB/2+1);
+    }
   }
 
   /* NAV1 sul PFD. n = misura del ricevitore (js/radio.js) + staz */

@@ -123,6 +123,7 @@ To work on it with VS Code the *Live Server* extension is fine too.
 | O (or click on the map) | map with north up or heading up |
 | T | radio: talk to the tower (then 1…4 to choose the sentence) |
 | U | radio COM1: tune the next nearest station |
+| Shift+T | transponder: type the 4-digit code (STBY / ON / ALT / IDENT in the RADIO tab) |
 | V | NAV1 radio: next VOR or ILS in range (nearest first) |
 | L | NAV1 radio: ILS of the arrival runway |
 | , / . | VOR course (CRS) −1° / +1°, with Shift ±10° |
@@ -647,6 +648,7 @@ Per lavorarci con VS Code va bene anche l'estensione *Live Server*.
 | O (o clic sulla mappa) | mappa con il nord in alto oppure con la prua in alto |
 | T | radio: parla con la torre (poi 1…4 per scegliere la frase) |
 | U | radio COM1: sintonizza la prossima stazione vicina |
+| Maiusc+T | transponder: digita il codice di 4 cifre (STBY / ON / ALT / IDENT nella scheda RADIO) |
 | V | radio NAV1: prossimo VOR o ILS ricevuto (il più vicino per primo) |
 | L | radio NAV1: ILS della pista di arrivo |
 | , / . | rotta del VOR (CRS) −1° / +1°, con Maiusc ±10° |

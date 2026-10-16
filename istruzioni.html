@@ -151,6 +151,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <tr><td><kbd>M</kbd> / <kbd>O</kbd></td><td>Scala della mappa / nord oppure prua in alto</td></tr>
     <tr><td><kbd>T</kbd></td><td>Radio: apre il menu delle frasi da dire alla torre (poi <kbd>1</kbd>…<kbd>4</kbd>)</td></tr>
     <tr><td><kbd>U</kbd></td><td>Radio COM1: sintonizza la prossima stazione vicina</td></tr>
+    <tr><td><kbd>Maiusc</kbd>+<kbd>T</kbd></td><td>Transponder: digita il codice di 4 cifre (vedi <a href="#radio">Comunicazioni radio</a>)</td></tr>
     <tr><td><kbd>V</kbd></td><td>NAV1: sintonizza la stazione VOR o ILS successiva fra quelle ricevute (la più vicina per prima)</td></tr>
     <tr><td><kbd>L</kbd></td><td>NAV1: sintonizza l'ILS della pista di arrivo</td></tr>
     <tr><td><kbd>,</kbd> / <kbd>.</kbd></td><td>Rotta CRS del VOR −1° / +1° (con <kbd>Maiusc</kbd> ±10°)</td></tr>
@@ -562,7 +563,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <ul>
   <li>Il tuo nominativo è <b>I-VOLO</b> (si dice “India Victor Oscar Lima Oscar”). Dopo la prima chiamata la torre usa quello abbreviato, <b>I-LO</b>.</li>
   <li>I numeri si dicono cifra per cifra: pista 27 = “runway two seven”, QNH 1016 = “Q N H one zero one six”, e il 9 è “niner”.</li>
-  <li>Quando la torre ti dà un'autorizzazione devi <b>ripeterla</b> (readback). Tra le risposte ce n'è a volte una sbagliata, con la pista o il QNH diversi: se la scegli, la torre ti corregge. Ascolta bene!</li>
+  <li>Quando la torre ti dà un'autorizzazione devi <b>ripeterla</b> (readback). Tra le risposte ce n'è a volte una sbagliata, con la pista, il QNH o il codice del transponder diversi: se la scegli, la torre ti corregge. Ascolta bene!</li>
   <li>Quando la torre ti chiama, la linguetta RADIO lampeggia e compare un avviso arancione. Se non rispondi, dopo un po' la torre richiama.</li>
   <li>Mentre qualcuno sta trasmettendo non si parla: aspetta la fine e poi premi <kbd>T</kbd>.</li>
 </ul>
@@ -586,6 +587,15 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <h3>Sintonizzare la radio (COM1)</h3>
 <p>Ogni aeroporto ha la sua frequenza, scritta nel piano di volo (riga <b>COM</b>: partenza e arrivo) e nel menu <b>COM1</b> della scheda RADIO. Prima di chiamare una stazione devi sintonizzare la sua frequenza: dal menu COM1 oppure con il tasto <kbd>U</kbd>, che passa alle stazioni più vicine una dopo l'altra. Se chiami sulla frequenza sbagliata <b>nessuno risponde</b>, come nella realtà, e la radio ti dice quale frequenza serve. Quando lasci la zona di controllo, la torre ti dice anche la frequenza della stazione di arrivo: ripetila e poi impostala.</p>
 <p>Se non vuoi pensare alle frequenze, spunta <b>Sintonia automatica</b>: il gioco imposta da solo la frequenza giusta quando chiami (puoi comunque cambiarla a mano). Il MAYDAY riceve sempre risposta, qualunque sia la frequenza, perché nella realtà c'è una frequenza di emergenza (121.5) sempre ascoltata.</p>
+<h3>Il transponder</h3>
+<p>Il <b>transponder</b> risponde al radar del controllore con un <b>codice di 4 cifre</b> (solo da 0 a 7) e, nel modo ALT, anche con la quota. Lo trovi nella scheda RADIO (riga <b>XPDR</b>), in basso a destra sul PFD del Cessna e sulla radio nella cabina del C42.</p>
+<ul>
+  <li><b>Cambiare il codice</b>: premi <kbd>Maiusc</kbd>+<kbd>T</kbd> (oppure fai clic sul codice) e digita le 4 cifre; mentre digiti, i numeri non muovono la manetta. <kbd>Esc</kbd> annulla.</li>
+  <li><b>Modi</b>: <b>STBY</b> = acceso ma non risponde (a terra, al parcheggio); <b>ON</b> = risponde solo con il codice; <b>ALT</b> = codice e quota, si usa in volo (si inserisce prima di entrare in pista). <b>IDENT</b> fa “lampeggiare” il tuo aereo sul radar: si preme solo quando il controllore lo chiede.</li>
+  <li><b>7000</b> è il codice per il volo a vista (VFR) in Italia: è quello con cui parti. Le <b>torri</b> ti assegnano un codice (“squawk 4521”) quando ti autorizzano al rullaggio o al decollo e quando arrivi; va ripetuto nel readback e impostato. Uscendo dalla zona di controllo la torre ti rimette sul 7000.</li>
+  <li>Se non imposti il codice, dopo una trentina di secondi la torre ti chiede di verificarlo (“check squawk”); se sei in volo vicino al campo senza il modo ALT, te lo ricorda (“squawk mode Charlie”).</li>
+  <li>In emergenza si mette il <b>7700</b>: dopo il MAYDAY la torre te lo chiede, se non l'hai già fatto.</li>
+</ul>
 <p>Se decolli o atterri senza autorizzazione, la torre se ne accorge e te lo dice. Se ti si spegne il motore puoi dichiarare emergenza con il <b>MAYDAY</b>: la torre ti indica l'aeroporto più vicino, la prua e la distanza.</p>
 <p>Nel mondo Piemonte stazioni e frequenze sono quelle <b>vere</b> (da OurAirports): per esempio Torino Ground 121.705 e Torino Tower 118.500 a Caselle, Malpensa Tower 119.000, Cuneo Information 119.550, Bresso Radio 122.005. Le <b>torri</b> (“Tower”) danno le autorizzazioni; i servizi <b>Information</b> (AFIS) e <b>Radio</b> danno solo informazioni (pista in uso, vento, traffico) e lasciano a te la decisione. Dove c'è la frequenza di <b>terra</b> (“Ground”), partendo dal parcheggio il rullaggio si chiede a Terra, che al punto attesa ti passa alla torre. La frequenza sintonizzata è scritta in alto nella scheda RADIO (COM1).</p>
 <div class="attenzione">Per gli aeroporti senza dati (alcuni campi piccoli, e tutti quelli della Valle Azzurra) la stazione è <b>simulata</b> e nel menu COM1 è indicata come tale. Anche le procedure sono semplificate: assomigliano a quelle vere ma non sono quelle pubblicate per ogni aeroporto. La voce dipende dal browser e dal sistema: su Windows ci sono già voci inglesi; se non ne trovi, le trasmissioni restano comunque scritte. Con il pulsante AUDIO spento la radio non parla.</div>
