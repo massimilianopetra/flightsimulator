@@ -14,6 +14,8 @@ Manual / Manuale: [English](https://massimilianopetra.github.io/flightsimulator/
 
 Code / Codice: https://github.com/massimilianopetra/flightsimulator
 
+Contact / Contatti: Massimiliano Petra — [massimiliano.petra@gmail.com](mailto:massimiliano.petra@gmail.com)
+
 ---
 
 <a id="english"></a>
@@ -338,6 +340,7 @@ The site needs no build step: it is made of static files.
 | `js/atc.js` | radio communications with the tower (speech synthesis, menu of answers) | |
 | `js/monumenti.js` | the 3D models of the monuments | |
 | `js/aeroporti-3d.js` | the large airports in 3D: terminals, hangars, towers, jet bridges, parked aircraft, car parks, lights at night | |
+| `js/modelli.js` | reusable 3D models: airliners (A320 size, scaled for regional and long-haul), light aircraft, cars, ground vehicles | |
 | `js/piano.js` | flight plan to the destination and arrival runway information | |
 | `js/audio.js` | synthesised sounds: engine, wind, stall horn | |
 | `js/autopilota.js` | the autopilot: heading, altitude and vertical speed, speed protection, auto-trim | |
@@ -526,6 +529,12 @@ do not end up in the sea.
 ## Ideas for the next steps
 
 - Other aircraft (a glider? a jet?): another data file like `dati/c42.js`, plus its 3D model.
+
+## Contact
+
+The author is **Massimiliano Petra**. For questions, suggestions, bug reports or to share your flights,
+write to [massimiliano.petra@gmail.com](mailto:massimiliano.petra@gmail.com), or open an issue on
+[GitHub](https://github.com/massimilianopetra/flightsimulator/issues).
 
 ## Licence
 
@@ -873,6 +882,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `js/libretto.js` | il libretto di volo: ogni volo salvato nel browser, totali e record | |
 | `js/monumenti.js` | i modelli 3D dei monumenti | |
 | `js/aeroporti-3d.js` | i grandi aeroporti in 3D: terminal, hangar, torri, pontili, aerei parcheggiati, parcheggi, luci di notte | |
+| `js/modelli.js` | modelli 3D riusabili: aerei di linea (misure dell'A320, in scala per regionali e lungo raggio), aerei da turismo, auto, mezzi di rampa | |
 | `js/piano.js` | piano di volo verso la destinazione e informazioni sulla pista di arrivo | |
 | `js/audio.js` | suoni sintetizzati: motore, vento, avvisatore di stallo | |
 | `js/main.js` | collega tutto: comandi, telecamere, messaggi, ciclo principale | |
@@ -1055,6 +1065,12 @@ conviene ricontrollare che gli aeroporti non finiscano in mare.
 ## Idee per i prossimi passi
 
 - Altri aerei (un aliante? un jet?): un altro file di dati come `dati/c42.js`, più il suo modello 3D.
+
+## Contatti
+
+L'autore è **Massimiliano Petra**. Per domande, suggerimenti, segnalazioni di errori o per raccontare i tuoi voli
+scrivi a [massimiliano.petra@gmail.com](mailto:massimiliano.petra@gmail.com), oppure apri una segnalazione su
+[GitHub](https://github.com/massimilianopetra/flightsimulator/issues).
 
 ## Licenza
 
