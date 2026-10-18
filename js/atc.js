@@ -10,6 +10,9 @@
    informazioni. Frequenze e procedure sono simulate, non quelle vere.
    I testi hanno tre forme: scritta in inglese (en), pronunciata (sp) e la
    traduzione italiana (it), mostrata sotto quando il gioco è in italiano.
+   Sulla frequenza si sentono anche gli altri aerei del circuito (js/traffico.js,
+   terza voce) e la torre tiene conto di loro con il giocatore: "hold position"
+   con traffico in corto finale, "number two" in finale, informazioni di traffico.
    ===================================================================== */
 (function(){
 'use strict';
@@ -108,7 +111,7 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
   const testoSquawk=c=>L(`imposta il transponder su ${c} (Maiusc+T o scheda RADIO)`,`set the transponder to ${c} (Shift+T or the RADIO tab)`);
 
   /* ---------- voci ---------- */
-  let voci={atc:null,pilota:null};
+  let voci={atc:null,pilota:null,altro:null};
   function scegliVoci(){
     if(!window.speechSynthesis) return;
     const en=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));
@@ -116,6 +119,7 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
     const gb=en.filter(v=>/GB|UK/i.test(v.lang)), us=en.filter(v=>/US/i.test(v.lang));
     voci.atc=gb[0]||en[0];
     voci.pilota=us.find(v=>v!==voci.atc)||en.find(v=>v!==voci.atc)||voci.atc;
+    voci.altro=en.find(v=>v!==voci.atc&&v!==voci.pilota)||voci.pilota;   // gli altri aerei
   }
   if(window.speechSynthesis){scegliVoci();speechSynthesis.addEventListener&&speechSynthesis.addEventListener('voiceschanged',scegliVoci);}
 
@@ -136,9 +140,9 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
     if(audio.attivo)audio.fruscio();
     if(window.speechSynthesis&&audio.attivo){
       const u=new SpeechSynthesisUtterance(m.sp);
-      const v=m.chi==='atc'?voci.atc:voci.pilota;
+      const v=m.chi==='atc'?voci.atc:m.chi==='altro'?voci.altro:voci.pilota;
       if(v){u.voice=v;u.lang=v.lang;}else u.lang='en-GB';
-      u.rate=m.chi==='atc'?1.08:1.0;u.pitch=m.chi==='atc'?0.9:1.1;
+      u.rate=m.chi==='atc'?1.08:m.chi==='altro'?1.12:1.0;u.pitch=m.chi==='atc'?0.9:m.chi==='altro'?0.8:1.1;
       let fatto=false,partita=false;const io=++turno;
       const una=()=>{if(!fatto){fatto=true;clearTimeout(sveglia);fine();}};
       // se il browser non avvisa la fine: si butta via la frase, così non resta in coda
@@ -166,7 +170,7 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
 
   /* ---------- pannello ---------- */
   const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  const rigaRadio=m=>`<div class="rl ${m.chi}"><b>${m.chi==='atc'?'ATC':L('TU','YOU')}</b><span>${esc(m.en)}`+
+  const rigaRadio=m=>`<div class="rl ${m.chi}"><b>${m.chi==='atc'?'ATC':m.chi==='altro'?esc(m.nome||''):L('TU','YOU')}</b><span>${esc(m.en)}`+
     (SIM.lingua!=='en'&&m.it?`<i>${esc(m.it)}</i>`:'')+`</span></div>`;
   function disegnaRegistro(nuova){
     const el=$('radioLog');if(!el) return;
@@ -219,10 +223,19 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
   /* ---------- stato della conversazione ---------- */
   let staz=null, fase='pronto', att=null, attTimer=0, ripetuto=false, chiamato=false, uscitaFatta=false, arrivoAvvisato=false;
   let ultimoATC=null, ctx=null, st=stato||null, emergenza=false, maydayFatto=false, benvenuto=false;
+  let traffico=null, numeroDue=null;   // altri aerei (js/traffico.js); pista per cui si aspetta l'autorizzazione dopo "number two"
+  // c'è traffico in corto finale sulla pista te: la torre fa aspettare (true se ha detto "hold position")
+  function aspettaTraffico(te){
+    const a=staz&&staz.torre&&traffico?traffico.inCorto(staz.ap,te):null;if(!a) return false;
+    atcDice(frase(CSB,', hold position, traffic ',a.tipo,' on short final ',pistaF(te)),`${CSB.d}, mantenete la posizione, traffico ${a.tipo.d} in corto finale pista ${te.nome}.`,
+      readback(frase('Holding position, ',CSB),`Manteniamo la posizione, ${CSB.d}.`,null,null,null,null,
+        ()=>avvisa(L('Aspetta che l\'altro aereo sia passato sulla pista, poi richiama (T)','Wait until the other aircraft has passed on the runway, then call again (T)'))));
+    return true;
+  }
   function reset(c){
     zitto();registro.length=0;disegnaRegistro();chiudiMenu();
     xp.codice='7000';xp.modo=c.part&&c.parcheggio&&!c.finale?'STBY':'ALT';xp.atteso=null;xp.modoRichiamato=false;xp.identRichiesto=0;xp.digita=null;disegnaXpdr();
-    ctx=c;att=null;ripetuto=false;chiamato=false;uscitaFatta=false;arrivoAvvisato=false;emergenza=false;maydayFatto=false;benvenuto=false;ultimoATC=null;
+    ctx=c;att=null;ripetuto=false;chiamato=false;numeroDue=null;uscitaFatta=false;arrivoAvvisato=false;emergenza=false;maydayFatto=false;benvenuto=false;ultimoATC=null;
     if(c.finale&&c.fin){staz=stazioni.get(c.fin.ap);fase='arrivo';
       avvisa(L(`In finale: chiama ${staz.nome} per l'atterraggio (T)`,`On final: call ${staz.nome} for landing (T)`));}
     else if(c.part&&c.parcheggio){staz=terra.get(c.part.ap)||stazioni.get(c.part.ap);fase='parcheggio';
@@ -330,6 +343,7 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
       pilotaDice(f,it);attendi(1100);
       const a=ctx.attesa, lontano=a&&Math.hypot(a.x-st.pos.x,a.z-st.pos.z)>80;
       if(staz.torre&&lontano){atcDice(frase(CSB,', negative, report at holding point ',pistaF(te)),`${CSB.d}, negativo, riportate al punto attesa pista ${te.nome}.`);return;}
+      if(aspettaTraffico(te)) return;
       const altra=te.pista.testate.find(t=>t!==te);
       if(staz.torre&&!ctx.backtrack){   // una via arriva alla testata: ci si allinea e si parte
         atcDice(frase(CSB,', line up ',pistaF(te),', ',ventoF(),', cleared for take-off'),
@@ -360,6 +374,7 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
     const it=`${staz.nome}, ${REG}, ${TIPO.d} al punto attesa pista ${te.nome}, VFR ${dest?'per '+dest.nome:'locale'}, pronto per la partenza.`;
     return {f,it,fai:()=>{
       pilotaDice(f,it);attendi(1200);
+      if(aspettaTraffico(te)) return;
       const altra=te.pista.testate.find(t=>t!==te), sbPista=!!altra&&Math.random()<0.5;
       if(staz.torre){
         const sq=nuovoCodice(),sqS=codiceSbagliato(sq);
@@ -422,6 +437,12 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
       if(!te){atcDice(frase(CSB,', say again'),`${CSB.d}, ripetete.`);return;}
       const r=rispettoPista(te),inFinale=r.avanti>200&&r.avanti<7*NM&&Math.abs(r.ang)<25;
       if(!inFinale){atcDice(frase(CSB,', negative, you are not on final, report final ',pistaF(te)),`${CSB.d}, negativo, non siete in finale, riportate in finale pista ${te.nome}.`);return;}
+      const prima=staz.torre&&traffico?traffico.davanti(staz.ap,te,st.pos):null;
+      if(prima){   // un altro aereo atterra prima: l'autorizzazione arriva quando la pista è libera (in aggiorna)
+        atcDice(frase(CSB,', number two, traffic ',prima.tipo,' on short final, continue approach'),`${CSB.d}, numero due, traffico ${prima.tipo.d} in corto finale, continuate l'avvicinamento.`,
+          readback(frase('Number two, continue approach, ',CSB),`Numero due, continuiamo l'avvicinamento, ${CSB.d}.`,null,null,null,null,()=>{numeroDue=te;}));
+        avvisa('');return;
+      }
       if(staz.torre){
         atcDice(frase(CSB,', ',pistaF(te),', ',ventoF(),', cleared to land'),`${CSB.d}, pista ${te.nome}, ${ventoIt()}, autorizzato all'atterraggio.`,
           readback(frase('Cleared to land ',pistaF(te),', ',CSB),`Autorizzato all'atterraggio pista ${te.nome}, ${CSB.d}.`,null,null,null,null,()=>{fase='finale';}));
@@ -511,6 +532,14 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
     get comFreq(){return com?com.freq:null;},
     // nessuna trasmissione in corso e nessuna risposta attesa (o attesa da più di 40 s)
     get libero(){return !parlando&&(!att||Date.now()-attTimer>40000);},
+    usaTraffico(t){traffico=t;},
+    /* trasmissioni degli altri aerei e delle risposte (js/traffico.js): righe = [{chi:'altro'|'atc', nome, f, it}].
+       Si sentono solo con COM1 su quella stazione e se la radio è libera (niente in corso, nessuna risposta attesa). */
+    annuncio(s,righe){
+      if(!st||com!==s||parlando||att||coda.length||menu) return false;
+      righe.forEach((r,i)=>{if(i)coda.push({pausa:900});coda.push({chi:r.chi,nome:r.nome,en:r.f.d,sp:r.f.s,it:r.it});});
+      prossimo();return true;
+    },
     // tasti: T apre/chiude il menu; con il menu aperto le cifre scelgono (e non muovono la manetta)
     tasto(e){
       if(xp.digita!==null){   // si sta digitando il codice del transponder: le cifre non toccano la manetta
@@ -552,6 +581,23 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
         }else if(xp.identRichiesto&&xp.ident>xp.identRichiesto&&xp.codice===xp.atteso&&xp.modo!=='STBY'){
           xp.identRichiesto=0;const p=posizioneDa(staz.ap);
           atcDice(frase(CSB,', identified, ',p.f),`${CSB.d}, identificati, ${p.it}.`);
+        }
+      }
+      // "number two": quando l'aereo davanti ha passato la pista arriva l'autorizzazione all'atterraggio
+      if(numeroDue&&staz&&!parlando&&!att&&(!traffico||!traffico.davanti(staz.ap,numeroDue,s.pos))){
+        const te=numeroDue;numeroDue=null;
+        if(!s.aTerra)atcDice(frase(CSB,', ',pistaF(te),', ',ventoF(),', cleared to land'),`${CSB.d}, pista ${te.nome}, ${ventoIt()}, autorizzato all'atterraggio.`,
+          readback(frase('Cleared to land ',pistaF(te),', ',CSB),`Autorizzato all'atterraggio pista ${te.nome}, ${CSB.d}.`,null,null,null,null,()=>{fase='finale';}));
+      }
+      // informazioni di traffico: un altro aereo vicino (in volo, con la torre del campo sulla frequenza)
+      if(traffico&&staz&&staz.torre&&com===staz&&!s.aTerra&&!parlando&&!att&&s.gs>10){
+        const trk=(Math.atan2(s.vel.x,-s.vel.z)*R2D+360)%360,t=traffico.daSegnalare(staz.ap,s.pos,trk);
+        if(t){
+          const nm=t.nm===1?{d:'1 mile',s:'one mile'}:{d:t.nm+' miles',s:cifre(t.nm)+' miles'};
+          atcDice(frase(CSB,', traffic ',{d:t.ore+" o'clock",s:(t.ore===10||t.ore===11||t.ore===12?['ten','eleven','twelve'][t.ore-10]:NUM[t.ore])+" o'clock"},', ',nm,', ',t.tipo,' on ',t.fase[0],', ',t.q[0]),
+            `${CSB.d}, traffico a ore ${t.ore}, ${t.nm} ${t.nm===1?'miglio':'miglia'}, ${t.tipo.d} in ${t.fase[1]}, ${t.q[1]}.`,
+            [{f:frase('Traffic in sight, ',CSB),it:`Traffico in vista, ${CSB.d}.`,fai:()=>{att=null;avvisa('');}},
+             {f:frase('Looking out, ',CSB),it:`Lo cerchiamo, ${CSB.d}.`,fai:()=>{att=null;avvisa('');}}]);
         }
       }
       // uscita dalla zona di controllo della partenza
