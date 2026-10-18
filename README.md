@@ -88,6 +88,7 @@ In the opening briefing you choose the **world**:
   Como…), towns and villages with their buildings, motorways, roads, railways and rivers, and the real
   VOR radio beacons. From altitude you can see the Alps up to 70 km away.
   The main **monuments** are there as visual landmarks: Mole Antonelliana, Superga, the Lingotto with its rooftop test track, the two Turin skyscrapers, the Palace of Venaria, Stupinigi, the Sacra di San Michele, Vicoforte, San Gaudenzio in Novara, Oropa and the bell tower of San Maurizio Canavese (simplified models, marked on the map).
+  The five large airports (Turin-Caselle, Milan-Malpensa, Milan-Linate, Genoa, Cuneo-Levaldigi) are drawn with the real outline of every building from OpenStreetMap: terminals with their glass façades, hangars, control towers, radars, floodlight masts, jet bridges, numbered stands, parked airliners, car parks and the perimeter fence.
 - **Valle Azzurra (invented)**: the procedural world in `dati/mappa.js`, easy to edit by hand.
 
 You can open a world directly from the address: `index.html?mappa=piemonte` or `index.html?mappa=valle`.
@@ -317,10 +318,12 @@ The site needs no build step: it is made of static files.
 | `dati/piemonte-radio.js` | the real VORs and airport radio frequencies (generated) | no |
 | `dati/piemonte-rullaggio.js` | the real taxiways and aprons of 18 airports (generated) | no |
 | `dati/piemonte-monumenti.js` | position and orientation of the monuments | yes |
+| `dati/piemonte-aeroporti.js` | buildings, towers, jet bridges, stands and car parks of the five large airports (generated) | no |
 | `dati/c172.js` | the Cessna 172 data: weight, engine, fuel, wing, aerodynamic coefficients, landing gear | yes, to experiment |
 | `strumenti/genera-piemonte.js` | the script that downloads the real data and creates the Piedmont files | |
 | `strumenti/genera-radio.js` | the script that creates the list of real VORs and airport frequencies | |
 | `strumenti/genera-rullaggio.js` | the script that extracts the taxiways and aprons from OpenStreetMap | |
+| `strumenti/genera-aeroporti.js` | the script that extracts the buildings and equipment of the large airports from OpenStreetMap | |
 | `strumenti/leggi-pbf.js` | a small reader for OpenStreetMap `.osm.pbf` files, used by the generator | |
 | `js/lingua.js` | Italian / English: language choice and translation of the page | |
 | `js/terreno.js` | computes the terrain height and builds the mesh that follows the aircraft | |
@@ -334,6 +337,7 @@ The site needs no build step: it is made of static files.
 | `js/rullaggio.js` | taxiways: network, shortest route from the apron to the holding point, drawing | |
 | `js/atc.js` | radio communications with the tower (speech synthesis, menu of answers) | |
 | `js/monumenti.js` | the 3D models of the monuments | |
+| `js/aeroporti-3d.js` | the large airports in 3D: terminals, hangars, towers, jet bridges, parked aircraft, car parks, lights at night | |
 | `js/piano.js` | flight plan to the destination and arrival runway information | |
 | `js/audio.js` | synthesised sounds: engine, wind, stall horn | |
 | `js/autopilota.js` | the autopilot: heading, altitude and vertical speed, speed protection, auto-trim | |
@@ -611,6 +615,7 @@ Nel briefing iniziale si sceglie il **mondo**:
   Viverone, Avigliana, Lugano, Como…), città e paesi con i loro edifici, autostrade, strade,
   ferrovie e fiumi, e i radiofari VOR veri. Dall'alto si vedono le Alpi fino a 70 km di distanza.
   Ci sono anche i principali **monumenti**, utili come riferimento a vista: la Mole Antonelliana, Superga, il Lingotto con la pista sul tetto, i due grattacieli di Torino, la Reggia di Venaria, Stupinigi, la Sacra di San Michele, Vicoforte, San Gaudenzio a Novara, Oropa e il campanile di San Maurizio Canavese (modelli semplificati, segnati sulla mappa).
+  I cinque grandi aeroporti (Torino-Caselle, Milano-Malpensa, Milano-Linate, Genova, Cuneo-Levaldigi) sono disegnati con la sagoma vera di ogni edificio presa da OpenStreetMap: terminal con le loro vetrate, hangar, torri di controllo, radar, torri faro, pontili d'imbarco, piazzole numerate, aerei di linea parcheggiati, parcheggi e recinzione.
 - **Valle Azzurra (inventata)**: il mondo procedurale di `dati/mappa.js`, comodo da modificare a mano.
 
 Si può aprire direttamente un mondo dall'indirizzo: `index.html?mappa=piemonte` oppure `index.html?mappa=valle`.
@@ -844,10 +849,12 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `dati/piemonte-radio.js` | i VOR veri e le frequenze radio degli aeroporti (generato) | no |
 | `dati/piemonte-rullaggio.js` | le vie di rullaggio e i piazzali veri di 18 aeroporti (generato) | no |
 | `dati/piemonte-monumenti.js` | posizione e orientamento dei monumenti | sì |
+| `dati/piemonte-aeroporti.js` | edifici, torri, pontili, piazzole e parcheggi dei cinque grandi aeroporti (generato) | no |
 | `dati/c172.js` | i dati del Cessna 172: peso, motore, carburante, ala, coefficienti aerodinamici, carrello | sì, per sperimentare |
 | `strumenti/genera-piemonte.js` | lo script che scarica i dati reali e crea i file del Piemonte | |
 | `strumenti/genera-radio.js` | lo script che crea l'elenco dei VOR veri e delle frequenze degli aeroporti | |
 | `strumenti/genera-rullaggio.js` | lo script che estrae vie di rullaggio e piazzali da OpenStreetMap | |
+| `strumenti/genera-aeroporti.js` | lo script che estrae da OpenStreetMap edifici e attrezzature dei grandi aeroporti | |
 | `strumenti/leggi-pbf.js` | piccolo lettore dei file `.osm.pbf` di OpenStreetMap, usato dal generatore | |
 | `js/lingua.js` | italiano / inglese: scelta della lingua e traduzione della pagina | |
 | `js/terreno.js` | calcola l'altezza del terreno e costruisce la mesh che segue l'aereo | |
@@ -865,6 +872,7 @@ Il sito non ha bisogno di compilazione: sono file statici.
 | `js/missioni.js` | missioni: a tempo, giri a tappe, atterraggio di precisione; stelle e risultato | |
 | `js/libretto.js` | il libretto di volo: ogni volo salvato nel browser, totali e record | |
 | `js/monumenti.js` | i modelli 3D dei monumenti | |
+| `js/aeroporti-3d.js` | i grandi aeroporti in 3D: terminal, hangar, torri, pontili, aerei parcheggiati, parcheggi, luci di notte | |
 | `js/piano.js` | piano di volo verso la destinazione e informazioni sulla pista di arrivo | |
 | `js/audio.js` | suoni sintetizzati: motore, vento, avvisatore di stallo | |
 | `js/main.js` | collega tutto: comandi, telecamere, messaggi, ciclo principale | |

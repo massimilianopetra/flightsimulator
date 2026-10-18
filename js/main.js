@@ -31,6 +31,8 @@ const terreno=T.creaMesh(scene,renderer);
 const mondo=SIM.creaMondo(scene,renderer);
 const monumenti=SIM.creaMonumenti?SIM.creaMonumenti(scene):null;   // solo mondo reale (js/monumenti.js)
 if(SIM.disegnaRullaggio)SIM.disegnaRullaggio(scene);   // vie di rullaggio vere (js/rullaggio.js)
+// grandi aeroporti con terminal, hangar, torri, pontili e aerei parcheggiati (js/aeroporti-3d.js)
+const aeroporti3D=SIM.aeroporti3D=SIM.creaAeroporti3D?SIM.creaAeroporti3D(scene,renderer):null;
 // ora del volo: giorno, tramonto, notte (js/notte.js), scelta nel briefing e ricordata
 const notte=SIM.creaNotte(scene,mondo,T);
 let oraVolo='giorno';
@@ -1112,7 +1114,7 @@ mostraScheda(scheda);
 ricominciaSubito();
 aggiornaVento(0);
 // scorciatoie per le prove: index.html#salta (salta il briefing), #vista=1 (cabina)
-SIM.debug={st,fis,terreno,monumenti,scene,atc,renderer,camera,missioni,libretto};  // utile dalla console del browser (F12)
+SIM.debug={st,fis,terreno,monumenti,aeroporti3D,scene,atc,renderer,camera,missioni,libretto};  // utile dalla console del browser (F12)
 if(/salta/.test(location.hash)) inizia();
 if(/finale/.test(location.hash)) inizia('finale');
 {const mv=/vista=(\d)/.exec(location.hash);if(mv)vista=(+mv[1])%3;}
@@ -1139,6 +1141,7 @@ function ciclo(ora){
   aggiornaCamera(dt);
   terreno.aggiorna(camera.position.x,camera.position.z,false);
   if(monumenti&&n%10===0)monumenti.aggiorna(camera.position,terreno.vicino());
+  if(aeroporti3D)aeroporti3D.aggiorna(camera.position,terreno.vicino(),dt);
   if(attivo&&n%15===0){
     atc.aggiorna(st,ctxATC());
     if(daParcheggio&&atterratoA&&atterratoA.rullaggioVero&&SIM.reteRullaggio&&st.aTerra&&st.gs<12&&!rull){   // percorso verso il piazzale
