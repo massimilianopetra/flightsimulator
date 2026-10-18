@@ -116,7 +116,10 @@ SIM.creaMondo=function(scene,renderer){
     // piazzale, raccordo, hangar e torre sul lato destro della PRIMA pista di ogni aeroporto
     // aeroporti con le vie di rullaggio vere (js/rullaggio.js): torre e hangar accanto al piazzale vero
     const rv=p===p.ap.piste[0]&&p.ap.rullaggioVero&&SIM.reteRullaggio?SIM.reteRullaggio.di(p.ap):null;
-    if(rv){
+    // grandi aeroporti disegnati con gli edifici veri (js/aeroporti-3d.js): solo la posizione della torre vera, per la vista dalla torre
+    const tv=p===p.ap.piste[0]&&SIM.torreVera?SIM.torreVera(p.ap):null;
+    if(tv)torri.push({pos:new THREE.Vector3(tv.x,T.meshH(tv.x,tv.z)+tv.y,tv.z),ap:p.ap});
+    else if(rv){
       const t=rv.torre,y0=Math.max(p.quota,T.meshH(t.x,t.z));
       const metti=(geo,m,x,y,z,ry)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.rotation.y=ry;scene.add(o);return o;};
       metti(new THREE.CylinderGeometry(2.4,3,15,10),matTorre,t.x,y0+7.5,t.z,0);
@@ -126,7 +129,7 @@ SIM.creaMondo=function(scene,renderer){
       for(const s of [-1,1]){const hx=t.x+p.dir.x*s*55,hz=t.z+p.dir.z*s*55,hy=Math.max(p.quota,T.meshH(hx,hz));
         metti(new THREE.BoxGeometry(22,9,30),matHangar,hx,hy+4.5,hz,-p.hdg*D2R);}
     }
-    if(p===p.ap.piste[0]&&!rv){
+    if(p===p.ap.piste[0]&&!rv&&!tv){
       // piazzale: 160 m lungo la pista (x locale = traverso, z = lungo la pista) e 70 di profondità, da v 70 a 140
       suPista(p,new THREE.Mesh(new THREE.PlaneGeometry(70,160).rotateX(-Math.PI/2),matPiazzale),0,105,p.quota+0.04);
       suPista(p,new THREE.Mesh(new THREE.PlaneGeometry(15,70-p.W/2+2).rotateX(-Math.PI/2).rotateY(Math.PI/2),matRaccordo),0,(70+p.W/2)/2,p.quota+0.05);
@@ -187,6 +190,7 @@ SIM.creaMondo=function(scene,renderer){
     if(T.tipo!=='erba'||h<minH||h>maxH) return null;
     if(T.inAeroporto(x,z,60)) return null;
     if(SIM.reteRullaggio&&SIM.reteRullaggio.zona(x,z,30)) return null;   // vie di rullaggio vere
+    if(SIM.zonaAeroporti&&SIM.zonaAeroporti(x,z)) return null;          // sedime dei grandi aeroporti (js/aeroporti-3d.js)
     for(const c of T.citta){if(Math.hypot(x-c.x,z-c.z)<c.r*0.9)return null;}
     return h;
   }

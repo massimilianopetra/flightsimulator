@@ -317,7 +317,7 @@
 <!-- dati modificabili: il mondo si sceglie con ?mappa=piemonte (predefinito) o ?mappa=valle -->
 <script>
 (function(){
-  var MONDI={piemonte:["dati/piemonte-rilievo.js","dati/piemonte-vie.js","dati/piemonte-abitati.js","dati/piemonte.js","dati/piemonte-radio.js","dati/piemonte-monumenti.js","dati/piemonte-rullaggio.js"], valle:["dati/mappa.js"]};
+  var MONDI={piemonte:["dati/piemonte-rilievo.js","dati/piemonte-vie.js","dati/piemonte-abitati.js","dati/piemonte.js","dati/piemonte-radio.js","dati/piemonte-monumenti.js","dati/piemonte-rullaggio.js","dati/piemonte-aeroporti.js"], valle:["dati/mappa.js"]};
   var m=/[?&]mappa=(\w+)/.exec(location.search), scelta=(m&&MONDI[m[1]])?m[1]:"piemonte";
   // aereo: ?aereo=c172 (Cessna, predefinito) o ?aereo=c42 (Ikarus C42); la scelta viene ricordata
   var AEREI={c172:"dati/c172.js",c42:"dati/c42.js"}, ma=/[?&]aereo=(\w+)/.exec(location.search), ricordato=null;
@@ -332,6 +332,7 @@
 <!-- motore del simulatore -->
 <script src="js/terreno.js"></script>
 <script src="js/rullaggio.js"></script>
+<script src="js/aeroporti-3d.js"></script>
 <script src="js/monumenti.js"></script>
 <script src="js/paesaggio.js"></script>
 <script src="js/fisica.js"></script>
