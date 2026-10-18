@@ -1,4 +1,4 @@
-# Flight Simulator · Simulatore di Volo
+# Volo · Flight simulator · Simulatore di volo
 
 <p align="center">
   <img src="istruzioni/en/cabina.jpg" alt="Cockpit of the Cessna 172 with G1000 screens on an ILS approach / Cabina del Cessna 172 con gli schermi G1000 in avvicinamento ILS" width="100%">
@@ -23,7 +23,7 @@ Contact / Contatti: Massimiliano Petra — [massimiliano.petra@gmail.com](mailto
 # English
 
 A small flight simulator that runs in the browser, with realistic physics based on a **Cessna 172**
-and Garmin G1000 avionics. You take off from a real runway, fly with glass-cockpit instruments,
+and a glass cockpit inspired by the Garmin G1000. You take off from a real runway, fly with glass-cockpit instruments,
 navigate with VOR and ILS, and land following the PAPI lights. Missions (against the clock, tours,
 precision landings) give each flight a goal, and the logbook keeps track of every flight.
 
@@ -71,7 +71,7 @@ briefing, or open `index.html?lang=en`. The choice is remembered.
 
 In the briefing you also choose the **aircraft**:
 
-- **Cessna 172 Skyhawk** (default) with Garmin G1000 glass cockpit, autopilot and NAV1 radio (VOR and ILS).
+- **Cessna 172 Skyhawk** (default) with a glass cockpit inspired by the Garmin G1000, autopilot and NAV1 radio (VOR and ILS).
 - **Ikarus C42**, the two-seat microlight of many flight schools, reproduced **as delivered**: analogue
   instruments, COM radio and transponder only; no autopilot, no VOR/ILS, day flying only, fuel in litres.
   Speeds, flaps (0°, 15°, 40°) and performance come from its owner's manual (`dati/c42.js`).
@@ -550,6 +550,8 @@ OurAirports (public domain), © OpenStreetMap contributors (ODbL), Mapzen Terrai
 
 This simulator is a game: do not use it for real navigation.
 
+Volo is an independent project: it is not affiliated with, sponsored or endorsed by Microsoft, Laminar Research (X-Plane), Textron Aviation (Cessna), Garmin, Comco Ikarus, ENAV or the operators of the airports shown. Aircraft, avionics and airport names are used only to describe what is simulated; all trademarks belong to their respective owners.
+
 ---
 
 <a id="italiano"></a>
@@ -557,7 +559,7 @@ This simulator is a game: do not use it for real navigation.
 # Italiano
 
 Un piccolo simulatore di volo nel browser, con fisica realistica ispirata a un **Cessna 172**
-con avionica Garmin G1000: si decolla da una pista vera, si vola con strumenti da glass cockpit,
+con un glass cockpit ispirato al Garmin G1000: si decolla da una pista vera, si vola con strumenti da glass cockpit,
 si naviga con VOR e ILS e si atterra seguendo le luci PAPI. Le missioni (a tempo, giri a tappe,
 atterraggi di precisione) danno uno scopo a ogni volo e il libretto di volo li ricorda tutti.
 
@@ -605,7 +607,7 @@ aprendo `index.html?lang=en`. La scelta viene ricordata.
 
 Nel briefing si sceglie anche l'**aereo**:
 
-- **Cessna 172 Skyhawk** (predefinito) con avionica Garmin G1000, autopilota e radio NAV1 (VOR e ILS).
+- **Cessna 172 Skyhawk** (predefinito) con glass cockpit ispirato al Garmin G1000, autopilota e radio NAV1 (VOR e ILS).
 - **Ikarus C42**, l'ultraleggero biposto di molte scuole di volo, riprodotto **com'è di serie**: strumenti
   analogici, solo radio COM e transponder; niente autopilota, niente VOR/ILS, si vola solo di giorno,
   carburante in litri. Velocità, flap (0°, 15°, 40°) e prestazioni vengono dal suo manuale di volo (`dati/c42.js`).
@@ -1091,3 +1093,5 @@ Privacy: il gioco non usa cookie né tracciamento; tiene impostazioni e libretto
 localStorage del browser. Informativa completa in [privacy.html](privacy.html).
 
 Questo simulatore è un gioco: non usarlo per la navigazione reale.
+
+Volo è un progetto indipendente: non è affiliato, sponsorizzato né approvato da Microsoft, Laminar Research (X-Plane), Textron Aviation (Cessna), Garmin, Comco Ikarus, ENAV né dai gestori degli aeroporti rappresentati. I nomi di aerei, avionica e aeroporti servono solo a descrivere ciò che viene simulato; i marchi appartengono ai rispettivi proprietari.
