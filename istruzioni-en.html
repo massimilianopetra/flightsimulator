@@ -284,6 +284,7 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
       <li>Mouse wheel on the map, the <b>SCALE</b> menu or <kbd>M</kbd>: from 0.5 to 100 NM or the whole region.</li>
       <li><span class="c-mag">Magenta</span> line: the flight plan route; the solid part goes from the aircraft to the next point.</li>
       <li><span class="c-cya">Blue</span> hexagons: <b>VOR</b> stations; those with a square around them also have <b>DME</b>, which measures distance.</li>
+      <li><span class="c-cya">Blue</span> diamonds: the <a href="#traffico">other aircraft</a>, with the altitude difference in hundreds of feet.</li>
       <li><span class="c-ver">Green dashed</span> line: the CRS course of the tuned VOR. The <span class="c-ver">green fan</span> in front of a runway is the beam of the tuned ILS localizer.</li>
     </ul>
     <p>Below the map:</p>
@@ -357,6 +358,28 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <p><b>Where the taxiways are real</b> (Piedmont world, 18 airports): Milan-Malpensa (LIMC), Milan-Linate (LIML), Turin-Caselle (LIMF), Genoa (LIMJ), Cameri (LIMN), Turin-Aeritalia (LIMA), Aosta (LIMW), Biella-Cerrione (LILE), Milan-Bresso (LIMB), Cuneo-Levaldigi (LIMZ), Varese-Venegono (LILN), Vergiate (LILG), Albenga (LIMG), Voghera-Rivanazzano (LILH), Vercelli (LILI), Alessandria (LILA), Alzate Brianza (LILB), Casale Monferrato (LILM).</p>
 
 <p><b>The five large airports</b> — Turin-Caselle, Milan-Malpensa, Milan-Linate, Genoa and Cuneo-Levaldigi — are drawn like the real ones, with the outline of every building taken from OpenStreetMap: the <b>terminal</b> with its glass façade (aqua-green at Caselle, blue at Malpensa, green at Linate), the <b>hangars</b> with their doors facing the apron, cargo buildings, multi-storey car parks, the <b>control tower</b> (the tower view, key C, starts right there), rotating radars, red-and-white floodlight masts, <b>jet bridges</b>, stands with their <b>number</b> painted on the ground, parked <b>airliners</b> with ground vehicles, car parks full of cars and the fence with barbed wire. At night the glass façades are lit and the floodlight masts light up the apron.</p>
+<p>On the roof of the terminals there is the <b>name of the airport</b> in large blue letters, facing the runway and the road (lit at night). At Caselle the glass façade facing the runway is not straight: above the ground floor it leans outwards, like the real one.</p>
+<div class="galleria">
+  <figure><img src="istruzioni/aeroporti/caselle.jpg" alt="Turin-Caselle from above" loading="lazy"><figcaption><b>Torino-Caselle</b> · terminal, apron and car parks</figcaption></figure>
+  <figure><img src="istruzioni/aeroporti/malpensa.jpg" alt="Milan-Malpensa, Terminal 1" loading="lazy"><figcaption><b>Milan-Malpensa</b> · Terminal 1 with its satellites</figcaption></figure>
+  <figure><img src="istruzioni/aeroporti/linate.jpg" alt="Milan-Linate" loading="lazy"><figcaption><b>Milan-Linate</b> · the green glass façade and the hangars</figcaption></figure>
+  <figure><img src="istruzioni/aeroporti/genova.jpg" alt="Genoa" loading="lazy"><figcaption><b>Genoa</b> · the terminal and the jet bridges</figcaption></figure>
+  <figure><img src="istruzioni/aeroporti/cuneo.jpg" alt="Cuneo-Levaldigi" loading="lazy"><figcaption><b>Cuneo-Levaldigi</b> · the apron with numbered stands</figcaption></figure>
+  <figure><img src="istruzioni/aeroporti/caselle-vetrata.jpg" alt="The Caselle glass façade on the airside" loading="lazy"><figcaption><b>Caselle, airside</b> · the outward-leaning glass façade and the sign</figcaption></figure>
+  <figure><img src="istruzioni/aeroporti/caselle-notte.jpg" alt="Caselle at night" loading="lazy"><figcaption><b>Caselle at night</b> · lit glass façade and sign</figcaption></figure>
+</div>
+<h3 id="cartelli">Taxiway signs</h3>
+<p>At the airports with real taxiways, at the junctions there are <b>signs</b> like the real ones, usually on the left of the taxiway:</p>
+<ul>
+  <li>the <b>location</b> sign, with a <b>yellow letter on a black background</b> and a yellow border, tells you which taxiway you are on;</li>
+  <li>the <b>direction</b> signs, with <b>black letters on a yellow background</b> and an arrow, tell you where the other taxiways go: those turning left are to the left of the location sign, those turning right to the right;</li>
+  <li>at the <b>holding point</b> there is the <b>red</b> sign with the runway numbers (for example <b>36-18</b>): beyond that sign you enter the runway, so you need the tower's clearance.</li>
+</ul>
+<p>At night the signs are lit.</p>
+<figure>
+  <img src="istruzioni/aeroporti/cartelli.jpg" alt="Sign at Malpensa: location DA, taxiway P straight ahead, taxiway W to the right" loading="lazy">
+  <figcaption>At Malpensa: you are on taxiway <b>DA</b>; <b>P</b> goes straight on, <b>W</b> turns right.</figcaption>
+</figure>
 <p>At Casale Monferrato, and on runway 10/28 at Turin-Aeritalia, the taxiways drawn in OpenStreetMap do not reach the runway: if you start “from the parking area” you start directly on the runway.</p>
 <p><b>Where there is the simple apron</b> (14 airports): Novi Ligure (LIMR) and Moncucco-Vische (LIVV), which have no taxiways in OpenStreetMap; the Swiss airports (Lugano-Agno, Locarno, Sion, Bex, Saanen, Ambri, Raron, Sankt Stephan) and the French ones (Courchevel, Megève, Barcelonnette, Mont-Dauphin), because the data used only cover north-west Italy. In the invented Valle Azzurra world every airport has the simple apron.</p>
 <ol class="passi">
@@ -589,6 +612,19 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
     <tr><td>After landing</td><td>Tower</td><td>“vacate the runway”, “taxi to stand…” (stand and taxiways) and welcome</td></tr>
   </tbody>
 </table>
+<h3 id="traffico">Other aircraft</h3>
+<p>Near the airports (not at Malpensa and Linate, where light aircraft do not fly circuits) there are also <b>other light aircraft</b>: one, or two where there is a tower. They fly the <b>traffic circuit</b> at 1000 feet (upwind, crosswind, downwind, base, final), touch the runway and take off again (“touch and go”). They have Italian callsigns, such as I-ABCD, and if COM1 is on the station's frequency you hear them on the radio with a third voice: they report “downwind” and “final” and the tower answers.</p>
+<ul>
+  <li>On the map they are <b>blue diamonds</b>, with a short line in the direction of flight and the altitude difference in hundreds of feet: <b>+10</b> = 1000 feet above you, <b>−03</b> = 300 feet below.</li>
+  <li>If you ask to depart while one is on <b>short final</b>, the tower answers “<b>hold position</b>”: read it back, wait until it has passed on the runway and call again.</li>
+  <li>If there is another aircraft ahead of you on final, the tower says “<b>number two</b>, continue approach”: carry on; the landing clearance comes by itself when the runway is free. Do not land before!</li>
+  <li>When another aircraft passes close to you, the tower gives you <b>traffic information</b>: “traffic, 2 o'clock, 1 mile, Cessna on downwind, same altitude” = traffic at 2 o'clock (ahead to the right), one mile away, on downwind, at your altitude. Answer “traffic in sight” or “looking out”.</li>
+  <li>The other aircraft always give way to you: if you are on the runway or on final they extend downwind or go around (“going around”), and if you get too close they change altitude.</li>
+</ul>
+<figure>
+  <img src="istruzioni/aeroporti/traffico.jpg" alt="Another light aircraft on downwind over the houses near Caselle" loading="lazy">
+  <figcaption>Another aircraft on downwind at Caselle.</figcaption>
+</figure>
 <h3>Tuning the radio (COM1)</h3>
 <p>Every airport has its own frequency, shown in the flight plan (<b>COM</b> line: departure and arrival) and in the <b>COM1</b> menu of the RADIO tab. Before calling a station you must tune its frequency: from the COM1 menu or with the <kbd>U</kbd> key, which steps through the nearest stations. If you call on the wrong frequency <b>nobody answers</b>, as in real life, and the radio tells you which frequency you need. When you leave the control zone the tower also gives you the frequency of the arrival station: read it back and then set it.</p>
 <p>If you do not want to think about frequencies, tick <b>Automatic tuning</b>: the game sets the right frequency when you call (you can still change it by hand). A MAYDAY is always answered, whatever the frequency, because in real life there is an emergency frequency (121.5) that is always monitored.</p>
