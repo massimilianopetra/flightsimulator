@@ -205,8 +205,9 @@ SIM.disegnaRullaggio=function(scene){
       for(let k=0;k<10;k++){const a0=k/10*Math.PI*2,a1=(k+1)/10*Math.PI*2;
         pos.push(c.x,y,c.z, c.x+Math.cos(a1)*hw,y,c.z+Math.sin(a1)*hw, c.x+Math.cos(a0)*hw,y,c.z+Math.sin(a0)*hw);}}
   }
-  function mesh(pos,m){
+  function mesh(pos,m,scalaUV){
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.computeVertexNormals();
+    if(scalaUV){const uv=[];for(let i=0;i<pos.length;i+=3)uv.push(pos[i]/scalaUV,pos[i+2]/scalaUV);g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));}
     const o=new THREE.Mesh(g,m);o.frustumCulled=false;scene.add(o);
   }
   const asf=[],giallo=[],pz=[];
@@ -235,6 +236,13 @@ SIM.disegnaRullaggio=function(scene){
       }
     }
   }
-  mesh(asf,mAsf);mesh(giallo,mGiallo);mesh(pz,mPz);
+  // piazzali in lastre di cemento chiaro (5 m, con i giunti), come quelli veri; l'immagine copre 20 m
+  {const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');let s=7;const r=()=>((s=s*16807%2147483647)/2147483647);
+   for(let j=0;j<4;j++)for(let i=0;i<4;i++){const v=150+r()*16|0;g.fillStyle=`rgb(${v},${v-1},${v-5})`;g.fillRect(i*64,j*64,64,64);}
+   for(let k=0;k<2500;k++){const v=r()*255|0;g.fillStyle=`rgba(${v},${v},${v},.06)`;g.fillRect(r()*256,r()*256,2,2);}
+   for(let k=0;k<3;k++){g.fillStyle='rgba(40,40,40,.06)';g.beginPath();g.ellipse(r()*256,r()*256,6+r()*20,3+r()*8,r()*3,0,7);g.fill();}   // macchie d'olio
+   g.fillStyle='rgba(60,60,58,.32)';for(let k=0;k<4;k++){g.fillRect(k*64,0,2,256);g.fillRect(0,k*64,256,2);}
+   const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;mPz.map=t;mPz.color.setHex(0xffffff);}
+  mesh(asf,mAsf);mesh(giallo,mGiallo);mesh(pz,mPz,20);
 };
 })();

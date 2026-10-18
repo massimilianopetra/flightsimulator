@@ -47,7 +47,7 @@ function* blocchi(file){
 }
 
 /* PrimitiveBlock: tabella delle stringhe + gruppi */
-function leggiBlocco(dati,{suWay,suNodi,suRel}){
+function leggiBlocco(dati,{suWay,suNodi,suRel,conTag}){
   const r=new Lettore(dati);const stringhe=[];const gruppi=[];
   let gran=100,latOff=0,lonOff=0;
   while(!r.fine()){
@@ -88,13 +88,20 @@ function leggiBlocco(dati,{suWay,suNodi,suRel}){
         suRel(id,tag,membri.map((m,i)=>({id:m,tipo:tipi[i],ruolo:stringhe[ruoli[i]]||''})));
       }else if(n===2&&suNodi){ // DenseNodes
         const [a,b]=g.pezzo();const d=new Lettore(dati,a,b);
-        let ids=[],lats=[],lons=[];
+        let ids=[],lats=[],lons=[],kv=null;
         while(!d.fine()){const c=d.campo();
           if(c.n===1){let acc=0;ids=d.impaccati(x=>(acc+=x.zigzag()));}
           else if(c.n===8){let acc=0;lats=d.impaccati(x=>(acc+=x.zigzag()));}
           else if(c.n===9){let acc=0;lons=d.impaccati(x=>(acc+=x.zigzag()));}
+          else if(c.n===10&&conTag)kv=d.impaccati(x=>x.varint());
           else d.salta(c.t);}
-        for(let i=0;i<ids.length;i++)suNodi(ids[i],1e-9*(latOff+gran*lats[i]),1e-9*(lonOff+gran*lons[i]));
+        // con conTag i tag dei nodi (keys_vals: chiave, valore, ..., 0 alla fine di ogni nodo)
+        let j=0;
+        for(let i=0;i<ids.length;i++){
+          let tag=null;
+          if(kv){while(j<kv.length&&kv[j]!==0){(tag||(tag={}))[stringhe[kv[j]]]=stringhe[kv[j+1]];j+=2;}j++;}
+          suNodi(ids[i],1e-9*(latOff+gran*lats[i]),1e-9*(lonOff+gran*lons[i]),tag);
+        }
       }else g.salta(t);
     }
   }
@@ -191,4 +198,23 @@ function estraiWayLeggere(file,filtro,log=console.log){
   return {n:nw,inizio:I.slice(0,nw+1),lat:LA,lon:LO};
 }
 
-module.exports={estraiWay,estraiRelazioni,estraiWayLeggere};
+/* tutto quello che sta in alcune zone (riquadri {sud,nord,ovest,est}) in una sola lettura (nel file i nodi
+   vengono prima delle way e le way prima delle relazioni):
+     nodi: i nodi con tag dentro le zone [{id, lat, lon, tag}]
+     way: le way con almeno un nodo dentro [{id, tag, punti:[[lat,lon],...]}] (i nodi fuori zona mancano)
+     rel: le relazioni con almeno una way trovata [{id, tag, membri:[{id, tipo, ruolo}]}] */
+function estraiZone(file,zone,log=console.log){
+  const coord=new Map(),nodi=[],way=[],rel=[],idWay=new Set();
+  const dentro=(la,lo)=>zone.some(z=>la>=z.sud&&la<=z.nord&&lo>=z.ovest&&lo<=z.est);
+  let ultimo=0;const t0=Date.now();
+  for(const {tipo,dati,avanzamento} of blocchi(file)){
+    if(tipo==='OSMData')leggiBlocco(dati,{conTag:true,
+      suNodi:(id,la,lo,tag)=>{if(!dentro(la,lo))return;coord.set(id,[la,lo]);if(tag)nodi.push({id,lat:la,lon:lo,tag});},
+      suWay:(id,tag,refs)=>{if(!refs.some(r=>coord.has(r)))return;idWay.add(id);way.push({id,tag,punti:refs.map(r=>coord.get(r)).filter(Boolean)});},
+      suRel:(id,tag,membri)=>{if(membri.some(m=>m.tipo===1&&idWay.has(m.id)))rel.push({id,tag,membri});}});
+    if(avanzamento-ultimo>0.1||avanzamento===1){ultimo=avanzamento;log('  lettura '+Math.round(avanzamento*100)+'% ('+Math.round((Date.now()-t0)/1000)+' s)');}
+  }
+  return {nodi,way,rel};
+}
+
+module.exports={estraiWay,estraiRelazioni,estraiWayLeggere,estraiZone};

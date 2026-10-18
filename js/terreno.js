@@ -206,7 +206,7 @@ function meshH(x,z){
 }
 
 const api={
-  seme:SEED, vnoise, hash, rng, terrainH, naturale, meshH, locale, inLago, reale:!!RL, rilievo:RL,
+  seme:SEED, vnoise, hash, rng, terrainH, naturale, meshH, passoMesh:STEP, locale, inLago, reale:!!RL, rilievo:RL,
   aeroporti, piste, montagne, laghi, citta, boschi,
   tipo:'erba',
   /* quota della superficie su cui si appoggia l'aereo; imposta api.tipo
