@@ -582,8 +582,12 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
         benvenuto=true;
         if(staz){
           const citta=staz.ap.nome.replace(/-.*$/,'');
-          atcDice(frase(CSB,', vacate the runway at the next taxiway, taxi to the apron, welcome to ',citta),`${CSB.d}, liberate la pista al prossimo raccordo, rullate al piazzale, benvenuti a ${citta}.`,
-            readback(frase('Vacating the runway, taxiing to the apron, ',CSB),`Liberiamo la pista, rulliamo al piazzale, ${CSB.d}.`,null,null,null,null,()=>{}));
+          // dove parcheggiare (js/main.js, preparaArrivo): piazzola con il numero detto cifra per cifra e le vie da seguire
+          const arr=ctx.arrivo||{},vie=viaF(arr.vie),vieIt=arr.vie&&arr.vie.length?' via '+arr.vie.join(', '):'';
+          const dove=arr.ref?frase('stand ',{d:arr.ref,s:arr.ref.split('').map(c=>/\d/.test(c)?NUM[+c]:NATO[c.toUpperCase()]||c).join(' ')}):'the apron';
+          const doveIt=arr.ref?`alla piazzola ${arr.ref}`:'al piazzale';
+          atcDice(frase(CSB,', vacate the runway at the next taxiway, taxi to ',dove,vie,', welcome to ',citta),`${CSB.d}, liberate la pista al prossimo raccordo, rullate ${doveIt}${vieIt}, benvenuti a ${citta}.`,
+            readback(frase('Vacating the runway, taxiing to ',dove,vie,', ',CSB),`Liberiamo la pista, rulliamo ${doveIt}${vieIt}, ${CSB.d}.`,null,null,null,null,()=>{}));
         }
       }
     },

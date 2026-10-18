@@ -140,25 +140,40 @@ SIM.creaReteRullaggio=function(T){
     di:ap=>reti.get(ap)||null,
     tutte:()=>[...reti.values()],
     zona, suSuperficie:(x,z)=>zona(x,z,0), suPiazzale:(x,z)=>zona(x,z,0,true),
-    /* partenza dal parcheggio verso la testata te: punti del percorso, punto attesa, nomi delle vie, backtrack */
-    partenza(ap,te){
+    /* partenza dal parcheggio (o dal punto "inizio", per esempio la piazzola dove si è parcheggiato) verso la testata te:
+       punti del percorso, punto attesa, nomi delle vie, backtrack */
+    partenza(ap,te,inizio){
       const r=reti.get(ap);if(!r) return null;
       const ing=ingresso(r,te);if(!ing) return null;
-      const da=vicino(r,r.parcheggio),cam=dijkstra(r,da,ing.lato);if(!cam) return null;
-      const punti=[{x:r.parcheggio.x,z:r.parcheggio.z},...cam.lista.map(i=>({x:r.nodi[i].x,z:r.nodi[i].z}))];
+      const p0=inizio||r.parcheggio;
+      const da=vicino(r,p0),cam=dijkstra(r,da,ing.lato);if(!cam) return null;
+      const punti=[{x:p0.x,z:p0.z},...cam.lista.map(i=>({x:r.nodi[i].x,z:r.nodi[i].z}))];
       punti.push({x:ing.attesa.x,z:ing.attesa.z,nome:'ATT'});
       const ni=r.nodi[ing.nodo];punti.push({x:ni.x,z:ni.z});
       const backtrack=ing.u>150;
       const fine=backtrack?15:Math.max(ing.u,0)+40;   // dove allinearsi sulla pista
       punti.push({x:te.x+te.dir.x*fine,z:te.z+te.dir.z*fine,nome:te.nome});
-      const p1=punti[1],hdg=((Math.atan2(p1.x-r.parcheggio.x,-(p1.z-r.parcheggio.z))*180/Math.PI)+360)%360;
-      return {parcheggio:r.parcheggio,hdg,punti,attesa:{x:ing.attesa.x,z:ing.attesa.z},refs:cam.refs,backtrack};
+      const p1=punti[1],hdg=((Math.atan2(p1.x-p0.x,-(p1.z-p0.z))*180/Math.PI)+360)%360;
+      return {parcheggio:{x:p0.x,z:p0.z},hdg,punti,attesa:{x:ing.attesa.x,z:ing.attesa.z},refs:cam.refs,backtrack};
     },
-    /* dopo l'atterraggio: dal punto in cui si è fino al piazzale */
-    versoPiazzale(ap,pos){
+    /* dopo l'atterraggio: dal punto in cui si è fino al piazzale, oppure fino a una piazzola
+       (piazzola = {ingresso:{x,z}, linea:[punti della linea gialla fino al punto di arresto], ref}).
+       Ritorna i punti del percorso; in .vie i nomi delle vie di rullaggio. */
+    versoPiazzale(ap,pos,piazzola){
       const r=reti.get(ap);if(!r) return null;
-      const cam=dijkstra(r,vicino(r,pos),vicino(r,r.parcheggio));if(!cam) return null;
-      return [{x:pos.x,z:pos.z},...cam.lista.map(i=>({x:r.nodi[i].x,z:r.nodi[i].z})),{x:r.parcheggio.x,z:r.parcheggio.z,nome:'P'}];
+      const da=vicino(r,pos);
+      if(piazzola){
+        const a=vicino(r,piazzola.ingresso),n=r.nodi[a];
+        const cam=Math.hypot(n.x-piazzola.ingresso.x,n.z-piazzola.ingresso.z)<45?dijkstra(r,da,a):null;
+        if(cam){
+          const punti=[{x:pos.x,z:pos.z},...cam.lista.map(i=>({x:r.nodi[i].x,z:r.nodi[i].z})),...piazzola.linea.map(p=>({x:p.x,z:p.z}))];
+          punti[punti.length-1].nome=piazzola.ref||'P';
+          punti.vie=cam.refs;return punti;
+        }
+      }
+      const cam=dijkstra(r,da,vicino(r,r.parcheggio));if(!cam) return null;
+      const punti=[{x:pos.x,z:pos.z},...cam.lista.map(i=>({x:r.nodi[i].x,z:r.nodi[i].z})),{x:r.parcheggio.x,z:r.parcheggio.z,nome:'P'}];
+      punti.vie=cam.refs;return punti;
     },
     ingresso:(ap,te)=>{const r=reti.get(ap);return r?ingresso(r,te):null;},
   };

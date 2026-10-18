@@ -555,7 +555,7 @@ SIM.creaAeroporti3D=function(scene,renderer){
     }
 
     /* ===== piazzole: segnaletica, numeri, aerei e mezzi ===== */
-    const etichette=[],aerei=[],mezzi=[];
+    const etichette=[],aerei=[],mezzi=[],libere=[];
     const partenza=rete&&rete.di(ap)?rete.di(ap).parcheggio:null;
     let nEt=0;
     const canvasEt=document.createElement('canvas');canvasEt.width=1024;canvasEt.height=1024;
@@ -573,13 +573,13 @@ SIM.creaAeroporti3D=function(scene,renderer){
     };
     for(const s of d.piazzole){
       const nose=P(s.x,s.y),h=s.d*D2R,fx=Math.sin(h),fz=-Math.cos(h);   // avanti (verso il muso)
-      let ingresso;
-      if(s.l){const pts=anello(ap,s.l);linea(pts,0.3,giallo);ingresso=pts[0];}
+      let ingresso,lin;   // lin: la linea gialla dall'ingresso al punto di arresto
+      if(s.l){const pts=anello(ap,s.l);linea(pts,0.3,giallo);ingresso=pts[0];lin=pts;}
       else{
         const pts=anello(ap,s.a);linea(pts.concat([pts[0]]),0.25,rosso);
         const c=P(s.x,s.y);ingresso={x:c.x-fx*s.s*0.6,z:c.z-fz*s.s*0.6};
         nose.x=c.x+fx*s.s*0.4;nose.z=c.z+fz*s.s*0.4;
-        linea([ingresso,nose],0.3,giallo);
+        linea([ingresso,nose],0.3,giallo);lin=[ingresso,{x:nose.x,z:nose.z}];
       }
       // barra di arresto
       linea([{x:nose.x-fz*2,z:nose.z+fx*2},{x:nose.x+fz*2,z:nose.z-fx*2}],0.5,giallo);
@@ -595,7 +595,10 @@ SIM.creaAeroporti3D=function(scene,renderer){
       }
       // aereo parcheggiato (non sulla piazzola dove parte il giocatore)
       const tr=TRAFFICO[ap.codice]||{pieno:0.6,linea:0.8};
-      if(s.s<9||(partenza&&Math.hypot(nose.x-partenza.x,nose.z-partenza.z)<70)||rnd()>tr.pieno) continue;
+      if(s.s<9||(partenza&&Math.hypot(nose.x-partenza.x,nose.z-partenza.z)<70)||rnd()>tr.pieno){
+        if(s.s>=9&&s.r)libere.push({ref:s.r,ingresso,linea:lin,s:s.s});   // piazzola libera: ci si può parcheggiare
+        continue;
+      }
       let tipo=s.s<17?'turismo':s.s<27?'regionale':(s.s>=44&&ap.codice==='LIMC')?'lungo':'medio';
       if(tipo!=='turismo'&&rnd()>tr.linea)tipo='turismo';
       const sc=MOD.TIPI[tipo].scala;
@@ -781,12 +784,19 @@ SIM.creaAeroporti3D=function(scene,renderer){
     scene.add(gr);
     // quota del terreno lontano (griglia da 1 km) rispetto a quello dettagliato, al centro dell'aeroporto
     const dyLontano=(T.hLontano?T.hLontano(ap.x,ap.z):T.meshH(ap.x,ap.z))-T.meshH(ap.x,ap.z);
-    return {ap,gr,radar,terra,istanze,pezzi,notte,dyLontano,nEdifici:d.edifici.length,nAerei:aerei.length,nAuto:auto.length};
+    return {ap,gr,radar,terra,istanze,pezzi,notte,dyLontano,libere,nEdifici:d.edifici.length,nAerei:aerei.length,nAuto:auto.length};
   }
 
   let ora='giorno';
   return {
     lista:elenco,
+    /* piazzola libera dove parcheggiare dopo l'atterraggio (js/main.js): la più piccola adatta a un aereo da turismo
+       (aperture fino a ~20 m), a parità la più vicina a "pos"; null se l'aeroporto non è disegnato */
+    piazzola(ap,pos){
+      const a=elenco.find(e=>e.ap===ap);if(!a||!a.libere.length) return null;
+      const voto=p=>(p.s<=20?0:p.s)*50+Math.hypot(p.ingresso.x-pos.x,p.ingresso.z-pos.z);
+      return a.libere.reduce((m,p)=>voto(p)<voto(m)?p:m);
+    },
     // ora del volo (js/notte.js): finestre accese e luci delle torri faro
     ora(o){
       ora=o;const k=o==='notte'?1:o==='tramonto'?0.35:0;
