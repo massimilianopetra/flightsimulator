@@ -723,6 +723,19 @@ SIM.creaStrumenti=function(A){
       mg.strokeStyle='#ff5ad9';mg.lineWidth=2;mg.setLineDash([6,4]);
       mg.beginPath();mg.moveTo(cx,cy);mg.lineTo(dx,dy);mg.stroke();mg.setLineDash([]);
     }
+    // altri aerei (js/traffico.js): rombo azzurro come il traffico del G1000, quota relativa in centinaia di piedi
+    if(SIM.traffico&&range<=40000){
+      mg.font=`700 9px ${MONO}`;mg.textAlign='center';mg.textBaseline='middle';
+      for(const t of SIM.traffico.lista()){
+        const [x,y]=P(t.x,t.z);if(x<-10||x>MW+10||y<-10||y>MH+10) continue;
+        const dq=Math.round((t.y-s.pos.y)*3.28084/100);
+        mg.fillStyle='#3fd0ff';mg.strokeStyle='#04121c';mg.lineWidth=1;
+        mg.beginPath();mg.moveTo(x,y-5);mg.lineTo(x+5,y);mg.lineTo(x,y+5);mg.lineTo(x-5,y);mg.closePath();mg.fill();mg.stroke();
+        const a=t.hdg*D2R-rot;mg.strokeStyle='#3fd0ff';mg.lineWidth=1.5;
+        mg.beginPath();mg.moveTo(x+Math.sin(a)*6,y-Math.cos(a)*6);mg.lineTo(x+Math.sin(a)*12,y-Math.cos(a)*12);mg.stroke();
+        mg.fillStyle='#3fd0ff';mg.fillText((dq>0?'+':dq<0?'−':'')+String(Math.abs(dq)).padStart(2,'0'),x,y+(dq>=0?-11:11));
+      }
+    }
     // aereo: in "prua" punta sempre in alto
     mg.save();mg.translate(cx,cy);mg.rotate(hdg*D2R-rot);
     mg.fillStyle='#ffb020';mg.strokeStyle='#000';mg.lineWidth=1.5;

@@ -9,7 +9,10 @@
      ~45 m dal bordo pista; se nessuna via arriva vicino alla testata si entra
      dove si può e si risale la pista (backtrack);
    - disegno: strisce d'asfalto con linea gialla centrale, piazzali, linee del
-     punto attesa; zone libere da case e alberi; luci blu di notte (js/notte.js).
+     punto attesa; zone libere da case e alberi; luci blu di notte (js/notte.js);
+   - cartelli come quelli veri (ICAO): agli incroci quello di posizione (giallo
+     su nero, la via in cui si è) con quelli di direzione (nero su giallo, con
+     la freccia verso le altre vie); al punto attesa quello rosso con la pista.
    ===================================================================== */
 (function(){
 'use strict';
@@ -263,5 +266,129 @@ SIM.disegnaRullaggio=function(scene){
    g.fillStyle='rgba(60,60,58,.32)';for(let k=0;k<4;k++){g.fillRect(k*64,0,2,256);g.fillRect(0,k*64,256,2);}
    const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;mPz.map=t;mPz.color.setHex(0xffffff);}
   mesh(asf,mAsf);mesh(giallo,mGiallo);mesh(pz,mPz,20);
+  cartelli(scene,rete,T);
 };
+
+/* ---------- cartelli delle vie di rullaggio ---------- */
+function cartelli(scene,rete,T){
+  if(!SIM.Acc) return;
+  /* immagini dei pannelli in un'unica tela, a righe alte 64 px, ognuno largo quanto serve;
+     pannelli uguali (stessa via, stessa freccia) si disegnano una volta sola */
+  const CW=256,CH=64,tela=document.createElement('canvas');tela.width=2048;tela.height=2048;
+  const g=tela.getContext('2d'),caselle=new Map();let cx=0,cy=0;
+  const FONT='bold 46px Arial, Helvetica, sans-serif';
+  function freccia(cx,cy,ang){   // freccia lunga 40 px, ang in radianti (0 = dritto, + = a destra)
+    g.save();g.translate(cx,cy);g.rotate(ang);g.beginPath();
+    g.moveTo(0,-21);g.lineTo(13,-6);g.lineTo(4.5,-6);g.lineTo(4.5,20);g.lineTo(-4.5,20);g.lineTo(-4.5,-6);g.lineTo(-13,-6);g.closePath();g.fill();g.restore();
+  }
+  // tipo: 'pos' (giallo su nero), 'dir' (nero su giallo, freccia prima o dopo il nome), 'pista' (bianco su rosso)
+  function casella(tipo,testo,ang,frecciaPrima){
+    const k=tipo+'|'+testo+'|'+ang+'|'+frecciaPrima;
+    if(caselle.has(k)) return caselle.get(k);
+    g.font=FONT;const tw=g.measureText(testo).width,conFreccia=tipo==='dir';
+    const w=Math.min(CW,Math.ceil(tw+(conFreccia?60:0)+28));
+    if(cx+w>tela.width){cx=0;cy+=CH;}
+    if(cy+CH>tela.height) return null;
+    const x0=cx,y0=cy;cx+=w+2;
+    g.fillStyle=tipo==='pos'?'#141414':tipo==='pista'?'#c8202a':'#f2c200';g.fillRect(x0,y0,w,CH);
+    const chiaro=tipo==='pos'?'#f2c200':'#ffffff',scuro='#141414';
+    if(tipo==='pos'){g.strokeStyle=chiaro;g.lineWidth=4;g.strokeRect(x0+5,y0+5,w-10,CH-10);}
+    if(tipo==='pista'){g.strokeStyle='#ffffff';g.lineWidth=2;g.strokeRect(x0+3,y0+3,w-6,CH-6);}
+    g.fillStyle=tipo==='dir'?scuro:chiaro;g.textBaseline='middle';g.textAlign='left';
+    let x=x0+14;
+    if(conFreccia&&frecciaPrima){freccia(x+20,y0+CH/2,ang);x+=52;}
+    g.fillText(testo,x,y0+CH/2+2);x+=tw+8;
+    if(conFreccia&&!frecciaPrima)freccia(x+20,y0+CH/2,ang);
+    if(tipo==='dir'){g.fillStyle='rgba(0,0,0,.35)';g.fillRect(x0+w-2,y0,2,CH);}   // giunto fra due pannelli
+    const c={u0:x0/tela.width,u1:(x0+w)/tela.width,v0:1-(y0+CH)/tela.height,v1:1-y0/tela.height,w:w/CH};
+    caselle.set(k,c);return c;
+  }
+  const fatti=[];   // per non mettere due cartelli uguali a pochi metri (incroci fatti da più nodi vicini)
+  const segni=[];   // {x,z,fx,fz (verso cui guarda il pilota), pannelli:[casella]}
+  const dir=(a,b)=>{const dx=b.x-a.x,dz=b.z-a.z,l=Math.hypot(dx,dz)||1;return {x:dx/l,z:dz/l};};
+  // si percorre una via a partire dal nodo "da" lungo l'arco e, per al massimo "lung" metri (solo nodi da 2 archi)
+  function lungo(r,da,e,lung){
+    let prec=da,cur=e.n,l=e.l;
+    while(l<lung){const n=r.nodi[cur];if(n.adj.length!==2) break;
+      const nx=n.adj[0].n===prec?n.adj[1]:n.adj[0];prec=cur;cur=nx.n;l+=nx.l;}
+    const a=r.nodi[da],b=r.nodi[cur],L=Math.hypot(b.x-a.x,b.z-a.z);
+    if(L<1) return null;
+    const t=Math.min(1,lung/L);return {x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t,L};
+  }
+  // posto del cartello: a sinistra della via (a destra se a sinistra c'è un'altra via o un piazzale)
+  function posto(px,pz,f,hw){
+    for(const s of [1,-1]){const lx=f.z*s,lz=-f.x*s,x=px+lx*(hw+8),z=pz+lz*(hw+8);
+      if(!rete.zona(x,z,3)) return {x,z};}
+    return null;
+  }
+  function aggiungi(x,z,f,pannelli){
+    if(!pannelli.length||pannelli.includes(null)) return;
+    if(fatti.some(o=>Math.hypot(o.x-x,o.z-z)<25&&o.fx*f.x+o.fz*f.z>0.7)) return;
+    fatti.push({x,z,fx:f.x,fz:f.z});segni.push({x,z,fx:f.x,fz:f.z,pannelli});
+  }
+  for(const r of rete.tutte()){
+    const lw=new Map();for(const v of r.vie)if(v.ref&&!lw.has(v.ref))lw.set(v.ref,v.w/2);
+    // incroci: nodi con almeno tre archi e almeno due vie con il nome
+    r.nodi.forEach((n,i)=>{
+      if(n.adj.length<3) return;
+      const refs=new Set(n.adj.map(e=>e.ref).filter(Boolean));if(refs.size<2) return;
+      for(const e of n.adj){
+        if(!e.ref) continue;
+        const dietro=lungo(r,i,e,32);if(!dietro||dietro.L<18) continue;   // da dove si arriva
+        const f=dir(dietro,n);   // verso l'incrocio
+        const altre=new Map();
+        for(const b of n.adj){
+          if(b===e||!b.ref||b.ref===e.ref) continue;
+          const p=lungo(r,i,b,25);if(!p) continue;
+          const d=dir(n,p),ang=Math.atan2(f.x*d.z-f.z*d.x,f.x*d.x+f.z*d.z);   // + = a destra
+          const q=Math.round(ang/(Math.PI/4))*Math.PI/4;
+          if(Math.abs(q)>Math.PI*0.76) continue;   // si torna indietro
+          if(!altre.has(b.ref)||Math.abs(q)<Math.abs(altre.get(b.ref)))altre.set(b.ref,q);
+        }
+        if(!altre.size) continue;
+        const el=[...altre].sort((a,b)=>a[1]-b[1]);
+        // da sinistra a destra: direzioni a sinistra (freccia prima), posizione, direzioni a destra (freccia dopo)
+        const pannelli=[];
+        for(const [ref,q] of el)if(q<0)pannelli.push(casella('dir',ref,q,true));
+        pannelli.push(casella('pos',e.ref,0,false));
+        for(const [ref,q] of el)if(q>=0)pannelli.push(casella('dir',ref,q,false));
+        const p=posto(dietro.x,dietro.z,f,lw.get(e.ref)||10);if(p)aggiungi(p.x,p.z,f,pannelli);
+      }
+    });
+    // punto attesa: cartello rosso con le due testate (a sinistra quella che il pilota ha a sinistra)
+    for(const pi of r.ap.piste)for(const te of pi.testate){
+      const ing=rete.ingresso(r.ap,te);if(!ing) continue;
+      const a=ing.attesa,f={x:-Math.sin(a.dir),z:-Math.cos(a.dir)};   // verso la pista
+      const altra=pi.testate.find(t=>t!==te);if(!altra) continue;
+      const dx=-f.z,dz=f.x;   // destra del pilota
+      const [sx,dx2]=((te.x-a.x)*dx+(te.z-a.z)*dz)<((altra.x-a.x)*dx+(altra.z-a.z)*dz)?[te,altra]:[altra,te];
+      const p=posto(a.x,a.z,f,8);if(p)aggiungi(p.x,p.z,f,[casella('pista',sx.nome+'-'+dx2.nome,0,false)]);
+    }
+  }
+  if(!segni.length) return;
+  /* geometria: pannelli alti 0,9 m su una cassetta grigia scura, su due gambe */
+  const ac=new SIM.Acc(),retro=new SIM.Acc(),B=new THREE.Color(1,1,1),grigio=new THREE.Color(0x3a3c3e);
+  const HP=0.9,Y0=0.45,SP=0.25;
+  for(const s of segni){
+    const largo=s.pannelli.reduce((t,c)=>t+c.w*HP,0),y=T.meshH(s.x,s.z);
+    const rx=-s.fz,rz=s.fx,nx=-s.fx,nz=-s.fz;   // destra del pilota; la faccia guarda verso chi arriva
+    const P=(u,h,d)=>[s.x+rx*u+nx*d,y+h,s.z+rz*u+nz*d];
+    let u=-largo/2;
+    for(const c of s.pannelli){const w=c.w*HP;
+      ac.quad(P(u,Y0,0),P(u+w,Y0,0),P(u+w,Y0+HP,0),P(u,Y0+HP,0),[c.u0,c.v0],[c.u1,c.v0],[c.u1,c.v1],[c.u0,c.v1],B,[nx,0,nz]);u+=w;}
+    const L2=largo/2+0.04,a0=Y0-0.04,a1=Y0+HP+0.04;
+    retro.quad(P(-L2,a0,-SP),P(L2,a0,-SP),P(L2,a1,-SP),P(-L2,a1,-SP),[0,0],[0,0],[0,0],[0,0],grigio,[-nx,0,-nz]);
+    retro.quad(P(-L2,a1,-SP),P(L2,a1,-SP),P(L2,a1,0),P(-L2,a1,0),[0,0],[0,0],[0,0],[0,0],grigio,[0,1,0]);
+    for(const k of [-1,1])retro.quad(P(k*L2,a0,-SP),P(k*L2,a0,0),P(k*L2,a1,0),P(k*L2,a1,-SP),[0,0],[0,0],[0,0],[0,0],grigio,[rx*k,0,rz*k]);
+    for(const k of [-0.7,0.7]){const g0=k*largo/2;   // gambe
+      retro.quad(P(g0-0.04,-0.3,-SP/2),P(g0+0.04,-0.3,-SP/2),P(g0+0.04,a0,-SP/2),P(g0-0.04,a0,-SP/2),[0,0],[0,0],[0,0],[0,0],grigio,[nx,0,nz]);
+      retro.quad(P(g0-0.04,-0.3,-SP/2),P(g0+0.04,-0.3,-SP/2),P(g0+0.04,a0,-SP/2),P(g0-0.04,a0,-SP/2),[0,0],[0,0],[0,0],[0,0],grigio,[-nx,0,-nz]);}
+  }
+  const tex=new THREE.CanvasTexture(tela);tex.anisotropy=8;
+  // di notte i cartelli sono illuminati da dentro: la stessa immagine fa da luce
+  const mat=new THREE.MeshStandardMaterial({map:tex,emissiveMap:tex,emissive:new THREE.Color(0.35,0.35,0.35),roughness:.6,vertexColors:true});
+  const o1=ac.mesh(mat),o2=retro.mesh(new THREE.MeshStandardMaterial({vertexColors:true,roughness:.7,metalness:.2}));
+  for(const o of [o1,o2]){o.frustumCulled=false;scene.add(o);}
+  SIM.cartelliRullaggio={segni,pannelli:caselle.size,ora(k){mat.emissive.setScalar(k==='notte'?0.9:k==='tramonto'?0.45:0.35);}};
+}
 })();

@@ -141,6 +141,9 @@ const piano=SIM.creaPiano(T,A,met,DOT.nav?radio:null);   // senza NAV1 il piano 
 // comunicazioni radio con la torre (js/atc.js)
 const atc=SIM.creaATC({A,T,met,audio,radio:DOT.nav?radio:Object.assign(Object.create(radio),{ilsDi:()=>null}),stato:st});   // senza NAV1 niente avvicinamento ILS
 piano.impostaCom(atc.stazioneDi,atc.terraDi);
+// altri aerei nel circuito dell'aeroporto vicino (js/traffico.js); la torre ne tiene conto
+const traffico=SIM.traffico=SIM.creaTraffico?SIM.creaTraffico({T,scene,met,atc}):null;
+if(traffico){atc.usaTraffico(traffico);traffico.ora(notte.ora);}
 // missioni (js/missioni.js) e libretto di volo (js/libretto.js)
 const missioni=SIM.creaMissioni(T);
 const libretto=SIM.creaLibretto();
@@ -633,9 +636,11 @@ canvas.addEventListener('pointerup',fineTrascina);canvas.addEventListener('point
 
 /* sensibilità della cloche (1…10): velocità con cui i tasti la spostano e curva "esponenziale"
    (piccoli spostamenti vicino al centro danno poco effetto, a fondo corsa resta tutta l'escursione).
-   Su richiesta la cloche torna al centro quando non la tocchi, come quella vera rilasciata. */
-const opz={sens:5,centro:false};
-try{const s=+localStorage.getItem('volo-sens');if(s>=1&&s<=10)opz.sens=s;opz.centro=localStorage.getItem('volo-centro')==='1';}catch(e){}
+   Di serie la cloche torna al centro quando non la tocchi, come quella vera rilasciata.
+   La scelta si salva in volo-cloche solo quando la si cambia (la vecchia volo-centro si salvava per tutti). */
+const opz={sens:5,centro:true};
+try{const s=+localStorage.getItem('volo-sens');if(s>=1&&s<=10)opz.sens=s;
+  const c=localStorage.getItem('volo-cloche');if(c!==null)opz.centro=c==='1';localStorage.removeItem('volo-centro');}catch(e){}
 function curva(v){const e=clamp(0.9-0.08*opz.sens,0.1,0.82);return v*(1-e+e*v*v);}
 function aggiornaOpzioni(){
   $('sens').value=String(opz.sens);$('sensv').textContent=String(opz.sens);$('centro').checked=opz.centro;
@@ -644,11 +649,12 @@ function aggiornaOpzioni(){
        'When you release the keys the stick <b>returns to the centre</b>: for long climbs or descents use the trim (<kbd>Z</kbd>/<kbd>X</kbd>).')
     :L('La cloche <b>resta dove la lasci</b>: correggi con <kbd>W</kbd>/<kbd>S</kbd> o centrala con <kbd>K</kbd>.',
        'The stick <b>stays where you leave it</b>: correct with <kbd>W</kbd>/<kbd>S</kbd> or centre it with <kbd>K</kbd>.');
-  try{localStorage.setItem('volo-sens',String(opz.sens));localStorage.setItem('volo-centro',opz.centro?'1':'0');}catch(e){}
+  try{localStorage.setItem('volo-sens',String(opz.sens));}catch(e){}
 }
 $('sens').addEventListener('input',()=>{opz.sens=+$('sens').value;aggiornaOpzioni();});
 $('sens').addEventListener('change',()=>$('sens').blur());
-$('centro').addEventListener('change',()=>{opz.centro=$('centro').checked;aggiornaOpzioni();$('centro').blur();});
+$('centro').addEventListener('change',()=>{opz.centro=$('centro').checked;
+  try{localStorage.setItem('volo-cloche',opz.centro?'1':'0');}catch(e){}aggiornaOpzioni();$('centro').blur();});
 aggiornaOpzioni();
 
 // pulsanti a schermo
@@ -1148,7 +1154,7 @@ mostraScheda(scheda);
 ricominciaSubito();
 aggiornaVento(0);
 // scorciatoie per le prove: index.html#salta (salta il briefing), #vista=1 (cabina)
-SIM.debug={st,fis,terreno,monumenti,aeroporti3D,arrivo:()=>arrivo,scene,atc,renderer,camera,missioni,libretto};  // utile dalla console del browser (F12)
+SIM.debug={st,fis,terreno,monumenti,aeroporti3D,arrivo:()=>arrivo,scene,atc,renderer,camera,missioni,libretto,traffico};  // utile dalla console del browser (F12)
 if(/salta/.test(location.hash)) inizia();
 if(/finale/.test(location.hash)) inizia('finale');
 {const mv=/vista=(\d)/.exec(location.hash);if(mv)vista=(+mv[1])%3;}
@@ -1170,6 +1176,7 @@ function ciclo(ora){
     for(let i=0;i<passi;i++)fis.passo(h,inp,vento);
     libretto.aggiorna(dt,st);
     const mm=missioni.aggiorna(dt);if(mm)messaggio(mm,6);
+    if(traffico)traffico.aggiorna(dt,st,ctxATC());
   }
   gestisciEventi();
   aggiornaCamera(dt);
