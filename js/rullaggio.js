@@ -119,12 +119,13 @@ SIM.creaReteRullaggio=function(T){
         for(let gz=Math.floor((Math.min(a.z,b.z)-m)/CELLA);gz<=Math.floor((Math.max(a.z,b.z)+m)/CELLA);gz++){
           const k=gx+','+gz;(griglia.get(k)||griglia.set(k,{s:[],p:[]}).get(k)).s.push(s);}
     }
-    for(const a of r.piazzali){
-      let x0=Infinity,x1=-Infinity,z0=Infinity,z1=-Infinity;for(const p of a){x0=Math.min(x0,p.x);x1=Math.max(x1,p.x);z0=Math.min(z0,p.z);z1=Math.max(z1,p.z);}
-      const o={a,box:[x0,x1,z0,z1]};
-      for(let gx=Math.floor((x0-30)/CELLA);gx<=Math.floor((x1+30)/CELLA);gx++)for(let gz=Math.floor((z0-30)/CELLA);gz<=Math.floor((z1+30)/CELLA);gz++){
-        const k=gx+','+gz;(griglia.get(k)||griglia.set(k,{s:[],p:[]}).get(k)).p.push(o);}
-    }
+    for(const a of r.piazzali)inGriglia(a);
+  }
+  function inGriglia(a){
+    let x0=Infinity,x1=-Infinity,z0=Infinity,z1=-Infinity;for(const p of a){x0=Math.min(x0,p.x);x1=Math.max(x1,p.x);z0=Math.min(z0,p.z);z1=Math.max(z1,p.z);}
+    const o={a,box:[x0,x1,z0,z1]};
+    for(let gx=Math.floor((x0-30)/CELLA);gx<=Math.floor((x1+30)/CELLA);gx++)for(let gz=Math.floor((z0-30)/CELLA);gz<=Math.floor((z1+30)/CELLA);gz++){
+      const k=gx+','+gz;(griglia.get(k)||griglia.set(k,{s:[],p:[]}).get(k)).p.push(o);}
   }
   const distSeg=(x,z,a,b)=>{const dx=b.x-a.x,dz=b.z-a.z,l2=dx*dx+dz*dz||1,t=Math.max(0,Math.min(1,((x-a.x)*dx+(z-a.z)*dz)/l2));return Math.hypot(a.x+t*dx-x,a.z+t*dz-z);};
   function zona(x,z,margine=0,soloPiazzali=false){
@@ -137,6 +138,9 @@ SIM.creaReteRullaggio=function(T){
 
   return {
     reti,
+    /* superficie pavimentata in più (le piazzole dei grandi aeroporti, js/aeroporti-3d.js, dove i piazzali di OSM sono
+       disegnati più stretti di quelli veri): si disegna e conta come un piazzale; va aggiunta prima di SIM.disegnaRullaggio */
+    aggiungiPiazzale(ap,a){const r=reti.get(ap);if(!r||a.length<3) return;r.piazzali.push(a);inGriglia(a);},
     di:ap=>reti.get(ap)||null,
     tutte:()=>[...reti.values()],
     zona, suSuperficie:(x,z)=>zona(x,z,0), suPiazzale:(x,z)=>zona(x,z,0,true),

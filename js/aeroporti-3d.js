@@ -53,6 +53,26 @@ for(const ap of T.aeroporti){
 }
 if(!ELENCO.length) return;
 
+/* piazzole pavimentate: in OSM i piazzali di Caselle e Malpensa sono più stretti di quelli veri (resta l'erba tra
+   via di rullaggio e piazzale, e sotto alcune piazzole remote). Ogni piazzola diventa un pezzo di piazzale:
+   l'ingombro dell'aereo (apertura alare x lunghezza) e, sotto la linea d'ingresso, una striscia larga come la piazzola.
+   Si aggiungono alla rete di js/rullaggio.js, che li disegna con lo stesso cemento e li conta per la fisica. */
+if(SIM.reteRullaggio)for(const e of ELENCO){
+  const {ap,d}=e,rete=SIM.reteRullaggio;if(!rete.di(ap)) continue;
+  const P=(x,y)=>({x:ap.x+x/10,z:ap.z-y/10});
+  const rett=(a,b,hw)=>{const dx=b.x-a.x,dz=b.z-a.z,L=Math.hypot(dx,dz)||1,nx=-dz/L*hw,nz=dx/L*hw;
+    return [{x:a.x+nx,z:a.z+nz},{x:b.x+nx,z:b.z+nz},{x:b.x-nx,z:b.z-nz},{x:a.x-nx,z:a.z-nz}];};
+  for(const s of d.piazzole){
+    const h=s.d*D2R,fx=Math.sin(h),fz=-Math.cos(h);
+    let nose=P(s.x,s.y),linea;
+    if(s.l)linea=anello(ap,s.l);
+    else{const c=P(s.x,s.y);nose={x:c.x+fx*s.s*0.4,z:c.z+fz*s.s*0.4};linea=[{x:c.x-fx*s.s*0.6,z:c.z-fz*s.s*0.6},nose];}
+    const lung=Math.max(12,s.s*1.05);
+    rete.aggiungiPiazzale(ap,rett({x:nose.x+fx*5,z:nose.z+fz*5},{x:nose.x-fx*lung,z:nose.z-fz*lung},s.s/2+3));
+    for(let i=1;i<linea.length;i++)rete.aggiungiPiazzale(ap,rett(linea[i-1],linea[i],Math.max(8,s.s/2+2)));   // larga come la piazzola: le vicine si toccano
+  }
+}
+
 /* true se il punto è nel sedime di un aeroporto disegnato (+150 m): lì gli edifici sono quelli veri */
 SIM.zonaAeroporti=function(x,z){
   for(const e of ELENCO){
