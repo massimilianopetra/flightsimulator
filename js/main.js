@@ -129,6 +129,7 @@ function puntoFinale(){
 }
 let modalita='decollo';
 let atterratoA=null;   // aeroporto dove si è appena atterrati: fermi lì, diventa la nuova partenza
+let arrivo=null;       // dopo l'atterraggio: dove parcheggiare {ap, ref (numero della piazzola), vie, fine (punto di arresto)}
 let destIdx=T.aeroporti.findIndex(a=>a.codice===M.destinazione);
 if(destIdx<0)destIdx=Math.max(0,T.aeroporti.findIndex(a=>a!==partenza.ap));
 const dest=()=>T.aeroporti[destIdx]||null;
@@ -144,7 +145,7 @@ piano.impostaCom(atc.stazioneDi,atc.terraDi);
 const missioni=SIM.creaMissioni(T);
 const libretto=SIM.creaLibretto();
 let daPiano=null;   // giro a tappe dopo un tocca e riparti: il piano parte dalla pista appena toccata
-const ctxATC=()=>({parcheggio:!!partenza.parcheggio&&modalita!=='finale',attesa:partenza.attesa||null,vie:partenza.vie||[],backtrack:partenza.backtrack!==false,part:partenza.ap?{ap:partenza.ap,te:partenza.te}:null,arr:piano.piano?{ap:piano.piano.arr,te:piano.piano.te}:null,finale:modalita==='finale',fin:modalita==='finale'?pistaFinale():null});
+const ctxATC=()=>({parcheggio:!!partenza.parcheggio&&modalita!=='finale',attesa:partenza.attesa||null,vie:partenza.vie||[],backtrack:partenza.backtrack!==false,part:partenza.ap?{ap:partenza.ap,te:partenza.te}:null,arr:piano.piano?{ap:piano.piano.arr,te:piano.piano.te}:null,finale:modalita==='finale',fin:modalita==='finale'?pistaFinale():null,arrivo:arrivo?{ref:arrivo.ref,vie:arrivo.vie}:null});
 let faseMostrata=-1;
 function ricalcolaPiano(){
   const d=dest(),p=piano.calcola(daPiano||partenza,d,d&&testataControvento(d));
@@ -228,6 +229,7 @@ function ricominciaSubito(){
   primaCamera=true;
   $('thr').value=Math.round(st.thr*100);
   rull=partenza.parcheggio&&modalita!=='finale'?{punti:partenza.percorso,i:1}:null;
+  arrivo=null;
   if(piano.piano){piano.piano.prossimo=0;aggiornaPiano();}
   atc.reset(ctxATC());
   atterratoA=null;
@@ -716,7 +718,7 @@ function gestisciEventi(){
   for(const e of st.eventi){
     atc.evento(e,st,ctxATC());
     if(e.tipo==='decollo'){
-      atterratoA=null;
+      atterratoA=null;arrivo=null;
       if(rull){rull=null;aggiornaPiano();}
       const pv=T.pistaVicina(e.x,e.z,80);
       libretto.decollo({mondo:window.MONDO_SCELTO,da:pv?pv.pista.ap.codice:L('fuori campo','off-field'),ora:oraVolo});
@@ -996,10 +998,42 @@ function aggiornaRifornimento(dt){
   messaggio(L(`${pieno?'Pieno fatto':'Rifornimento'}: <b>${fmtCarb(st.carburante)} / ${A.carburante.capacita} ${unCarb}</b>`,`${pieno?'Tank full':'Refuelling'}: <b>${fmtCarb(st.carburante)} / ${A.carburante.capacita} ${unCarb}</b>`),pieno?3:1);
   if(pieno)rifornendo=false;
 }
-function nuovaPartenza(ap){
+/* dopo l'atterraggio: piazzola libera (grandi aeroporti, js/aeroporti-3d.js) o piazzale, percorso da dove si è
+   (sulla mappa in magenta), nomi delle vie e messaggio; la torre li ripete alla radio (js/atc.js) */
+function preparaArrivo(ap){
+  let punti=null,ref=null,vie=[];
+  if(ap.rullaggioVero&&SIM.reteRullaggio){
+    const pz=aeroporti3D&&aeroporti3D.piazzola?aeroporti3D.piazzola(ap,st.pos):null;
+    punti=SIM.reteRullaggio.versoPiazzale(ap,st.pos,pz);
+    if(punti){vie=punti.vie||[];if(pz&&punti[punti.length-1].nome===pz.ref)ref=pz.ref;}
+  }
+  if(!punti){ // piazzale generico accanto alla pista principale (stessa geometria di js/mondo.js)
+    const g=geometriaRullaggio(ap);
+    punti=[{x:st.pos.x,z:st.pos.z},g.P(0,0),g.P(0,70),g.P(0,100),g.P(-45,100),Object.assign(g.P(-45,115),{nome:'P'})];
+  }
+  const fine=punti[punti.length-1];
+  arrivo={ap,ref,vie,fine:{x:fine.x,z:fine.z}};
+  rull={punti,i:1};aggiornaPiano();
+  strum.impostaZoom(0);   // mappa a 0,5 NM: si vedono le vie di rullaggio e il percorso
+  const dove=ref?L(`alla piazzola <b>${ref}</b>`,`to stand <b>${ref}</b>`):L('al piazzale','to the apron');
+  const via=vie.length?` via <b>${vie.join(', ')}</b>`:'';
+  messaggio(L(`Benvenuto a <b>${ap.codice}</b>! Libera la pista e rulla ${dove}${via}: segui la linea <b style="color:var(--magenta)">magenta</b> sulla mappa e la linea gialla a terra.${ref?' Fermati sulla barra gialla.':''}`,
+              `Welcome to <b>${ap.codice}</b>! Vacate the runway and taxi ${dove}${via}: follow the <b style="color:var(--magenta)">magenta</b> line on the map and the yellow line on the ground.${ref?' Stop on the yellow bar.':''}`),9);
+}
+function nuovaPartenza(ap,arr){
   let te=testataControvento(ap);
   partenza=creaPartenza(ap,te);te=partenza.te;modalita='decollo';daPiano=null;
   rull=partenza.parcheggio?{punti:partenza.percorso,i:1}:null;
+  // parcheggiati dopo un atterraggio: il percorso verso la pista parte da dove si è (e da lì riparte anche "ricomincia")
+  if(arr&&ap.rullaggioVero&&SIM.reteRullaggio){
+    const rr=SIM.reteRullaggio.partenza(ap,te,{x:st.pos.x,z:st.pos.z});
+    if(rr){
+      for(const q of rr.punti)if(q.nome==='ATT')q.nome=L('ATT','HP');
+      rull={punti:rr.punti,i:1};
+      if(partenza.parcheggio)Object.assign(partenza,{x:st.pos.x,z:st.pos.z,hdg:rr.hdg,attesa:rr.attesa,percorso:rr.punti,vie:rr.refs,backtrack:rr.backtrack});
+    }
+  }
+  arrivo=null;
   selAp.value=String(T.aeroporti.indexOf(ap));riempiPiste(ap,te);
   if(dest()===ap){ // arrivati a destinazione: si propone l'aeroporto più vicino come prossima tappa
     let best=-1,bd=Infinity;
@@ -1008,8 +1042,8 @@ function nuovaPartenza(ap){
   }
   impostaDest(destIdx);
   atc.reset(ctxATC());
-  const d=dest();
-  messaggio(L(`Sei fermo a <b>${ap.codice}</b>. Prossima destinazione: <b>${d?d.codice:'—'}</b> (cambiala con N o il menu DEST).<br>Rulla fino alla pista <b>${te.nome}</b> e chiedi il decollo alla torre (T).`,
+  const d=dest(),parch=arr&&arr.ref?L(`Parcheggiato alla piazzola <b>${arr.ref}</b>. `,`Parked at stand <b>${arr.ref}</b>. `):'';
+  messaggio(parch+L(`Sei fermo a <b>${ap.codice}</b>. Prossima destinazione: <b>${d?d.codice:'—'}</b> (cambiala con N o il menu DEST).<br>Rulla fino alla pista <b>${te.nome}</b> e chiedi il decollo alla torre (T).`,
               `You are stopped at <b>${ap.codice}</b>. Next destination: <b>${d?d.codice:'—'}</b> (change it with N or the DEST menu).<br>Taxi to runway <b>${te.nome}</b> and ask the tower for take-off clearance (T).`),10);
   if(partenza.parcheggio)setTimeout(messaggioPartenza,10500);
 }
@@ -1114,7 +1148,7 @@ mostraScheda(scheda);
 ricominciaSubito();
 aggiornaVento(0);
 // scorciatoie per le prove: index.html#salta (salta il briefing), #vista=1 (cabina)
-SIM.debug={st,fis,terreno,monumenti,aeroporti3D,scene,atc,renderer,camera,missioni,libretto};  // utile dalla console del browser (F12)
+SIM.debug={st,fis,terreno,monumenti,aeroporti3D,arrivo:()=>arrivo,scene,atc,renderer,camera,missioni,libretto};  // utile dalla console del browser (F12)
 if(/salta/.test(location.hash)) inizia();
 if(/finale/.test(location.hash)) inizia('finale');
 {const mv=/vista=(\d)/.exec(location.hash);if(mv)vista=(+mv[1])%3;}
@@ -1143,12 +1177,13 @@ function ciclo(ora){
   if(monumenti&&n%10===0)monumenti.aggiorna(camera.position,terreno.vicino());
   if(aeroporti3D)aeroporti3D.aggiorna(camera.position,terreno.vicino(),dt);
   if(attivo&&n%15===0){
+    // appena atterrati e rallentati: dove parcheggiare e come arrivarci (prima della radio, così la torre lo dice)
+    if(atterratoA&&!arrivo&&st.aTerra&&st.gs<15&&!st.crashed)preparaArrivo(atterratoA);
     atc.aggiorna(st,ctxATC());
-    if(daParcheggio&&atterratoA&&atterratoA.rullaggioVero&&SIM.reteRullaggio&&st.aTerra&&st.gs<12&&!rull){   // percorso verso il piazzale
-      const pts=SIM.reteRullaggio.versoPiazzale(atterratoA,st.pos);if(pts){rull={punti:pts,i:1};aggiornaPiano();}
-    }
     const alPiazzale=()=>atterratoA.rullaggioVero&&SIM.reteRullaggio?SIM.reteRullaggio.suPiazzale(st.pos.x,st.pos.z):sulPiazzale();
-    if(atterratoA&&st.aTerra&&st.gs<1.5&&!st.crashed&&atc.libero&&(!daParcheggio||alPiazzale())){const ap=atterratoA;atterratoA=null;nuovaPartenza(ap);}
+    // arrivati: alla piazzola assegnata (entro 15 m dal punto di arresto) o, senza piazzola, sul piazzale
+    const parcheggiato=()=>arrivo&&arrivo.ref?Math.hypot(st.pos.x-arrivo.fine.x,st.pos.z-arrivo.fine.z)<15:alPiazzale();
+    if(atterratoA&&st.aTerra&&st.gs<1.5&&!st.crashed&&atc.libero&&(!(daParcheggio||arrivo)||parcheggiato())){const ap=atterratoA;atterratoA=null;nuovaPartenza(ap,arrivo);}
     // missione finita: il risultato quando l'aereo è fermo
     if(missioni.daMostrare()&&st.aTerra&&st.gs<1&&!st.crashed)mostraEsito();
   }
