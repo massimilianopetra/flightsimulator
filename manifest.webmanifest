@@ -1,5 +1,5 @@
 {
-  "name": "Simulatore di Volo",
+  "name": "Volo · Simulatore di volo",
   "short_name": "Volo",
   "description": "Simulatore di volo nel browser con un Cessna 172",
   "start_url": "./",

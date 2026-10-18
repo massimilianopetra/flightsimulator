@@ -299,3 +299,5 @@ select:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
 .privacy a{color:var(--cyan)}
 .privacy button{flex:none}
 @media (max-width:560px){.privacy{flex-direction:column;align-items:stretch}}
+/* nota di non affiliazione in fondo al briefing */
+.nota-marchi{margin:12px 0 0;font-size:11px;line-height:1.4;color:var(--dim);}
