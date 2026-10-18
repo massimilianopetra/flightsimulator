@@ -14,6 +14,8 @@ Manual / Manuale: [English](https://massimilianopetra.github.io/flightsimulator/
 
 Code / Codice: https://github.com/massimilianopetra/flightsimulator
 
+Contact / Contatti: Massimiliano Petra — [massimiliano.petra@gmail.com](mailto:massimiliano.petra@gmail.com)
+
 ---
 
 <a id="english"></a>
@@ -527,6 +529,12 @@ do not end up in the sea.
 ## Ideas for the next steps
 
 - Other aircraft (a glider? a jet?): another data file like `dati/c42.js`, plus its 3D model.
+
+## Contact
+
+The author is **Massimiliano Petra**. For questions, suggestions, bug reports or to share your flights,
+write to [massimiliano.petra@gmail.com](mailto:massimiliano.petra@gmail.com), or open an issue on
+[GitHub](https://github.com/massimilianopetra/flightsimulator/issues).
 
 ## Licence
 
@@ -1057,6 +1065,12 @@ conviene ricontrollare che gli aeroporti non finiscano in mare.
 ## Idee per i prossimi passi
 
 - Altri aerei (un aliante? un jet?): un altro file di dati come `dati/c42.js`, più il suo modello 3D.
+
+## Contatti
+
+L'autore è **Massimiliano Petra**. Per domande, suggerimenti, segnalazioni di errori o per raccontare i tuoi voli
+scrivi a [massimiliano.petra@gmail.com](mailto:massimiliano.petra@gmail.com), oppure apri una segnalazione su
+[GitHub](https://github.com/massimilianopetra/flightsimulator/issues).
 
 ## Licenza
 
