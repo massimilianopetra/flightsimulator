@@ -150,6 +150,8 @@ SIM.creaNotte=function(scene,mondo,T){
     faro.intensity=window.AEREO&&window.AEREO.id==='c42'?0:c.faro;   // il C42 di serie non ha il faro di atterraggio
     for(const l of mondo.aereo.luciNav)l.scale.setScalar(c.luci?2.2:1);
     if(SIM.aeroporti3D)SIM.aeroporti3D.ora(k);   // vetrate accese e torri faro (js/aeroporti-3d.js)
+    if(SIM.cartelliRullaggio)SIM.cartelliRullaggio.ora(k);
+    if(SIM.traffico)SIM.traffico.ora(k);   // luci degli altri aerei (js/traffico.js)   // cartelli delle vie di rullaggio illuminati (js/rullaggio.js)
   }
   return {
     imposta, get ora(){return ora;},

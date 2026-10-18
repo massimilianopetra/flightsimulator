@@ -17,7 +17,9 @@
      - pontili d'imbarco, aerei di linea e da turismo parcheggiati, mezzi di
        rampa, segnaletica delle piazzole con i numeri;
      - parcheggi con le strisce e le auto, recinzione col filo spinato;
-     - di notte vetrate e finestre accese e luce delle torri faro.
+     - insegne col nome in lettere sul tetto dei terminal (lato pista e lato
+       strada); a Caselle la vetrata verso la pista si piega in fuori;
+     - di notte vetrate, finestre e insegne accese e luce delle torri faro.
    Gli edifici sono fusi per materiale: pochi oggetti da disegnare.
    ===================================================================== */
 (function(){
@@ -271,6 +273,11 @@ const BIANCO=new THREE.Color(1,1,1),giallo=new THREE.Color(0xf2c200),rosso=new T
 /* traffico di ogni aeroporto: quante piazzole occupate e, sulle piazzole grandi, quanti aerei di linea
    (gli altri sono da turismo); Cuneo ha pochi voli di linea, Malpensa anche aerei a lungo raggio */
 const TRAFFICO={LIMC:{pieno:0.72,linea:1},LIMF:{pieno:0.65,linea:0.95},LIML:{pieno:0.75,linea:1},LIMJ:{pieno:0.6,linea:0.9},LIMZ:{pieno:0.55,linea:0.12}};
+/* insegne dei terminal: nome dell'edificio in OSM (o '*' = il terminal più grande) -> scritta */
+const INSEGNE={LIMF:{'*':'TORINO CASELLE'},LIMC:{'Terminal 1':'MILANO MALPENSA  TERMINAL 1','Terminal 2':'MALPENSA  TERMINAL 2'},
+  LIML:{'*':'MILANO LINATE'},LIMJ:{'*':'GENOVA'},LIMZ:{'*':'CUNEO'}};
+/* vetrata del terminal lato pista piegata in fuori: in cima sporge "sporge" metri, "curva" > 1 = più piegata verso l'alto */
+const VETRATA_PIEGATA={LIMF:{sporge:3.2,curva:1.7}};
 
 /* ---------- costruzione ---------- */
 SIM.creaAeroporti3D=function(scene,renderer){
@@ -320,6 +327,11 @@ SIM.creaAeroporti3D=function(scene,renderer){
     const col=new THREE.Color();
     const terminali=[],auto=[];   // auto: posti occupati nei parcheggi (anche sui tetti dei multipiano)
     const stileTerm=d.stile in M?d.stile:'genova';
+    const insegne=INSEGNE[ap.codice]||{};
+    let piuGrande=null;for(const e of d.edifici)if(e.t==='terminal'){const a=Math.abs(areaPoli(anello(ap,e.p)));if(!piuGrande||a>piuGrande.a)piuGrande={e,a};}
+    // lato verso la pista: davanti al lato (25 o 50 m) c'è un piazzale o una via di rullaggio
+    const latoPista=(a,b,n)=>{const mx=(a.x+b.x)/2,mz=(a.z+b.z)/2;
+      return !!rete&&[25,50].some(k=>rete.zona(mx+n.x*k,mz+n.z*k,0));};
 
     /* ===== edifici ===== */
     for(const e of d.edifici){
@@ -338,10 +350,14 @@ SIM.creaAeroporti3D=function(scene,renderer){
       if(e.t==='tettoia'){tettoia(est,buchi,top,yb,tinta);continue;}
       if(e.t==='terminal')terminali.push({est,top,yb});
       // facciata e fasce verticali
-      let fasce;
+      let fasce,piega=null;
       if(e.t==='terminal'){
         const gf=Math.min(5,e.h*0.3);
         fasce=[[base,yb+gf,'vetroBasso',X.vetroBasso.th,yb],[yb+gf,top-1.3,stileTerm,X[stileTerm].th,yb+gf],[top-1.3,top+0.9,'liscio',4,yb]];
+        const vp=VETRATA_PIEGATA[ap.codice];
+        if(vp&&!buchi.length)piega=piegaVetrata(est,vp,yb+gf,top-1.3);
+        const testo=insegne[e.n]||(piuGrande&&piuGrande.e===e?insegne['*']:null);
+        if(testo)insegna(est,testo,top+0.9,e.h);
       }else if(e.t==='uffici')fasce=[[base,top,'uffici',X.uffici.th,yb],[top,top+0.7,'liscio',4,yb]];
       else if(e.t==='casa')fasce=[[base,top,'casa',X.casa.th,yb]];
       else if(e.t==='parcheggio')fasce=[[base,top,'parcheggio',X.parcheggio.th,yb],[top,top+1.1,'cemento',4,yb]];
@@ -362,18 +378,85 @@ SIM.creaAeroporti3D=function(scene,renderer){
         }
         if(best)porta={n:best.n,c:{x:R.x+best.n.x*best.half,z:R.z+best.n.z*best.half},h:Math.min(e.h-1.5,Math.max(5,e.h*0.78))};
       }
-      for(const r of [est,...buchi])pareti(r,r!==est,fasce,tinta,porta);
+      for(const r of [est,...buchi])pareti(r,r!==est,fasce,tinta,porta,r===est?piega:null);
       // tetto
       if(piano){
         const mt=e.t==='parcheggio'?'asfalto':'tettoPiano';
-        coperchio(est,buchi,top,mt,tinta.clone().lerp(BIANCO,0.6));
+        coperchio(piega?est.map((p,i)=>({x:p.x+piega.off[i].x,z:p.z+piega.off[i].z})):est,buchi,top,mt,tinta.clone().lerp(BIANCO,0.6));
         if(e.t!=='casa'&&e.t!=='parcheggio'&&ar>300)impianti(est,top,ar,e.t==='terminal');
         if(e.t==='parcheggio')autoSuPoligono(est,top);
       }else tettoForma(R,top,e.r,e.t,tinta);
     }
 
-    /* pareti di un contorno: fasce = [[y0, y1, materiale, altezza del modulo, y di riferimento della texture]] */
-    function pareti(r,buco,fasce,tinta,porta){
+    /* vetrata piegata: per ogni vertice lo spostamento in cima (verso fuori, perpendicolare ai lati lato pista);
+       sotto y0 la parete è dritta, fra y0 e y1 si piega (spostamento * t^curva), sopra resta tutto spostato */
+    function piegaVetrata(r,vp,y0,y1){
+      const s=areaPoli(r)>0?1:-1,N=r.length,nl=[];
+      for(let i=0;i<N;i++){const a=r[i],b=r[(i+1)%N],L=Math.hypot(b.x-a.x,b.z-a.z)||1,n={x:(b.z-a.z)/L*s,z:-(b.x-a.x)/L*s};
+        nl.push(L>0.3&&latoPista(a,b,n)?n:null);}
+      if(!nl.some(Boolean)) return null;
+      const off=[];
+      for(let i=0;i<N;i++){
+        const n1=nl[(i-1+N)%N],n2=nl[i];
+        if(!n1&&!n2){off.push({x:0,z:0});continue;}
+        if(!n1||!n2){const n=n1||n2;off.push({x:n.x*vp.sporge,z:n.z*vp.sporge});continue;}
+        // fra due lati piegati: spigolo "a mitra" (limitato negli angoli stretti)
+        let mx=n1.x+n2.x,mz=n1.z+n2.z;const ml=Math.hypot(mx,mz)||1;mx/=ml;mz/=ml;
+        const k=vp.sporge/Math.max(0.5,mx*n2.x+mz*n2.z);off.push({x:mx*k,z:mz*k});
+      }
+      return {off,y0,y1,curva:vp.curva,lati:nl};
+    }
+    // insegna col nome: lettere in piedi sul tetto, appena dentro il bordo, sul lato verso la pista più lungo e su quello verso la strada
+    function insegna(r,testo,y0,h){
+      const s=areaPoli(r)>0?1:-1,N=r.length,tratti=[];
+      // tratti di lati consecutivi quasi allineati (le facciate curve sono fatte di tanti lati corti)
+      let cur=null;
+      for(let i=0;i<N;i++){
+        const a=r[i],b=r[(i+1)%N],L=Math.hypot(b.x-a.x,b.z-a.z);if(L<0.05) continue;
+        const ang=Math.atan2(b.z-a.z,b.x-a.x);
+        if(cur&&Math.abs(Math.atan2(Math.sin(ang-cur.ang0),Math.cos(ang-cur.ang0)))<0.35){cur.j=i;cur.L+=L;}
+        else{cur={i0:i,j:i,ang0:ang,L};tratti.push(cur);}
+      }
+      // verso la pista se lo è la maggior parte dei lati del tratto (sulle facciate curve la corda può passare dentro l'edificio)
+      const latoDi=t=>{const a=r[t.i0],b=r[(t.j+1)%N],L=Math.hypot(b.x-a.x,b.z-a.z)||1,n={x:(b.z-a.z)/L*s,z:-(b.x-a.x)/L*s};
+        let si=0,tot=0;for(let i=t.i0;i<=t.j;i++){const p=r[i],q=r[(i+1)%N],l=Math.hypot(q.x-p.x,q.z-p.z)||1;
+          tot+=l;if(latoPista(p,q,{x:(q.z-p.z)/l*s,z:-(q.x-p.x)/l*s}))si+=l;}
+        return {a,b,L,n,pista:si>tot*0.4};};
+      const lati=tratti.map(t=>Object.assign(t,latoDi(t))).filter(t=>t.L>20);
+      const scelti=[];
+      for(const pista of [true,false]){const l=lati.filter(t=>t.pista===pista).sort((p,q)=>q.L-p.L)[0];if(l)scelti.push(l);}
+      if(!scelti.length) return;
+      const hl=Math.max(2.2,Math.min(3.4,h*0.17));
+      const t=scritta(testo);
+      for(const l of scelti){
+        // il punto del tratto più rientrato (facciata curva): le lettere stanno 1,5 m più dentro, sopra il tetto
+        let dentroMin=0;for(let i=l.i0;i<=l.j+1;i++){const p=r[i%N];dentroMin=Math.min(dentroMin,(p.x-l.a.x)*l.n.x+(p.z-l.a.z)*l.n.z);}
+        const larga=Math.min(l.L*0.75,hl*t.rapporto),alta=larga/t.rapporto,d=dentroMin-1.5;
+        // ux, uz: la destra di chi guarda l'edificio da fuori (guarda verso -n)
+        const ux=l.n.z,uz=-l.n.x,cx=(l.a.x+l.b.x)/2+l.n.x*d,cz=(l.a.z+l.b.z)/2+l.n.z*d,yc=y0+0.3+alta/2;
+        const P=(u,v)=>[cx+ux*u,yc+v,cz+uz*u];
+        A(t.k).quad(P(-larga/2,-alta/2),P(larga/2,-alta/2),P(larga/2,alta/2),P(-larga/2,alta/2),[0,0],[1,0],[1,1],[0,1],BIANCO,[l.n.x,0,l.n.z]);
+        // dietro le lettere: due travi del sostegno
+        for(const k of [-0.3,0.3])A('metallo').geo(new THREE.BoxGeometry(0.15,alta*0.8+0.3,0.15),matrice(cx+ux*larga*k-l.n.x*0.3,y0+(alta*0.8+0.3)/2,cz+uz*larga*k-l.n.z*0.3),col.setHex(0x8a9096));
+      }
+    }
+    // immagine della scritta (lettere blu su trasparente; di notte accese): un materiale per scritta
+    function scritta(testo){
+      const k='insegna:'+testo;
+      if(M[k]) return M[k].info;
+      const c=document.createElement('canvas'),g=c.getContext('2d'),F='bold 120px Arial, Helvetica, sans-serif';
+      g.font=F;const w=Math.ceil(g.measureText(testo).width)+40;c.width=Math.min(4096,w);c.height=150;
+      g.font=F;g.textBaseline='middle';g.textAlign='center';g.fillStyle='#1d3f86';g.fillText(testo,c.width/2,80,c.width-20);
+      const tex=new THREE.CanvasTexture(c);tex.anisotropy=ANISO;
+      M[k]=new THREE.MeshStandardMaterial({map:tex,transparent:true,alphaTest:0.3,roughness:.5,emissive:new THREE.Color(0,0,0),emissiveMap:tex,
+        polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+      M[k].info={k,rapporto:c.width/c.height};conNotte.push(M[k]);
+      return M[k].info;
+    }
+
+    /* pareti di un contorno: fasce = [[y0, y1, materiale, altezza del modulo, y di riferimento della texture]];
+       piega (facoltativa): vetrata piegata in fuori (piegaVetrata) */
+    function pareti(r,buco,fasce,tinta,porta,piega){
       const s=areaPoli(r)>0?1:-1;   // verso del giro: per le normali verso fuori
       let cum=0;
       for(let i=0;i<r.length;i++){
@@ -382,6 +465,22 @@ SIM.creaAeroporti3D=function(scene,renderer){
         // porta dell'hangar: lato parallelo al lato del rettangolo scelto e vicino ad esso
         const mx=(a.x+b.x)/2,mz=(a.z+b.z)/2;
         const suPorta=porta&&nx*porta.n.x+nz*porta.n.z>0.9&&Math.abs((mx-porta.c.x)*porta.n.x+(mz-porta.c.z)*porta.n.z)<10;   // anche se la parete è un po' rientrata
+        const oa=piega&&piega.off[i],ob=piega&&piega.off[(i+1)%r.length];
+        if(piega&&(oa.x||oa.z||ob.x||ob.z)){
+          // parete piegata: fasce divise in strisce orizzontali, ognuna spostata secondo la sua quota
+          const f=y=>y<=piega.y0?0:y>=piega.y1?1:Math.pow((y-piega.y0)/(piega.y1-piega.y0),piega.curva);
+          for(const [y0,y1,m,th,yr] of fasce){
+            const tw=(X[m]&&X[m].tw)||4,u0=cum/tw,u1=(cum+L)/tw,n=y1>piega.y0&&y0<piega.y1?6:1;
+            for(let k=0;k<n;k++){
+              const za=y0+(y1-y0)*k/n,zb=y0+(y1-y0)*(k+1)/n,fa=f(za),fb=f(zb);
+              A(m).quad([a.x+oa.x*fa,za,a.z+oa.z*fa],[b.x+ob.x*fa,za,b.z+ob.z*fa],[b.x+ob.x*fb,zb,b.z+ob.z*fb],[a.x+oa.x*fb,zb,a.z+oa.z*fb],
+                [u0,(za-yr)/th],[u1,(za-yr)/th],[u1,(zb-yr)/th],[u0,(zb-yr)/th],tinta,[nx,0,nz]);
+            }
+          }
+          const ult=fasce[fasce.length-1];   // parapetto, faccia interna
+          A(ult[2]).quad([a.x+oa.x,ult[0],a.z+oa.z],[b.x+ob.x,ult[0],b.z+ob.z],[b.x+ob.x,ult[1],b.z+ob.z],[a.x+oa.x,ult[1],a.z+oa.z],[0,0],[1,0],[1,1],[0,1],tinta,[-nx,0,-nz]);
+          cum+=L;continue;
+        }
         for(const [y0,y1,m,th,yr] of fasce){
           const tw=(X[m]&&X[m].tw)||4;
           const segmenti=suPorta&&m==='lamiera'?[[y0,porta.h+y0+2.5,'portone'],[porta.h+y0+2.5,y1,m]]:[[y0,y1,m]];
