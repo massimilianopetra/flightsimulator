@@ -172,12 +172,12 @@ SIM.creaNotte=function(scene,mondo,T){
   // lampi in sequenza delle Calvert: due volte al secondo corrono dai 900 m verso la soglia
   const nLampi=lampi.length/4,lp=[],ord=new Float32Array(nLampi);
   for(let i=0;i<nLampi;i++){lp.push(lampi[i*4],lampi[i*4+1],lampi[i*4+2]);ord[i]=lampi[i*4+3];}
-  const luciLampi=nLampi?punti(lp,new Array(nLampi*3).fill(0),13,tex):null;
+  const luciLampi=nLampi?punti(lp,new Array(nLampi*3).fill(0),22,tex):null;
   if(luciLampi)scene.add(luciLampi);
   function aggiornaLampi(){
     const t=(performance.now()/500)%1,att=t*25,c=luciLampi.geometry.attributes.color;   // 21 luci in 0,42 s, poi buio
     for(let i=0;i<nLampi;i++){
-      const r=att-ord[i],k=r>=0&&r<2?0.55*(1-r/2):0;   // lampo discreto con una breve scia
+      const r=att-ord[i],k=r>=0&&r<2.5?0.8*(1-r/2.5):0;   // lampo con una breve scia, né troppo forte né troppo debole
       c.array[i*3]=k*0.85;c.array[i*3+1]=k*0.92;c.array[i*3+2]=k;
     }
     c.needsUpdate=true;
