@@ -380,7 +380,7 @@ api.creaMesh=function(scene,renderer){
         lavoro=null;
         for(const _ of costruisci(a,cx,cz));
         a.mesh.visible=true;buf[1-attivo].mesh.visible=false;
-        if(vie)vie.applica();
+        if(vie){vie.applica();vie.dettaglio(px,pz,true);}
         if(lontano)lontano.buco(a.cx,a.cz);
         return;
       }
@@ -390,7 +390,7 @@ api.creaMesh=function(scene,renderer){
         lavoro=null;attivo=1-attivo;
         buf[attivo].mesh.visible=true;buf[1-attivo].mesh.visible=false;
         if(vie)vie.applica();
-      }
+      }else if(vie&&!lavoro)vie.dettaglio(px,pz);   // immagine da vicino: quando la griglia non lavora
       if(lontano)lontano.buco(buf[attivo].cx,buf[attivo].cz);
     },
   };
