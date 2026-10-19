@@ -13,11 +13,12 @@
 const SIM=window.SIM=window.SIM||{};
 
 // macchia di luce morbida (texture comune a tutti i punti)
-function texturaLuce(){
+// (forte: nucleo pieno più largo, per i lampi delle luci di avvicinamento)
+function texturaLuce(forte){
   const c=document.createElement('canvas');c.width=c.height=64;
   const g=c.getContext('2d'),gr=g.createRadialGradient(32,32,0,32,32,32);
-  gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(0.25,'rgba(255,255,255,.85)');
-  gr.addColorStop(0.6,'rgba(255,255,255,.18)');gr.addColorStop(1,'rgba(255,255,255,0)');
+  gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(forte?0.3:0.25,forte?'rgba(255,255,255,1)':'rgba(255,255,255,.85)');
+  gr.addColorStop(0.6,forte?'rgba(255,255,255,.45)':'rgba(255,255,255,.18)');gr.addColorStop(1,'rgba(255,255,255,0)');
   g.fillStyle=gr;g.fillRect(0,0,64,64);
   return new THREE.CanvasTexture(c);
 }
@@ -55,6 +56,19 @@ const CALVERT={
 const calvertDi=te=>{
   const l=CALVERT[te.pista.ap.codice];if(!l) return null;
   return l.find(c=>Math.abs(((te.hdg-c.hdg)%360+540)%360-180)<20)||null;
+};
+// true se il punto è nella fascia delle Calvert (950 m prima della soglia, 45 m per lato): lì niente case generate (js/paesaggio.js)
+let zoneCalvert=null;
+SIM.zonaCalvert=(x,z)=>{
+  if(!zoneCalvert){
+    zoneCalvert=[];
+    for(const p of SIM.terreno.piste)for(const te of p.testate)if(calvertDi(te))zoneCalvert.push(te);
+  }
+  for(const te of zoneCalvert){
+    const dx=x-te.x,dz=z-te.z,d=-(dx*te.dir.x+dz*te.dir.z),v=Math.abs(-dx*te.dir.z+dz*te.dir.x);
+    if(d>-10&&d<950&&v<45) return true;
+  }
+  return false;
 };
 
 SIM.creaNotte=function(scene,mondo,T){
@@ -131,13 +145,13 @@ SIM.creaNotte=function(scene,mondo,T){
   // lampi in sequenza delle Calvert: due volte al secondo corrono dai 900 m verso la soglia
   const nLampi=lampi.length/4,lp=[],ord=new Float32Array(nLampi);
   for(let i=0;i<nLampi;i++){lp.push(lampi[i*4],lampi[i*4+1],lampi[i*4+2]);ord[i]=lampi[i*4+3];}
-  const luciLampi=nLampi?punti(lp,new Array(nLampi*3).fill(0),14,tex):null;
+  const luciLampi=nLampi?punti(lp,new Array(nLampi*3).fill(0),40,texturaLuce(true)):null;
   if(luciLampi)scene.add(luciLampi);
   function aggiornaLampi(){
     const t=(performance.now()/500)%1,att=t*25,c=luciLampi.geometry.attributes.color;   // 21 luci in 0,42 s, poi buio
     for(let i=0;i<nLampi;i++){
-      const r=att-ord[i],k=r>=0&&r<1?1:r>=1&&r<2?0.3:0;
-      c.array[i*3]=c.array[i*3+1]=k;c.array[i*3+2]=k*1.1;
+      const r=att-ord[i],k=r>=0&&r<3?1-r/3:0;   // il lampo e una breve scia (le luci fisse sono già bianche: serve un alone grande)
+      c.array[i*3]=k*0.85;c.array[i*3+1]=k*0.92;c.array[i*3+2]=k;
     }
     c.needsUpdate=true;
   }

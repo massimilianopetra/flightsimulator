@@ -285,6 +285,7 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
           if(SIM.zonaMonumenti&&SIM.zonaMonumenti(x,z)) continue;   // spazio per i monumenti (js/monumenti.js)
           if(SIM.reteRullaggio&&SIM.reteRullaggio.zona(x,z,20)) continue;   // vie di rullaggio vere (js/rullaggio.js)
           if(SIM.zonaAeroporti&&SIM.zonaAeroporti(x,z)) continue;   // grandi aeroporti: edifici veri (js/aeroporti-3d.js)
+          if(SIM.zonaCalvert&&SIM.zonaCalvert(x,z)) continue;       // luci di avvicinamento (js/notte.js)
           const rot=qDir?Math.atan2(-qDz,qDx):h4*Math.PI;  // facciata parallela alla strada
           aggiungi(x,z,w,d,h,rot,tetto,muro,industria?1:0);
         }
