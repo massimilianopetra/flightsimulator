@@ -123,6 +123,19 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
       linee.push(v);
     }
   }
+  // categoria della via (strade e ferrovie, non fiumi né canali) che passa a meno di r m dal bordo, o null
+  // (usata da js/notte.js per le luci di avvicinamento; lenta: solo per pochi punti)
+  SIM.viaSu=(x,z,r)=>{
+    for(const v of linee){
+      if(v.cat==='fiumi'||v.cat==='canali'||fuori(v.box,x,z,x,z,r+v.ing)) continue;
+      for(let i=1;i<v.xs.length;i++){
+        const ax=v.xs[i-1],az=v.zs[i-1],dx=v.xs[i]-ax,dz=v.zs[i]-az,l2=dx*dx+dz*dz||1;
+        const t=clamp(((x-ax)*dx+(z-az)*dz)/l2,0,1);
+        if(Math.hypot(ax+t*dx-x,az+t*dz-z)<r+v.ing) return v.cat;
+      }
+    }
+    return null;
+  };
   const aree=[];
   const AB=window.ABITATI||{};
   for(const tipo of ['residenziale','industriale']){

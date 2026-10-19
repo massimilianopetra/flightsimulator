@@ -57,16 +57,42 @@ const calvertDi=te=>{
   const l=CALVERT[te.pista.ap.codice];if(!l) return null;
   return l.find(c=>Math.abs(((te.hdg-c.hdg)%360+540)%360-180)<20)||null;
 };
-// true se il punto è nella fascia delle Calvert (950 m prima della soglia, 45 m per lato): lì niente case generate (js/paesaggio.js)
+/* fin dove arrivano le luci di avvicinamento (m prima della soglia, al massimo "max", a passi di 30 m):
+   si fermano prima della prima strada, ferrovia o zona costruita (come i sistemi accorciati veri),
+   così non escono dal sedime sopra le case o in mezzo all'autostrada */
+const lunghe=new Map();
+function lunghezzaLuci(te,max){
+  const ch=te.pista.ap.codice+te.nome+max;
+  if(lunghe.has(ch)) return lunghe.get(ch);
+  const den=SIM.densitaEdifici?SIM.densitaEdifici():null;
+  const costruito=(x,z)=>{
+    if(!den||!den.DEN) return false;
+    const DS=den.DS,i=Math.floor((x-DS.x0)/DS.passo),j=Math.floor((DS.yNord+z)/DS.passo);
+    return i>=0&&j>=0&&i<DS.larghezza&&j<DS.altezza&&den.DEN[j*DS.larghezza+i]>=5;   // da 5 in su js/paesaggio.js mette case
+  };
+  const libero=(d,v)=>{
+    const x=te.x-te.dir.x*d-te.dir.z*v,z=te.z-te.dir.z*d+te.dir.x*v;
+    return !(SIM.viaSu&&SIM.viaSu(x,z,4))&&!costruito(x,z);
+  };
+  let L=0;
+  for(let d=30;d<=max;d+=30){
+    const mezza=d%150===0&&d<=750?6+0.03*d:d<=270?12:2;   // dove ci sono le barre trasversali o le file rosse, anche le estremità
+    if(!libero(d,0)||!libero(d,mezza)||!libero(d,-mezza)) break;
+    L=d;
+  }
+  lunghe.set(ch,L);
+  return L;
+}
+// true se il punto è nella fascia delle Calvert (fin dove arrivano, 45 m per lato): lì niente case generate (js/paesaggio.js)
 let zoneCalvert=null;
 SIM.zonaCalvert=(x,z)=>{
   if(!zoneCalvert){
     zoneCalvert=[];
-    for(const p of SIM.terreno.piste)for(const te of p.testate)if(calvertDi(te))zoneCalvert.push(te);
+    for(const p of SIM.terreno.piste)for(const te of p.testate)if(calvertDi(te))zoneCalvert.push({te,L:lunghezzaLuci(te,900)});
   }
-  for(const te of zoneCalvert){
+  for(const {te,L} of zoneCalvert){
     const dx=x-te.x,dz=z-te.z,d=-(dx*te.dir.x+dz*te.dir.z),v=Math.abs(-dx*te.dir.z+dz*te.dir.x);
-    if(d>-10&&d<950&&v<45) return true;
+    if(d>-10&&d<L+40&&v<45) return true;
   }
   return false;
 };
@@ -81,23 +107,23 @@ SIM.creaNotte=function(scene,mondo,T){
   const BIANCO=new THREE.Color(1,0.93,0.78),VERDE=new THREE.Color(0.25,1,0.4),GIALLO=new THREE.Color(1,0.85,0.5);
   const ROSSO=new THREE.Color(1,0.14,0.08);
   const lampi=[];   // luci a lampi in sequenza ("coniglio"): x, y, z, numero nella fila (0 = la più lontana)
-  function calvert(p,te,cv){
+  function calvert(p,te,cv,Lc){
     const rx=-te.dir.z,rz=te.dir.x;   // destra di chi atterra
     // punto a d m prima della soglia e v m a destra; sul terreno (sull'acqua: a livello del mare)
     const P=(d,v,c,su=1.2)=>{const x=te.x-te.dir.x*d+rx*v,z=te.z-te.dir.z*d+rz*v;
       metti(x,Math.max(T.terrainH(x,z),0)+su,z,c);};
-    for(let d=30;d<=900;d+=30){
+    for(let d=30;d<=Lc;d+=30){
       for(let k=-2;k<=2;k++)P(d,k*1,BIANCO);          // asse: barrette di 5 luci su 4 m
-      if(d>=300){const x=te.x-te.dir.x*d,z=te.z-te.dir.z*d;lampi.push(x,Math.max(T.terrainH(x,z),0)+1.6,z,(900-d)/30);}
+      if(d>=300){const x=te.x-te.dir.x*d,z=te.z-te.dir.z*d;lampi.push(x,Math.max(T.terrainH(x,z),0)+1.6,z,(Lc-d)/30);}
     }
     // barre trasversali a 150, 300, 450, 600, 750 m: le estremità su due rette che si allargano
-    for(let d=150;d<=750;d+=150){
+    for(let d=150;d<=Math.min(750,Lc);d+=150){
       const mezza=6+0.03*d;
       for(let v=4;v<=mezza;v+=1.5){P(d,v,BIANCO);P(d,-v,BIANCO);}
     }
     if(cv.cat>=2){
       // negli ultimi 270 m: barrette rosse di 3 luci ai due lati dell'asse
-      for(let d=30;d<=270;d+=30)for(const s of [-1,1])for(let k=0;k<3;k++)P(d,s*(9+k*1.5),ROSSO);
+      for(let d=30;d<=Math.min(270,Lc);d+=30)for(const s of [-1,1])for(let k=0;k<3;k++)P(d,s*(9+k*1.5),ROSSO);
       // zona di contatto: barrette bianche sulla pista nei primi 900 m
       for(let u=60;u<=900;u+=60)for(const s of [-1,1])for(let k=0;k<3;k++){
         const v=s*(9+k*1.5);metti(te.x+te.dir.x*u+rx*v,p.quota+0.35,te.z+te.dir.z*u+rz*v,BIANCO);
@@ -114,10 +140,12 @@ SIM.creaNotte=function(scene,mondo,T){
     for(const te of p.testate){                      // soglie verdi
       for(let k=0;k<=8;k++){const v=-p.W/2+p.W*k/8;metti(te.x+(-te.dir.z)*v,y,te.z+te.dir.x*v,VERDE);}
       const cv=calvertDi(te);
-      if(cv){calvert(p,te,cv);continue;}
+      const Lc=cv?lunghezzaLuci(te,900):0;
+      if(Lc>=150){calvert(p,te,cv,Lc);continue;}
       if(!p.erba&&p.L>=1000){                        // luci di avvicinamento: 300 m di asse e una barra a 150 m
-        for(let d=30;d<=300;d+=30)metti(te.x-te.dir.x*d,y+0.5,te.z-te.dir.z*d,BIANCO);
-        for(let k=-4;k<=4;k++){const v=k*3.5;metti(te.x-te.dir.x*150+(-te.dir.z)*v,y+0.5,te.z-te.dir.z*150+te.dir.x*v,BIANCO);}
+        const Ls=lunghezzaLuci(te,300);
+        for(let d=30;d<=Ls;d+=30)metti(te.x-te.dir.x*d,y+0.5,te.z-te.dir.z*d,BIANCO);
+        if(Ls>=150)for(let k=-4;k<=4;k++){const v=k*3.5;metti(te.x-te.dir.x*150+(-te.dir.z)*v,y+0.5,te.z-te.dir.z*150+te.dir.x*v,BIANCO);}
       }
     }
   }
