@@ -3,7 +3,9 @@
    Strade, ferrovie, fiumi e aree urbane vere (OpenStreetMap) disegnate su
    un'immagine grande (fino a 4096 px, ~5 m per pixel) che copre la griglia
    vicina del terreno: il terreno la "indossa" nello shader, quindi tutto
-   segue esattamente il rilievo. Dentro le aree urbane vengono generati gli
+   segue esattamente il rilievo. Attorno all'aereo (4 km) una seconda
+   immagine più fine (~1 m per pixel) mostra le vie con bordi, segnaletica,
+   guardrail e binari; i tracciati hanno gli angoli smussati. Dentro le aree urbane vengono generati gli
    edifici ("autogen"): case con il tetto in coppi, palazzi più alti vicino
    ai centri delle città grandi, capannoni nelle zone industriali. Sono
    orientati come la strada più vicina e non invadono strade e fiumi.
@@ -47,6 +49,53 @@ const STILE_VIE3D={
   superstrade:[[21,'#837f75'],[18,'#4d4d4f'],[2,'#5e6a48']],      // banchina, asfalto, spartitraffico
   autostrade:[[28,'#86827a'],[25,'#4a4a4c'],[3.5,'#5b6845']],
 };
+/* immagine "da vicino" (circa 4 km attorno all'aereo, ~1 m per pixel): vie con bordi,
+   segnaletica e binari. Ogni passata: w larghezza (m; per i fiumi fattore), c colore,
+   o spostamenti laterali (linee parallele all'asse), d tratteggio [pieno, vuoto] in m */
+const STILE_DET={
+  fiumi:[{w:1.6,c:'#a39d8f'},{w:1.15,c:'#6f7f72'},{w:1,c:'#4c6a70'},{w:0.6,c:'#46646b'}],   // greto, riva, acqua, centro più profondo
+  canali:[{w:15,c:'#7c8668'},{w:10,c:'#4f6b6e'},{w:7,c:'#4a666a'}],
+  urbane:[{w:7,c:'#8d8a83'},{w:5.4,c:'#5a5957'}],                                        // marciapiedi, asfalto
+  comunali:[{w:6.6,c:'#8a8576'},{w:4.8,c:'#646260'}],                                   // bordo in terra, asfalto
+  provinciali:[{w:8,c:'#7d7a70'},{w:6.8,c:'#d4d2ca'},{w:6.3,c:'#58575a'},{w:0.18,c:'#d9d7cf',d:[3,6]}],
+  statali:[{w:10.5,c:'#7a776f'},{w:8.6,c:'#dedcd4'},{w:8,c:'#525153'},{w:0.2,c:'#e2e0d8',d:[4.5,7.5]}],
+  ferrovie:[{w:8,c:'#857a6c'},{w:3.4,c:'#5f554b'},{w:0.32,c:'#2e2b29',o:[-0.75,0.75]}],          // massicciata, traversine, rotaie
+  superstrade:[{w:21,c:'#837f75'},{w:18.6,c:'#e4e2da'},{w:18,c:'#4d4d4f'},{w:2.8,c:'#e4e2da'},{w:2.2,c:'#5e6a48'},
+    {w:0.2,c:'#d9d7cf',o:[-5.1,5.1],d:[4.5,7.5]}],
+  autostrade:[{w:28,c:'#86827a'},{w:25.2,c:'#e8e6df'},{w:24.6,c:'#4a4a4c'},{w:3.9,c:'#e8e6df'},{w:3.3,c:'#5b6845'},
+    {w:0.6,c:'#9a9890',o:[-1.25,1.25]},                                                 // guardrail
+    {w:0.2,c:'#d9d7cf',o:[-5.5,-9.1,5.5,9.1],d:[4.5,7.5]}],                             // corsie
+};
+// raggio massimo (m) con cui si arrotondano gli angoli dei tracciati (i dati sono semplificati a spezzate)
+const CURVA={autostrade:300,superstrade:220,ferrovie:300,statali:90,provinciali:60,comunali:30,urbane:10,fiumi:150,canali:60};
+// tracciato con gli angoli smussati: in ogni vertice un arco (quadratica) che parte a distanza r dal vertice
+function traccia(g,xs,zs,R){
+  const n=xs.length;
+  g.moveTo(xs[0],zs[0]);
+  for(let i=1;i<n-1;i++){
+    const ax=xs[i]-xs[i-1],az=zs[i]-zs[i-1],bx=xs[i+1]-xs[i],bz=zs[i+1]-zs[i];
+    const la=Math.hypot(ax,az)||1,lb=Math.hypot(bx,bz)||1,r=Math.min(R,la/2,lb/2);
+    g.lineTo(xs[i]-ax/la*r,zs[i]-az/la*r);
+    g.quadraticCurveTo(xs[i],zs[i],xs[i]+bx/lb*r,zs[i]+bz/lb*r);
+  }
+  g.lineTo(xs[n-1],zs[n-1]);
+}
+// linea parallela a distanza d (positiva = a destra nel verso del tracciato), angoli a spigolo vivo limitati
+function parallela(xs,zs,d){
+  const n=xs.length,px=new Float32Array(n),pz=new Float32Array(n);
+  for(let i=0;i<n;i++){
+    let nx=0,nz=0;
+    // normale a destra di (dx, dz) con z verso sud: (-dz, dx)
+    if(i>0){const dx=xs[i]-xs[i-1],dz=zs[i]-zs[i-1],l=Math.hypot(dx,dz)||1;nx+=-dz/l;nz+=dx/l;}
+    if(i<n-1){const dx=xs[i+1]-xs[i],dz=zs[i+1]-zs[i],l=Math.hypot(dx,dz)||1;nx+=-dz/l;nz+=dx/l;}
+    // agli estremi una normale sola; dentro è la somma di due normali unitarie s:
+    // lo spigolo sta a s·2d/|s|² (cioè d / cos del mezzo angolo), al massimo 2d
+    const s=Math.hypot(nx,nz)||1;
+    const k=i>0&&i<n-1?(s>=1?2*d/(s*s):2*d/s):d/s;
+    px[i]=xs[i]+nx*k;pz[i]=zs[i]+nz*k;
+  }
+  return {xs:px,zs:pz};
+}
 // colori degli edifici e del fondo delle aree urbane
 const TETTI=['#9c4a32','#a0583f','#8a4a36','#a8664e','#7f4b3d','#94604c','#74706b'];  // coppi; l'ultimo è un tetto piano grigio
 const TETTI_IND=['#b8b9b4','#a3a7a8','#c9c8c2','#8e979e','#d6d4cc'];
@@ -103,7 +152,15 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
   const tex=new THREE.CanvasTexture(cv);
   tex.premultiplyAlpha=true;  // così le mipmap non scuriscono i bordi
   tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
-  const unif={uVie:{value:tex},uVieO:{value:new THREE.Vector3(1e9,1e9,TS)}};
+  // immagine da vicino: DET m di lato attorno all'aereo (~1 m per pixel)
+  const PXD=PX,DET=PX>=4096?4096:2048,DET_RIFAI=650;
+  const cvd=document.createElement('canvas');cvd.width=cvd.height=PXD;
+  const gd=cvd.getContext('2d');
+  const texD=new THREE.CanvasTexture(cvd);
+  texD.premultiplyAlpha=true;
+  texD.anisotropy=tex.anisotropy;
+  const unif={uVie:{value:tex},uVieO:{value:new THREE.Vector3(1e9,1e9,TS)},
+    uDet:{value:texD},uDetO:{value:new THREE.Vector3(1e9,1e9,DET)}};
 
   /* ---------- vie vicine: griglia di segmenti ---------- */
   const NG=Math.ceil(TS/CELLA)+2;
@@ -290,12 +347,10 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
     for(const im of [cp.muri,cp.tetti]){im.count=n;im.instanceMatrix.needsUpdate=true;im.instanceColor.needsUpdate=true;}
   }
 
-  /* ---------- disegno dell'immagine ---------- */
-  function* disegnaImmagine(x0,z0,X1,Z1){
-    const k=PX/TS;
-    g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,PX,PX);
+  /* ---------- disegno delle immagini ---------- */
+  // fondo delle aree urbane, macchia della densità e tetti visti dall'alto, nella finestra x0..X1, z0..Z1 (k = pixel per metro)
+  function* disegnaFondo(g,x0,z0,X1,Z1,k){
     g.setTransform(k,0,0,k,-x0*k,-z0*k);
-    // fondo delle aree urbane
     g.globalAlpha=0.85;
     for(const tipo of ['residenziale','industriale']){
       g.fillStyle=FONDO[tipo];
@@ -304,20 +359,24 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
       for(const a of aree)if(a.tipo===tipo&&a.anelli.length===1&&!fuori(a.box,x0,z0,X1,Z1,0))tracciato(a);
       g.fill();
       for(const a of aree)if(a.tipo===tipo&&a.anelli.length>1&&!fuori(a.box,x0,z0,X1,Z1,0)){g.beginPath();tracciato(a);g.fill('evenodd');}
+      yield;
     }
     g.globalAlpha=1;
     // dove ci sono edifici veri: macchia sfumata (quadrati di 100 m ingranditi con smussatura)
     if(DEN&&fin&&fin.W&&fin.H){
-      const pc=document.createElement('canvas');pc.width=fin.W;pc.height=fin.H;
-      const pg=pc.getContext('2d'),img=pg.createImageData(fin.W,fin.H),col=new THREE.Color(FONDO.residenziale);
-      for(let j=0;j<fin.H;j++)for(let i=0;i<fin.W;i++){
-        const v=DEN[(fin.j0+j)*DS.larghezza+fin.i0+i],o=(j*fin.W+i)*4;
-        img.data[o]=col.r*255;img.data[o+1]=col.g*255;img.data[o+2]=col.b*255;
-        img.data[o+3]=Math.min(215,v*3.2);
+      if(!fin.macchia){
+        const pc=document.createElement('canvas');pc.width=fin.W;pc.height=fin.H;
+        const pg=pc.getContext('2d'),img=pg.createImageData(fin.W,fin.H),col=new THREE.Color(FONDO.residenziale);
+        for(let j=0;j<fin.H;j++)for(let i=0;i<fin.W;i++){
+          const v=DEN[(fin.j0+j)*DS.larghezza+fin.i0+i],o=(j*fin.W+i)*4;
+          img.data[o]=col.r*255;img.data[o+1]=col.g*255;img.data[o+2]=col.b*255;
+          img.data[o+3]=Math.min(215,v*3.2);
+        }
+        pg.putImageData(img,0,0);
+        fin.macchia=pc;
       }
-      pg.putImageData(img,0,0);
       g.imageSmoothingEnabled=true;
-      g.drawImage(pc,fin.ox,fin.oz,fin.W*DS.passo,fin.H*DS.passo);
+      g.drawImage(fin.macchia,fin.ox,fin.oz,fin.W*DS.passo,fin.H*DS.passo);
     }
     yield;
     // tetti visti dall'alto (servono da lontano, dove gli edifici non sono in 3D)
@@ -329,31 +388,78 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
         for(let e=0;e<ne;e++){
           const o=e*ST;
           if(E[o+7]!==ind||E[o+6]%16!==t) continue;
+          const x=E[o],z=E[o+1];
+          if(x<x0-30||x>X1+30||z<z0-30||z>Z1+30) continue;
           const c=Math.cos(E[o+5])*k,s=Math.sin(E[o+5])*k;
-          g.setTransform(c,-s,s,c,(E[o]-x0)*k,(E[o+1]-z0)*k);
+          g.setTransform(c,-s,s,c,(x-x0)*k,(z-z0)*k);
           g.fillRect(-E[o+2]/2,-E[o+3]/2,E[o+2],E[o+3]);
           if(++q%6000===0) yield;
         }
       }
     }
     g.setTransform(k,0,0,k,-x0*k,-z0*k);
-    // vie
+  }
+  // vie con gli stili dati (STILE_DET: passate {w, c, o, d})
+  function* disegnaVie(g,x0,z0,X1,Z1,stili){
     g.lineJoin='round';g.lineCap='round';
-    for(const cat of Object.keys(STILE_VIE3D)){
+    for(const cat of Object.keys(stili)){
       const vis=linee.filter(v=>v.cat===cat&&!fuori(v.box,x0,z0,X1,Z1,50));
-      for(const [w,col] of STILE_VIE3D[cat]){
-        g.strokeStyle=col;
-        if(cat!=='fiumi'){ // stessa larghezza: un solo tracciato
-          g.lineWidth=w;g.beginPath();
-          for(const v of vis){g.moveTo(v.xs[0],v.zs[0]);for(let i=1;i<v.xs.length;i++)g.lineTo(v.xs[i],v.zs[i]);}
-          g.stroke();
-        }else for(const v of vis){
-          g.lineWidth=w*v.w;g.beginPath();g.moveTo(v.xs[0],v.zs[0]);
-          for(let i=1;i<v.xs.length;i++)g.lineTo(v.xs[i],v.zs[i]);
-          g.stroke();
+      if(!vis.length) continue;
+      const R=CURVA[cat]||20;
+      for(const p of stili[cat]){
+        g.strokeStyle=p.c;g.setLineDash(p.d||[]);
+        g.lineCap=p.d?'butt':'round';
+        if(cat==='fiumi'){ // larghezza secondo il fiume: un tracciato per fiume
+          let q=0;
+          for(const v of vis){g.lineWidth=p.w*v.w;g.beginPath();traccia(g,v.xs,v.zs,R);g.stroke();if(++q%15===0)yield;}
+          yield;
+          continue;
         }
+        g.lineWidth=p.w;g.beginPath();   // stessa larghezza: un solo tracciato (a gruppi, per non fermare il fotogramma)
+        let q=0;
+        for(const v of vis){
+          if(!p.o)traccia(g,v.xs,v.zs,R);
+          else for(const d of p.o){const l=parallela(v.xs,v.zs,d);traccia(g,l.xs,l.zs,Math.max(2,R-Math.abs(d)));}
+          if(++q%300===0){g.stroke();yield;g.beginPath();}
+        }
+        g.stroke();
       }
       yield;
+    }
+    g.setLineDash([]);g.lineCap='round';
+  }
+  // immagine grande (tutta la griglia vicina, ~5 m per pixel)
+  const STILE_BASE={};
+  for(const cat in STILE_VIE3D)STILE_BASE[cat]=STILE_VIE3D[cat].map(([w,c])=>({w,c}));
+  function* disegnaImmagine(x0,z0,X1,Z1){
+    g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,PX,PX);
+    yield* disegnaFondo(g,x0,z0,X1,Z1,PX/TS);
+    yield* disegnaVie(g,x0,z0,X1,Z1,STILE_BASE);
+  }
+
+  /* ---------- immagine da vicino ----------
+     si ridisegna (a pezzi) quando l'aereo si allontana di DET_RIFAI dal suo centro;
+     nello shader prende il posto dell'immagine grande, sfumando verso il bordo */
+  function* disegnaDettaglio(cx,cz){
+    const x0=cx-DET/2,z0=cz-DET/2,X1=x0+DET,Z1=z0+DET;
+    gd.setTransform(1,0,0,1,0,0);gd.clearRect(0,0,PXD,PXD);
+    yield;
+    yield* disegnaFondo(gd,x0,z0,X1,Z1,PXD/DET);
+    yield* disegnaVie(gd,x0,z0,X1,Z1,STILE_DET);
+    detPronto=[x0,z0];
+  }
+  let detLavoro=null,detPronto=null,detC=null;
+  function dettaglio(px,pz,forza){
+    if(!fin) return;   // aspetta la prima immagine grande (serve la finestra della densità)
+    const lontano=!detC||Math.max(Math.abs(px-detC[0]),Math.abs(pz-detC[1]))>DET_RIFAI;
+    if(forza||(!detLavoro&&lontano)){
+      const cx=Math.round(px/50)*50,cz=Math.round(pz/50)*50;
+      detC=[cx,cz];detLavoro=disegnaDettaglio(cx,cz);
+      if(forza)for(const _ of detLavoro);
+    }
+    if(detLavoro&&(forza||detLavoro.next().done)){
+      detLavoro=null;
+      if(detPronto){unif.uDetO.value.set(detPronto[0],detPronto[1],DET);texD.needsUpdate=true;detPronto=null;}
     }
   }
 
@@ -366,11 +472,14 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
         Object.assign(sh.uniforms,unif);
         sh.vertexShader='varying vec2 vXZ;\n'+sh.vertexShader.replace('#include <begin_vertex>',
           '#include <begin_vertex>\nvXZ=(modelMatrix*vec4(transformed,1.0)).xz;');
-        sh.fragmentShader='varying vec2 vXZ;\nuniform sampler2D uVie;\nuniform vec3 uVieO;\n'+sh.fragmentShader.replace('#include <color_fragment>',
+        sh.fragmentShader='varying vec2 vXZ;\nuniform sampler2D uVie,uDet;\nuniform vec3 uVieO,uDetO;\n'+sh.fragmentShader.replace('#include <color_fragment>',
           '#include <color_fragment>\n'+
           'vec2 tuv=(vXZ-uVieO.xy)/uVieO.z; tuv.y=1.0-tuv.y;\n'+
           'vec4 tv=texture2D(uVie,tuv);\n'+
           'tv*=1.0-smoothstep(0.42,0.5,max(abs(tuv.x-0.5),abs(tuv.y-0.5)));\n'+ // sfuma verso il bordo
+          'vec2 duv=(vXZ-uDetO.xy)/uDetO.z; duv.y=1.0-duv.y;\n'+               // da vicino: immagine fine
+          'vec4 td=texture2D(uDet,duv);\n'+
+          'tv=mix(tv,td,1.0-smoothstep(0.38,0.48,max(abs(duv.x-0.5),abs(duv.y-0.5))));\n'+
           'diffuseColor.rgb=diffuseColor.rgb*(1.0-tv.a)+tv.rgb;');
       };
     },
@@ -384,6 +493,8 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
       yield* costruisci3D(copie[1-visibile],cx,cz);
       pronto=[x0,z0];
     },
+    // da chiamare a ogni fotogramma con la posizione dell'aereo (forza: subito, tutto in una volta)
+    dettaglio,
     // da chiamare quando la griglia nuova diventa visibile
     applica(){
       if(!pronto) return;
