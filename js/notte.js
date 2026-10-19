@@ -2,7 +2,8 @@
    ORA DEL VOLO: giorno, tramonto o notte.
    Cambiano cielo, luce del sole (o della luna), nebbia e nuvole; al tramonto
    e di notte si accendono le luci: bordi pista bianchi, soglie verdi, luci di
-   avvicinamento sulle piste lunghe, luci delle città (ricavate dalla densità
+   avvicinamento sulle piste lunghe (Calvert con lampi in sequenza dove ci
+   sono davvero: Caselle, Malpensa, Linate, Genova, Cuneo), luci delle città (ricavate dalla densità
    degli edifici veri, js/paesaggio.js), stelle e faro di atterraggio.
    Le luci sono "punti" della stessa grandezza a qualsiasi distanza, come le
    luci vere viste di notte; quelle delle città sbiadiscono nella foschia lontana.
@@ -40,6 +41,22 @@ const ORE={
             nuvola:0x2a3242,nuvolaE:0x05070a,vetroE:0xa08a50,luci:true,stelle:true,faro:3.2},
 };
 
+/* luci di avvicinamento "Calvert" (ICAO, 900 m di asse con barre trasversali) dove ci sono davvero:
+   prua di atterraggio (gradi veri) e categoria; 2 = CAT II/III (barre rosse ai lati negli ultimi 300 m e
+   luci della zona di contatto sulla pista). Ricavato dagli AIP a memoria: da ricontrollare.
+   Le altre piste asfaltate lunghe tengono le luci semplici (300 m e una barra). */
+const CALVERT={
+  LIMF:[{hdg:3,cat:2}],     // Torino Caselle 36
+  LIMC:[{hdg:349,cat:2}],   // Malpensa 35L e 35R
+  LIML:[{hdg:356,cat:2}],   // Linate 36
+  LIMJ:[{hdg:285,cat:1}],   // Genova 29
+  LIMZ:[{hdg:32,cat:1}],    // Cuneo Levaldigi 03
+};
+const calvertDi=te=>{
+  const l=CALVERT[te.pista.ap.codice];if(!l) return null;
+  return l.find(c=>Math.abs(((te.hdg-c.hdg)%360+540)%360-180)<20)||null;
+};
+
 SIM.creaNotte=function(scene,mondo,T){
   const tex=texturaLuce();
   const L=mondo.luci;
@@ -48,6 +65,31 @@ SIM.creaNotte=function(scene,mondo,T){
   const pp=[],pc=[];
   const metti=(x,y,z,c)=>{pp.push(x,y,z);pc.push(c.r,c.g,c.b);};
   const BIANCO=new THREE.Color(1,0.93,0.78),VERDE=new THREE.Color(0.25,1,0.4),GIALLO=new THREE.Color(1,0.85,0.5);
+  const ROSSO=new THREE.Color(1,0.14,0.08);
+  const lampi=[];   // luci a lampi in sequenza ("coniglio"): x, y, z, numero nella fila (0 = la più lontana)
+  function calvert(p,te,cv){
+    const rx=-te.dir.z,rz=te.dir.x;   // destra di chi atterra
+    // punto a d m prima della soglia e v m a destra; sul terreno (sull'acqua: a livello del mare)
+    const P=(d,v,c,su=1.2)=>{const x=te.x-te.dir.x*d+rx*v,z=te.z-te.dir.z*d+rz*v;
+      metti(x,Math.max(T.terrainH(x,z),0)+su,z,c);};
+    for(let d=30;d<=900;d+=30){
+      for(let k=-2;k<=2;k++)P(d,k*1,BIANCO);          // asse: barrette di 5 luci su 4 m
+      if(d>=300){const x=te.x-te.dir.x*d,z=te.z-te.dir.z*d;lampi.push(x,Math.max(T.terrainH(x,z),0)+1.6,z,(900-d)/30);}
+    }
+    // barre trasversali a 150, 300, 450, 600, 750 m: le estremità su due rette che si allargano
+    for(let d=150;d<=750;d+=150){
+      const mezza=6+0.03*d;
+      for(let v=4;v<=mezza;v+=1.5){P(d,v,BIANCO);P(d,-v,BIANCO);}
+    }
+    if(cv.cat>=2){
+      // negli ultimi 270 m: barrette rosse di 3 luci ai due lati dell'asse
+      for(let d=30;d<=270;d+=30)for(const s of [-1,1])for(let k=0;k<3;k++)P(d,s*(9+k*1.5),ROSSO);
+      // zona di contatto: barrette bianche sulla pista nei primi 900 m
+      for(let u=60;u<=900;u+=60)for(const s of [-1,1])for(let k=0;k<3;k++){
+        const v=s*(9+k*1.5);metti(te.x+te.dir.x*u+rx*v,p.quota+0.35,te.z+te.dir.z*u+rz*v,BIANCO);
+      }
+    }
+  }
   for(const p of T.piste){
     const rx=-p.dir.z,rz=p.dir.x,y=p.quota+0.5;     // destra rispetto alla pista
     const passo=p.erba?90:60, n=Math.max(2,Math.round(p.L/passo));
@@ -57,6 +99,8 @@ SIM.creaNotte=function(scene,mondo,T){
     }
     for(const te of p.testate){                      // soglie verdi
       for(let k=0;k<=8;k++){const v=-p.W/2+p.W*k/8;metti(te.x+(-te.dir.z)*v,y,te.z+te.dir.x*v,VERDE);}
+      const cv=calvertDi(te);
+      if(cv){calvert(p,te,cv);continue;}
       if(!p.erba&&p.L>=1000){                        // luci di avvicinamento: 300 m di asse e una barra a 150 m
         for(let d=30;d<=300;d+=30)metti(te.x-te.dir.x*d,y+0.5,te.z-te.dir.z*d,BIANCO);
         for(let k=-4;k<=4;k++){const v=k*3.5;metti(te.x-te.dir.x*150+(-te.dir.z)*v,y+0.5,te.z-te.dir.z*150+te.dir.x*v,BIANCO);}
@@ -84,6 +128,19 @@ SIM.creaNotte=function(scene,mondo,T){
     }
   }
   const luciPiste=punti(pp,pc,7,tex);scene.add(luciPiste);
+  // lampi in sequenza delle Calvert: due volte al secondo corrono dai 900 m verso la soglia
+  const nLampi=lampi.length/4,lp=[],ord=new Float32Array(nLampi);
+  for(let i=0;i<nLampi;i++){lp.push(lampi[i*4],lampi[i*4+1],lampi[i*4+2]);ord[i]=lampi[i*4+3];}
+  const luciLampi=nLampi?punti(lp,new Array(nLampi*3).fill(0),14,tex):null;
+  if(luciLampi)scene.add(luciLampi);
+  function aggiornaLampi(){
+    const t=(performance.now()/500)%1,att=t*25,c=luciLampi.geometry.attributes.color;   // 21 luci in 0,42 s, poi buio
+    for(let i=0;i<nLampi;i++){
+      const r=att-ord[i],k=r>=0&&r<1?1:r>=1&&r<2?0.3:0;
+      c.array[i*3]=c.array[i*3+1]=k;c.array[i*3+2]=k*1.1;
+    }
+    c.needsUpdate=true;
+  }
 
   /* ---- luci delle città: calcolate solo la prima volta che servono (tramonto o notte), così di giorno
      il caricamento resta veloce (sono qualche centinaio di migliaia di punti) ---- */
@@ -146,7 +203,7 @@ SIM.creaNotte=function(scene,mondo,T){
     L.matNuvola.color.setHex(c.nuvola);L.matNuvola.emissive.setHex(c.nuvolaE);
     L.matVetro.emissive.setHex(c.vetroE);
     if(c.luci&&!cittaFatte)costruisciCitta();
-    luciPiste.visible=c.luci;if(luciCitta){luciCitta.visible=c.luci;luciCitta.material.opacity=k==='tramonto'?0.4:1;}stelle.visible=c.stelle;
+    luciPiste.visible=c.luci;if(luciLampi)luciLampi.visible=c.luci;if(luciCitta){luciCitta.visible=c.luci;luciCitta.material.opacity=k==='tramonto'?0.4:1;}stelle.visible=c.stelle;
     faro.intensity=window.AEREO&&window.AEREO.id==='c42'?0:c.faro;   // il C42 di serie non ha il faro di atterraggio
     for(const l of mondo.aereo.luciNav)l.scale.setScalar(c.luci?2.2:1);
     if(SIM.aeroporti3D)SIM.aeroporti3D.ora(k);   // vetrate accese e torri faro (js/aeroporti-3d.js)
@@ -155,7 +212,7 @@ SIM.creaNotte=function(scene,mondo,T){
   }
   return {
     imposta, get ora(){return ora;},
-    aggiorna(cam){if(stelle.visible)stelle.position.copy(cam);},
+    aggiorna(cam){if(stelle.visible)stelle.position.copy(cam);if(luciLampi&&luciLampi.visible)aggiornaLampi();},
   };
 };
 })();
