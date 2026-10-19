@@ -510,12 +510,13 @@ SIM.creaStrumenti=function(A){
   let haVie=false;
   const sfondoVie=document.createElement('canvas');
   if(window.VIE){
+    const U=window.VIE.unita||10;   // metri per unità nelle coordinate
     for(const cat of Object.keys(STILE_VIE)){
       vie[cat]=(window.VIE[cat]||[]).map(l=>{
         const n=l.p.length/2,xs=new Float32Array(n),zs=new Float32Array(n);
         let x=0,y=0,x0=Infinity,x1=-Infinity,z0=Infinity,z1=-Infinity;
         for(let i=0;i<n;i++){
-          x+=l.p[2*i];y+=l.p[2*i+1];xs[i]=x*10;zs[i]=-y*10;
+          x+=l.p[2*i];y+=l.p[2*i+1];xs[i]=x*U;zs[i]=-y*U;
           if(xs[i]<x0)x0=xs[i];if(xs[i]>x1)x1=xs[i];if(zs[i]<z0)z0=zs[i];if(zs[i]>z1)z1=zs[i];
         }
         const po=cat==='fiumi'&&/^(Fiume )?Po$/.test(l.r||'');
