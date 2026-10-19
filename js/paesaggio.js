@@ -98,10 +98,22 @@ function parallela(xs,zs,d){
   return {xs:px,zs:pz};
 }
 // colori degli edifici e del fondo delle aree urbane
-const TETTI=['#9c4a32','#a0583f','#8a4a36','#a8664e','#7f4b3d','#94604c','#74706b'];  // coppi; l'ultimo è un tetto piano grigio
-const TETTI_IND=['#b8b9b4','#a3a7a8','#c9c8c2','#8e979e','#d6d4cc'];
-const MURI=[0xf1e7d0,0xe8d5b0,0xf4f1ea,0xd9c7a7,0xe6dccb,0xe3c9a0,0xd8b48c,0xcfc4b6];
-const MURI_IND=[0xc8c6bf,0xb9bcbd,0xd5d2ca,0xbfb8aa];
+// un solo elenco di colori per i tetti e uno per i muri; i gruppi dicono quali indici usare
+const TETTI=['#9c4a32','#a0583f','#8a4a36','#a8664e','#7f4b3d','#94604c',     // 0-5 coppi
+  '#74706b','#8a8a86','#9a968e','#7d7b76',                                     // 6-9 tetti piani (guaina, ghiaia)
+  '#b8b9b4','#a3a7a8','#c9c8c2','#8e979e','#d6d4cc',                           // 10-14 lamiera dei capannoni
+  '#6d6a66','#5f5c58','#7a7672'];                                              // 15-17 lose di pietra (montagna)
+const T_COPPI=[0,6],T_PIANI=[6,10],T_LAMIERA=[10,15],T_LOSE=[15,18];
+const MURI=[0xf1e7d0,0xe8d5b0,0xf4f1ea,0xd9c7a7,0xe6dccb,0xe3c9a0,0xd8b48c,0xcfc4b6,   // 0-7 intonaci chiari
+  0xc8c6bf,0xb9bcbd,0xd5d2ca,0xbfb8aa,                                                // 8-11 capannoni
+  0xe0b064,0xd9a55a,0xe8c27a,0xcf9a5e,0xc98f5a,                                       // 12-16 centro storico: giallo, ocra
+  0xd8d4cc,0xc9c2b4,0xe2ddd2,0xb7aa96,0xa9a39a,                                       // 17-21 condomini
+  0x8f8578,0xa39886,0x7a5a3c,0x6b4e34];                                               // 22-25 pietra e legno (montagna)
+const M_CHIARI=[0,8],M_IND=[8,12],M_OCRA=[12,17],M_CONDO=[17,22],M_MONTE=[22,26];
+const scegli=(g,h)=>g[0]+Math.min(g[1]-g[0]-1,(h*(g[1]-g[0]))|0);   // indice del gruppo g con h in [0,1)
+// forme del tetto e stili di facciata (lo shader dei muri disegna finestre e persiane secondo lo stile)
+const FALDE=0,PADIGLIONE=1,PIANO=2;
+const CASA=0,PALAZZO=1,CONDOMINIO=2,CAPANNONE=3,TORRE=4,BAITA=5;
 const FONDO={residenziale:'#7e7a68',industriale:'#8a8883'};
 
 const MAX3D=100000;  // edifici in 3D al massimo
@@ -216,10 +228,11 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
 
   /* ---------- edifici generati ----------
      ogni edificio: x, z, larghezza (lungo la strada), profondità, altezza, rotazione, colori */
-  const ST=8;let E=new Float32Array(ST*65536),ne=0;
-  function aggiungi(x,z,w,d,h,rot,tetto,muro,ind){
+  // x, z, larghezza, profondità, altezza, rotazione, colore tetto, colore muro, forma del tetto, stile
+  const ST=10;let E=new Float32Array(ST*65536),ne=0;
+  function aggiungi(x,z,w,d,h,rot,tetto,muro,forma,stile){
     if(ne*ST+ST>E.length){const n=new Float32Array(E.length*2);n.set(E);E=n;}
-    const o=ne*ST;E[o]=x;E[o+1]=z;E[o+2]=w;E[o+3]=d;E[o+4]=h;E[o+5]=rot;E[o+6]=tetto+16*muro;E[o+7]=ind;ne++;
+    const o=ne*ST;E[o]=x;E[o+1]=z;E[o+2]=w;E[o+3]=d;E[o+4]=h;E[o+5]=rot;E[o+6]=tetto;E[o+7]=muro;E[o+8]=forma;E[o+9]=stile;ne++;
   }
   /* densità degli edifici veri (ABITATI.densita): frazione coperta in quadrati di 100 m */
   const DS=AB.densita||null;let DEN=null;
@@ -275,19 +288,42 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
         const nl=industria?2:4,L=P/nl;            // lotti per lato: capannoni da 50 m, case da 25 m
         const fitto=lisc(0.08,0.45,c),u=industria?0:urbanita(cx0+P/2,cz0+P/2);
         const t=clamp(0.6*fitto+0.7*u,0,1);       // 0 = paese, 1 = centro città
+        const quotaCella=T.naturale(cx0+P/2,cz0+P/2);
         for(let b=0;b<nl;b++)for(let a=0;a<nl;a++){
           const li=gi*nl+a,lk=gj*nl+b;
           const h1=H(li*7+(industria?3:0),lk*13+1),h2=H(li+911,lk-377),h3=H(li-53,lk+71),h4=H(li*3+5,lk*5-9);
-          let w,d,h,tetto,muro;
-          if(industria){
+          const h5=H(li*11-7,lk*3+19);
+          let w,d,h,tetto,muro,forma,stile;
+          if(industria){                              // capannone: tetto piano o a falde basse in lamiera
             w=22+h2*28;d=16+h3*20;h=7+h4*5;
-            tetto=(h1*97|0)%TETTI_IND.length;muro=(h4*31|0)%MURI_IND.length;
-          }else{
-            w=lerp(9,20,fitto)+h2*lerp(4,8,fitto);d=lerp(8,15,fitto)+h3*4;
-            h=t<0.25?5.5+h4*3.5:lerp(8,24,t)*(0.75+0.5*h4);
-            tetto=(h1*97|0)%(TETTI.length-1);
-            if(t>0.5&&h3<0.35)tetto=TETTI.length-1; // in città qualche tetto piano
-            muro=(h4*53|0)%MURI.length;
+            forma=h5<0.6?PIANO:FALDE;stile=CAPANNONE;
+            tetto=scegli(T_LAMIERA,h1);muro=scegli(M_IND,h4);
+          }else if(quotaCella>700&&t<0.45){           // valli alpine: case basse in pietra e legno, tetto in lose
+            w=8+h2*6;d=7+h3*4;h=5.5+h4*3;
+            forma=FALDE;stile=BAITA;
+            tetto=scegli(T_LOSE,h1);muro=scegli(M_MONTE,h4);
+          }else if(t<0.25){                           // paese
+            if(fitto<0.15&&h5<0.18){                  // cascina: lunga, bassa, coppi
+              w=18+h2*6;d=9+h3*3;h=7+h4*2;forma=FALDE;
+            }else{                                    // villetta a due piani
+              w=lerp(9,14,fitto)+h2*4;d=lerp(8,11,fitto)+h3*3;h=5.8+h4*1.8;
+              forma=h5<0.4?PADIGLIONE:FALDE;
+            }
+            stile=CASA;tetto=scegli(T_COPPI,h1);muro=scegli(M_CHIARI,h4);
+          }else if(u>0.7){                            // centro storico: case a corte di 4-6 piani, gialle e ocra
+            w=16+h2*8;d=12+h3*4;h=13+h4*7;
+            forma=h5<0.55?FALDE:PADIGLIONE;stile=PALAZZO;
+            tetto=scegli(T_COPPI,h1);muro=scegli(M_OCRA,h4);
+            if(h5>0.996&&t>0.9){w=20;d=20;h=55+h2*45;forma=PIANO;stile=TORRE;tetto=scegli(T_PIANI,h1);muro=scegli(M_CONDO,h4);}
+          }else if(t>0.55&&h5<0.3*(t-0.55)/0.45){     // periferia: condomini di 8-12 piani col tetto piano (più fitti, più numerosi)
+            w=20+h2*10;d=12+h3*4;h=24+h4*12;
+            forma=PIANO;stile=CONDOMINIO;
+            tetto=scegli(T_PIANI,h1);muro=scegli(M_CONDO,h4);
+            if(h5<0.004&&t>0.85){w=20;d=20;h=50+h2*35;stile=TORRE;}   // ogni tanto una torre
+          }else{                                      // palazzine di 3-5 piani
+            w=lerp(12,18,fitto)+h2*4;d=lerp(10,13,fitto)+h3*3;h=9.5+h4*6.5;
+            forma=h5<0.6?PADIGLIONE:h5<0.85?FALDE:PIANO;stile=PALAZZO;
+            tetto=forma===PIANO?scegli(T_PIANI,h1):scegli(T_COPPI,h1);muro=scegli(h3<0.5?M_CHIARI:M_CONDO,h4);
           }
           // probabilità che il lotto sia costruito: così la superficie coperta è quella vera
           if(H(li+17,lk+29)>c*L*L/(w*d)*1.15) continue;
@@ -301,7 +337,7 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
           if(SIM.zonaAeroporti&&SIM.zonaAeroporti(x,z)) continue;   // grandi aeroporti: edifici veri (js/aeroporti-3d.js)
           if(SIM.zonaCalvert&&SIM.zonaCalvert(x,z)) continue;       // luci di avvicinamento (js/notte.js)
           const rot=qDir?Math.atan2(-qDz,qDx):h4*Math.PI;  // facciata parallela alla strada
-          aggiungi(x,z,w,d,h,rot,tetto,muro,industria?1:0);
+          aggiungi(x,z,w,d,h,rot,tetto,muro,forma,stile);
         }
       }
       if(j%12===11) yield;
@@ -309,26 +345,83 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
   }
 
 
-  /* ---------- edifici in 3D: due copie, come la griglia del terreno ---------- */
+  /* ---------- edifici in 3D: due copie, come la griglia del terreno ----------
+     muri (scatola con le finestre disegnate dallo shader) + tetto di una di tre forme */
   const geoMuro=new THREE.BoxGeometry(1,1,1).translate(0,0.5,0);
-  const geoTetto=(()=>{ // tetto a due falde, colmo lungo x
-    const A=[-.5,0,-.5],B=[.5,0,-.5],C=[.5,0,.5],D=[-.5,0,.5],R1=[-.5,1,0],R2=[.5,1,0];
+  function geoTettoA(r){ // tetto a falde (r = 0.5) o a padiglione (colmo più corto); colmo lungo x
+    const A=[-.5,0,-.5],B=[.5,0,-.5],C=[.5,0,.5],D=[-.5,0,.5],R1=[-r,1,0],R2=[r,1,0];
     const tri=[A,R1,R2, A,R2,B, D,C,R2, D,R2,R1, A,D,R1, B,R2,C];
     const geo=new THREE.BufferGeometry();
     geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(tri.flat()),3));
     geo.computeVertexNormals();
     return geo;
-  })();
+  }
+  const geoTetti=[geoTettoA(0.5),geoTettoA(0.22),new THREE.BoxGeometry(1,1,1).translate(0,0.5,0)];  // FALDE, PADIGLIONE, PIANO
+  const MAXT=[MAX3D,MAX3D*0.6|0,MAX3D*0.5|0];   // istanze al massimo per forma
   const matEd=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.9,metalness:0,flatShading:true});
-  const cTetti=TETTI.map(c=>new THREE.Color(c)),cTettiInd=TETTI_IND.map(c=>new THREE.Color(c));
-  const cMuri=MURI.map(c=>new THREE.Color(c)),cMuriInd=MURI_IND.map(c=>new THREE.Color(c));
-  function istanze(geo){
-    const im=new THREE.InstancedMesh(geo,matEd,MAX3D);
-    im.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(MAX3D*3),3);
+  /* facciate: finestre (vetro), persiane ai lati, piani e campate secondo lo stile; da lontano
+     (meno di ~5 pixel per campata) sfumano nel colore medio per non sfarfallare; di notte una
+     parte delle finestre è accesa */
+  const unifEd={uNotte:{value:0}};
+  const matMuri=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.9,metalness:0,flatShading:true});
+  matMuri.onBeforeCompile=sh=>{
+    sh.uniforms.uNotte=unifEd.uNotte;
+    const VAR='varying vec2 vFac;\nvarying float vLarg,vLato,vAlto,vSeme,vStile;\n';
+    sh.vertexShader='attribute float aStile;\n'+VAR+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+      vec3 scI=vec3(length(instanceMatrix[0].xyz),length(instanceMatrix[1].xyz),length(instanceMatrix[2].xyz));
+      float hy=position.y*scI.y-4.0;                       // i muri scendono 4 m sotto il suolo
+      if(abs(normal.x)>0.5){vFac=vec2((position.z+0.5)*scI.z,hy);vLarg=scI.z;}
+      else{vFac=vec2((position.x+0.5)*scI.x,hy);vLarg=scI.x;}
+      vLato=abs(normal.y)<0.5?1.0:0.0;
+      vAlto=scI.y-4.0;
+      vSeme=fract(instanceMatrix[3].x*0.0137+instanceMatrix[3].z*0.0291);
+      vStile=aStile;`);
+    sh.fragmentShader='uniform float uNotte;\n'+VAR+sh.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+      float fin=0.0,pers=0.0,acceso=0.0,lontano=0.0;
+      if(vLato>0.5){
+        float st=floor(vStile+0.5);
+        float baia=3.2,piano=3.0,fw=0.34,fh=0.5,conPers=1.0;      // casa
+        if(st==1.0){baia=3.4;piano=3.3;fw=0.3;fh=0.55;}             // palazzo
+        else if(st==2.0){baia=3.0;piano=2.9;fw=0.55;fh=0.45;conPers=0.0;}   // condominio
+        else if(st==3.0){baia=6.0;piano=3.0;fw=0.7;fh=0.4;conPers=0.0;}     // capannone
+        else if(st==4.0){baia=1.6;piano=3.4;fw=0.84;fh=0.8;conPers=0.0;}    // torre a vetri
+        else if(st==5.0){baia=3.6;piano=2.8;fw=0.26;fh=0.42;}       // baita
+        float nb=max(1.0,floor(vLarg/baia)),off=(vLarg-nb*baia)*0.5;
+        float u=(vFac.x-off)/baia,v=vFac.y/piano;
+        vec2 cel=floor(vec2(u,v)),q=fract(vec2(u,v))-0.5,dq=fwidth(vec2(u,v));
+        float dentro=step(0.0,u)*step(u,nb)*step(0.0,vFac.y)*step((cel.y+0.5+fh*0.5)*piano,vAlto-0.5);
+        float fx=1.0-smoothstep(fw*0.5-dq.x,fw*0.5+dq.x,abs(q.x));
+        float fy=1.0-smoothstep(fh*0.5-dq.y,fh*0.5+dq.y,abs(q.y));
+        fin=fx*fy*dentro;
+        if(conPers>0.5)pers=(1.0-smoothstep(fw-dq.x,fw+dq.x,abs(q.x)))*fy*dentro*(1.0-fin);
+        if(st==3.0)fin=fx*step(0.0,u)*step(u,nb)*step(vAlto-2.6,vFac.y)*step(vFac.y,vAlto-1.4);   // una fila in alto
+        lontano=smoothstep(0.35,0.8,max(dq.x*baia,dq.y*piano));    // metri per pixel
+        fin*=1.0-lontano;pers*=1.0-lontano;
+        float hh=fract(sin(dot(cel,vec2(12.9898,78.233))+vSeme*437.0)*43758.5453);
+        acceso=step(hh,st==3.0?0.15:st==4.0?0.5:0.33)*fin;
+        vec3 vetro=st==4.0?vec3(0.30,0.40,0.50):vec3(0.15,0.18,0.21);
+        vec3 colPers=st==5.0?vec3(0.36,0.24,0.15):vSeme<0.5?vec3(0.27,0.38,0.26):vec3(0.45,0.30,0.19);
+        diffuseColor.rgb=mix(diffuseColor.rgb,mix(diffuseColor.rgb,vetro,fw*fh*0.5),lontano);
+        diffuseColor.rgb=mix(diffuseColor.rgb,colPers,pers);
+        diffuseColor.rgb=mix(diffuseColor.rgb,vetro*(1.0-0.6*uNotte),fin);
+      }`).replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
+      totalEmissiveRadiance+=vec3(1.0,0.78,0.45)*uNotte*(acceso*0.9+lontano*vLato*0.04);`);
+  };
+  SIM.edificiOra=o=>{unifEd.uNotte.value=o==='notte'?1:o==='tramonto'?0.45:0;};   // chiamato da js/notte.js
+  const cTetti=TETTI.map(c=>new THREE.Color(c)),cMuri=MURI.map(c=>new THREE.Color(c));
+  function istanze(geo,mat,max){
+    const im=new THREE.InstancedMesh(geo,mat,max);
+    im.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(max*3),3);
     im.count=0;im.frustumCulled=false;im.visible=false;scene.add(im);
     return im;
   }
-  const copie=[{muri:istanze(geoMuro),tetti:istanze(geoTetto)},{muri:istanze(geoMuro),tetti:istanze(geoTetto)}];
+  function copia(){
+    const gm=geoMuro.clone();
+    gm.setAttribute('aStile',new THREE.InstancedBufferAttribute(new Float32Array(MAX3D),1));
+    const muri=istanze(gm,matMuri,MAX3D),tetti=geoTetti.map((g,i)=>istanze(g,matEd,MAXT[i]));
+    return {muri,tetti,tutte:[muri,...tetti]};
+  }
+  const copie=[copia(),copia()];
   let visibile=0;
   function matrice(a,o,x,y,z,c,s,sx,sy,sz){
     a[o]=c*sx;a[o+1]=0;a[o+2]=-s*sx;a[o+3]=0;
@@ -337,8 +430,8 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
     a[o+12]=x;a[o+13]=y;a[o+14]=z;a[o+15]=1;
   }
   function* costruisci3D(cp,cx,cz){
-    const mm=cp.muri.instanceMatrix.array,mc=cp.muri.instanceColor.array;
-    const tm=cp.tetti.instanceMatrix.array,tc=cp.tetti.instanceColor.array;
+    const mm=cp.muri.instanceMatrix.array,mc=cp.muri.instanceColor.array,ms=cp.muri.geometry.attributes.aStile.array;
+    const nt=[0,0,0];
     // in città gli edifici sono troppi: si accorcia il raggio finché ci stanno (prima i più vicini)
     const conta=new Uint32Array(46);
     for(let e=0;e<ne;e++){const dx=E[e*ST]-cx,dz=E[e*ST+1]-cz,k=Math.floor(Math.sqrt(dx*dx+dz*dz)/100);if(k<45)conta[k]++;}
@@ -348,18 +441,28 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
     for(let e=0;e<ne&&n<MAX3D;e++){
       const o=e*ST,x=E[o],z=E[o+1],dx=x-cx,dz=z-cz;
       if(dx*dx+dz*dz>R2) continue;
-      const w=E[o+2],d=E[o+3],h=E[o+4],r=E[o+5],ind=E[o+7]>0,ti=E[o+6]%16,mi=(E[o+6]/16)|0;
+      const w=E[o+2],d=E[o+3],h=E[o+4],r=E[o+5],ti=E[o+6],mi=E[o+7],fo=E[o+8],st=E[o+9];
+      if(nt[fo]>=MAXT[fo]) continue;
       const y=T.meshH(x,z),c=Math.cos(r),s=Math.sin(r);
       const var_=0.9+0.2*T.hash(x|0,z|0);
-      matrice(mm,n*16,x,y-4,z,c,s,w,h+4,d);
-      const cm=(ind?cMuriInd:cMuri)[mi];mc[n*3]=cm.r*var_;mc[n*3+1]=cm.g*var_;mc[n*3+2]=cm.b*var_;
-      const piano=ind||ti===TETTI.length-1;
-      matrice(tm,n*16,x,y+h,z,c,s,w*(piano?1:1.06),piano?0.7:Math.min(d*0.32,4.5),d*(piano?1:1.08));
-      const ct=(ind?cTettiInd:cTetti)[ti];tc[n*3]=ct.r*var_;tc[n*3+1]=ct.g*var_;tc[n*3+2]=ct.b*var_;
+      matrice(mm,n*16,x,y-4,z,c,s,w,h+4,d);ms[n]=st;
+      const cm=cMuri[mi];mc[n*3]=cm.r*var_;mc[n*3+1]=cm.g*var_;mc[n*3+2]=cm.b*var_;
+      // tetto: sporgenza e altezza secondo forma e stile
+      let sx,sy,sz;
+      if(fo===PIANO){sx=w+0.3;sy=0.9;sz=d+0.3;}                       // con il parapetto
+      else if(st===CAPANNONE){sx=w*1.02;sy=d*0.12;sz=d*1.04;}         // falde basse
+      else if(st===BAITA){sx=w*1.12;sy=d*0.42;sz=d*1.2;}              // ripido e sporgente
+      else if(fo===PADIGLIONE){sx=w*1.06;sy=Math.min(d*0.3,4);sz=d*1.08;}
+      else{sx=w*1.06;sy=Math.min(d*0.32,4.5);sz=d*1.08;}
+      const im=cp.tetti[fo],k=nt[fo]++;
+      matrice(im.instanceMatrix.array,k*16,x,y+h,z,c,s,sx,sy,sz);
+      const ct=cTetti[ti],tc=im.instanceColor.array;tc[k*3]=ct.r*var_;tc[k*3+1]=ct.g*var_;tc[k*3+2]=ct.b*var_;
       n++;
       if(n%4000===0) yield;
     }
-    for(const im of [cp.muri,cp.tetti]){im.count=n;im.instanceMatrix.needsUpdate=true;im.instanceColor.needsUpdate=true;}
+    cp.muri.count=n;cp.muri.geometry.attributes.aStile.needsUpdate=true;
+    cp.tetti.forEach((im,i)=>im.count=nt[i]);
+    for(const im of cp.tutte){im.instanceMatrix.needsUpdate=true;im.instanceColor.needsUpdate=true;}
   }
 
   /* ---------- disegno delle immagini ---------- */
@@ -396,20 +499,17 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
     yield;
     // tetti visti dall'alto (servono da lontano, dove gli edifici non sono in 3D)
     let q=0;
-    for(let ind=0;ind<2;ind++){
-      const tinte=ind?TETTI_IND:TETTI;
-      for(let t=0;t<tinte.length;t++){
-        g.fillStyle=tinte[t];
-        for(let e=0;e<ne;e++){
-          const o=e*ST;
-          if(E[o+7]!==ind||E[o+6]%16!==t) continue;
-          const x=E[o],z=E[o+1];
-          if(x<x0-30||x>X1+30||z<z0-30||z>Z1+30) continue;
-          const c=Math.cos(E[o+5])*k,s=Math.sin(E[o+5])*k;
-          g.setTransform(c,-s,s,c,(x-x0)*k,(z-z0)*k);
-          g.fillRect(-E[o+2]/2,-E[o+3]/2,E[o+2],E[o+3]);
-          if(++q%6000===0) yield;
-        }
+    for(let t=0;t<TETTI.length;t++){
+      g.fillStyle=TETTI[t];
+      for(let e=0;e<ne;e++){
+        const o=e*ST;
+        if(E[o+6]!==t) continue;
+        const x=E[o],z=E[o+1];
+        if(x<x0-30||x>X1+30||z<z0-30||z>Z1+30) continue;
+        const c=Math.cos(E[o+5])*k,s=Math.sin(E[o+5])*k;
+        g.setTransform(c,-s,s,c,(x-x0)*k,(z-z0)*k);
+        g.fillRect(-E[o+2]/2,-E[o+3]/2,E[o+2],E[o+3]);
+        if(++q%6000===0) yield;
       }
     }
     g.setTransform(k,0,0,k,-x0*k,-z0*k);
@@ -515,7 +615,7 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
       if(!pronto) return;
       unif.uVieO.value.set(pronto[0],pronto[1],TS);tex.needsUpdate=true;pronto=null;
       visibile=1-visibile;
-      for(let i=0;i<2;i++){copie[i].muri.visible=copie[i].tetti.visible=i===visibile;}
+      for(let i=0;i<2;i++)for(const im of copie[i].tutte)im.visible=i===visibile;
     },
   };
 };
