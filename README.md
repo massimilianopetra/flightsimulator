@@ -12,6 +12,8 @@
 Manual / Manuale: [English](https://massimilianopetra.github.io/flightsimulator/istruzioni-en.html) ·
 [Italiano](https://massimilianopetra.github.io/flightsimulator/istruzioni.html)
 
+Theory / Teoria: [Fisica del volo](https://massimilianopetra.github.io/fisicadelvolo/) — the physics and maths behind the simulator, for technical schools (in Italian) · la fisica e la matematica dietro il simulatore, per gli istituti tecnici
+
 Code / Codice: https://github.com/massimilianopetra/flightsimulator
 
 Contact / Contatti: Massimiliano Petra — [massimiliano.petra@gmail.com](mailto:massimiliano.petra@gmail.com)
