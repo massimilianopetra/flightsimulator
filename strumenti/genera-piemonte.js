@@ -343,11 +343,14 @@ function densitaEdifici(ril){
 }
 // estratto OpenStreetMap del Nord-Ovest (Piemonte, Valle d'Aosta, Liguria, Lombardia) da Geofabrik
 const PBF_URL='https://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf';
+// tol = scarto massimo (m) concesso alla semplificazione: piccolo, perché da vicino
+// le vie si vedono a ~1 m per pixel (js/paesaggio.js)
 const CAT_VIE={
-  autostrade:{tol:25}, superstrade:{tol:25}, statali:{tol:30}, provinciali:{tol:35},
-  comunali:{tol:25}, urbane:{tol:12},
-  ferrovie:{tol:30}, fiumi:{tol:30}, canali:{tol:30},
+  autostrade:{tol:5}, superstrade:{tol:5}, statali:{tol:6}, provinciali:{tol:7},
+  comunali:{tol:7}, urbane:{tol:5},
+  ferrovie:{tol:4}, fiumi:{tol:12}, canali:{tol:8},
 };
+const UNITA_VIE=1;   // metri per unità nelle coordinate delle vie
 // aree urbanizzate (poligoni chiusi landuse=*): vanno in dati/piemonte-abitati.js
 const CAT_AREE={residenziale:{tol:10}, industriale:{tol:10}};
 const GRANDI_CANALI=/^(Canale (Cavour|Villoresi|Regina Elena|Depretis)|Naviglio Grande)$/;
@@ -389,10 +392,10 @@ async function vie(ril){
     const linee=way.filter(w=>w.cat===nome&&w.punti.some(dentro)&&(nome!=='canali'||GRANDI_CANALI.test(w.ref)))
       .map(w=>({ref:w.ref,p:w.punti.map(([la,lo])=>{const q=proietta(la,lo);return [Math.round(q.x),Math.round(q.y)];})}));
     const unite=concatena(linee).map(l=>({ref:l.ref,p:semplifica(l.p,c.tol)})).filter(l=>l.p.length>1);
-    // codifica compatta: primo punto assoluto, poi differenze, in decine di metri
+    // codifica compatta: primo punto assoluto, poi differenze, in unità di UNITA_VIE metri
     out[nome]=unite.map(l=>{
       const v=[];let px=0,py=0;
-      for(const [x,y] of l.p){const qx=Math.round(x/10),qy=Math.round(y/10);v.push(qx-px,qy-py);px=qx;py=qy;}
+      for(const [x,y] of l.p){const qx=Math.round(x/UNITA_VIE),qy=Math.round(y/UNITA_VIE);if(v.length&&qx===px&&qy===py)continue;v.push(qx-px,qy-py);px=qx;py=qy;}
       return l.ref?{r:l.ref,p:v}:{p:v};
     });
     const punti=unite.reduce((n,l)=>n+l.p.length,0);
@@ -400,8 +403,8 @@ async function vie(ril){
   }
   const testo='/* Vie di comunicazione (strade, ferrovie, fiumi) generate da strumenti/genera-piemonte.js.\n'+
     '   Fonte: © OpenStreetMap contributors (licenza ODbL). Non modificare a mano.\n'+
-    '   Ogni linea: p = [x0, y0, dx1, dy1, ...] in decine di metri (x est, y nord); r = sigla o nome. */\n'+
-    'window.VIE='+JSON.stringify(out)+';\n';
+    '   Ogni linea: p = [x0, y0, dx1, dy1, ...] in unità di "unita" metri (x est, y nord); r = sigla o nome. */\n'+
+    'window.VIE='+JSON.stringify(Object.assign({unita:UNITA_VIE},out))+';\n';
   fs.writeFileSync(path.join(RADICE,'dati','piemonte-vie.js'),testo);
   console.log('Scritto dati/piemonte-vie.js ('+(testo.length/1e6).toFixed(2)+' MB)');
   // aree urbanizzate: poligoni chiusi (way) e multipoligoni (relazioni), semplificati, senza i più piccoli
@@ -476,6 +479,8 @@ async function vie(ril){
    ===================================================================== */
 (async()=>{
   const ril=await rilievo();
+  // node strumenti/genera-piemonte.js --solo-vie : rifà soltanto dati/piemonte-vie.js e piemonte-abitati.js
+  if(process.argv.includes('--solo-vie')){console.log("Vie di comunicazione:");await vie(ril);return;}
   const dentro=(lat,lon)=>{const p=proietta(lat,lon);return p.x>ril.xMin+3000&&p.x<ril.xMax-3000&&p.y>ril.yMin+3000&&p.y<ril.yMax-3000;};
   const aer=await aeroporti(dentro);
   console.log('Laghi:');const lag=await laghi(ril);

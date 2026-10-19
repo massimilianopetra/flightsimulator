@@ -17,12 +17,13 @@ const SIM=window.SIM=window.SIM||{};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const lerp=(a,b,t)=>a+(b-a)*t;
 
-// [x0, y0, dx1, dy1, ...] in decine di metri (y nord) -> coordinate interne (z sud)
-function decodifica(p){
+// [x0, y0, dx1, dy1, ...] in unità di u metri (y nord) -> coordinate interne (z sud)
+// (vie: window.VIE.unita, 1 m; aree urbane: decine di metri)
+function decodifica(p,u=10){
   const n=p.length/2,xs=new Float32Array(n),zs=new Float32Array(n);
   let x=0,y=0,x0=Infinity,x1=-Infinity,z0=Infinity,z1=-Infinity;
   for(let i=0;i<n;i++){
-    x+=p[2*i];y+=p[2*i+1];xs[i]=x*10;zs[i]=-y*10;
+    x+=p[2*i];y+=p[2*i+1];xs[i]=x*u;zs[i]=-y*u;
     if(xs[i]<x0)x0=xs[i];if(xs[i]>x1)x1=xs[i];if(zs[i]<z0)z0=zs[i];if(zs[i]>z1)z1=zs[i];
   }
   return {xs,zs,box:[x0,x1,z0,z1]};
@@ -115,7 +116,7 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
   const linee=[];
   for(const cat of Object.keys(STILE_VIE3D)){
     for(const l of (window.VIE[cat]||[])){
-      const v=decodifica(l.p);v.cat=cat;
+      const v=decodifica(l.p,window.VIE.unita||10);v.cat=cat;
       v.w=cat==='fiumi'?larghezzaFiume(l.r||''):1;
       // mezza larghezza "ingombrata" (dove non si costruisce)
       v.ing=(cat==='fiumi'?v.w*1.6:STILE_VIE3D[cat][0][0])/2;
@@ -141,7 +142,7 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
   for(const tipo of ['residenziale','industriale']){
     for(const p of (AB[tipo]||[])){
       // un contorno solo, oppure più contorni (multipoligono: buchi con la regola pari/dispari)
-      const an=(Array.isArray(p[0])?p:[p]).map(decodifica);
+      const an=(Array.isArray(p[0])?p:[p]).map(r=>decodifica(r));
       const a={tipo,anelli:an,box:[Math.min(...an.map(r=>r.box[0])),Math.max(...an.map(r=>r.box[1])),
         Math.min(...an.map(r=>r.box[2])),Math.max(...an.map(r=>r.box[3]))]};
       aree.push(a);
