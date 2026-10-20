@@ -654,12 +654,20 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <div class="nota"><b>Special codes</b>, to know by heart:
   <ul>
     <li><b>7000</b>: visual flight (VFR) without an assigned code, in Italy and most of Europe (in the United States it is 1200).</li>
-    <li><b>7700</b>: emergency. The aircraft is immediately highlighted on every controller's radar. In the game it goes with MAYDAY.</li>
+    <li><b>7700</b>: emergency. The aircraft is immediately highlighted on every controller's radar. In the game it goes with MAYDAY (see <a href="#emergenze-radio">Emergencies on the radio</a>).</li>
     <li><b>7600</b>: radio failure (you can no longer talk to the tower).</li>
     <li><b>7500</b>: unlawful interference (hijacking). Never used for fun: in real life it raises the alarm.</li>
   </ul>
   When you change code, be careful not to pass through these numbers by mistake while typing. In the game there are only 7000, the codes assigned by towers and 7700.</div>
-<p>If you take off or land without a clearance, the tower notices and tells you. If the engine stops you can declare an emergency with <b>MAYDAY</b>: the tower gives you the nearest airport, the heading and the distance.</p>
+<p>If you take off or land without a clearance, the tower notices and tells you.</p>
+<h3 id="emergenze-radio">Emergencies on the radio</h3>
+<p>In flight, the last item of the radio menu (<kbd>T</kbd>) is always <b>EMERGENCY</b>: it opens the list of reasons. In real life there are two levels:</p>
+<ul>
+  <li><b>MAYDAY</b> (said three times): grave and imminent danger. In the game: <i>engine failure</i>, <i>engine fire</i>, <i>smoke in the cockpit</i>.</li>
+  <li><b>PAN-PAN</b> (said three times): urgency, the aircraft still flies but you need help. In the game: <i>rough running engine</i>, <i>low fuel</i>, <i>sick passenger on board</i>, <i>uncertain of position</i>.</li>
+</ul>
+<p>The call follows the real pattern: who you are calling, callsign, aircraft type, what is happening, what you intend to do, where you are, altitude, heading, persons on board. The station of the nearest airport always answers (even if COM1 is on another frequency): it gives you heading and distance, QNH and wind, priority (the other aircraft in the circuit keep clear of the runway) and alerts the rescue services. With MAYDAY it asks for transponder <b>7700</b>, with PAN-PAN a new code. If, with the engine stopped, the field is too far to glide to, it tells you to land where you can: pick a long, clear meadow and land into the wind.</p>
+<p>After landing the emergency vehicles (or the ambulance) come to you; if you landed off-field, they come to where you are. If the problem goes away, the menu has <b>cancel</b> to call off the emergency. The logbook marks the flight with MAYDAY or PAN-PAN. If the engine stops because the fuel has run out, the MAYDAY appears by itself at the top of the menu. The aircraft has no real failures: you choose the emergency yourself, to practise.</p>
 <p>In the Piedmont world stations and frequencies are the <b>real</b> ones (from OurAirports): for example Torino Ground 121.705 and Torino Tower 118.500 at Caselle, Malpensa Tower 119.000, Cuneo Information 119.550, Bresso Radio 122.005. <b>Towers</b> give clearances; <b>Information</b> (AFIS) and <b>Radio</b> services only give information (runway in use, wind, traffic) and leave the decision to you. Where there is a <b>Ground</b> frequency, when starting from the parking area you ask Ground for taxi, and Ground hands you over to the tower at the holding point. The tuned frequency is shown at the top of the RADIO tab (COM1).</p>
 <div class="attenzione">For airports without data (some small fields, and all those of Valle Azzurra) the station is <b>simulated</b> and marked as such in the COM1 menu. Procedures are simplified too: they resemble real ones but are not those published for each airport. The voice depends on the browser and the system: Windows already has English voices; if none is found, the transmissions are still written. With the AUDIO button off the radio does not speak.</div>
 

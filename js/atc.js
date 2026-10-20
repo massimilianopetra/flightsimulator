@@ -236,6 +236,7 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
     zitto();registro.length=0;disegnaRegistro();chiudiMenu();
     xp.codice='7000';xp.modo=c.part&&c.parcheggio&&!c.finale?'STBY':'ALT';xp.atteso=null;xp.modoRichiamato=false;xp.identRichiesto=0;xp.digita=null;disegnaXpdr();
     ctx=c;att=null;ripetuto=false;chiamato=false;numeroDue=null;uscitaFatta=false;arrivoAvvisato=false;emergenza=false;maydayFatto=false;benvenuto=false;ultimoATC=null;
+    dich=null;if(traffico&&traffico.emergenza)traffico.emergenza(null);
     if(c.finale&&c.fin){staz=stazioni.get(c.fin.ap);fase='arrivo';
       avvisa(L(`In finale: chiama ${staz.nome} per l'atterraggio (T)`,`On final: call ${staz.nome} for landing (T)`));}
     else if(c.part&&c.parcheggio){staz=terra.get(c.part.ap)||stazioni.get(c.part.ap);fase='parcheggio';
@@ -299,6 +300,11 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
     }
     if(com)op.push(Object.assign(provaRadio(),{verso:com}));
     if(ultimoATC&&staz)op.push(Object.assign(ripeti(),{verso:staz}));
+    // in volo, sempre in fondo: dichiarare (o annullare) un'emergenza
+    if(!st.aTerra&&!att){
+      const fine=dich?annulla():voceEmergenza();
+      return op.slice(0,4).concat(fine);
+    }
     return op.slice(0,5);
   }
   // al parcheggio: richiesta di rullaggio fino al punto attesa
@@ -453,21 +459,102 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
       avvisa('');
     }};
   }
-  function mayday(){
-    const v=aeroportoVicino(),pos=posizioneDa(v.ap,v.ap.nome.replace(/-/g,' ')),q=piedi(st.pos.y*FT);
+  /* ---------- emergenze dichiarate dal pilota ----------
+     MAYDAY = pericolo grave e imminente, PAN-PAN = urgenza. Il pilota sceglie il motivo (l'aereo non ha
+     guasti veri); la chiamata segue lo schema ICAO: stazione, nominativo, tipo, natura, intenzioni,
+     posizione, quota, prua, persone a bordo. Si sente sempre (frequenza di emergenza 121.5): risponde la
+     stazione dell'aeroporto più vicino, che dà prua e distanza, precedenza e soccorsi. */
+  const CAUSE={
+    motore:    {liv:'mayday',f:'engine failure',it:'piantata motore'},
+    incendio:  {liv:'mayday',f:'engine fire',it:'incendio al motore'},
+    fumo:      {liv:'mayday',f:'smoke in the cockpit',it:'fumo in cabina'},
+    irregolare:{liv:'pan',f:'rough running engine',it:'motore che funziona male'},
+    carburante:{liv:'pan',f:'low fuel',it:'poco carburante'},
+    malore:    {liv:'pan',f:'sick passenger on board',it:'passeggero che sta male'},
+    perso:     {liv:'pan',f:'uncertain of position',it:'incerti sulla posizione'},
+  };
+  let dich=null;   // emergenza in corso: {causa, liv, ap}
+  const nomeAp=ap=>ap.nome.replace(/-/g,' ');
+  function dichiara(chiave){
+    const c=CAUSE[chiave],may=c.liv==='mayday',v=aeroportoVicino(),ap=v.ap,s2=stazioni.get(ap);
+    const pos=posizioneDa(ap,nomeAp(ap)),q=piedi(st.pos.y*FT);
+    const trk=tre(Math.atan2(st.vel.x,-st.vel.z)*R2D);
+    // a motore fermo: si arriva in planata al campo? (efficienza ~9, con un po' di margine)
+    const sopra=st.pos.y-(T.terrainH?T.terrainH(ap.x,ap.z):0),arriva=v.d<sopra*7.5;
+    const ripeti3=may?'Mayday, Mayday, Mayday, ':'Pan-pan, Pan-pan, Pan-pan, ',parola=may?'Mayday':'Pan-pan';
+    const intenz={
+      motore:arriva?[`gliding to ${nomeAp(ap)}`,`planiamo verso ${ap.nome}`]:['attempting forced landing','tentiamo un atterraggio fuori campo'],
+      incendio:[`diverting to ${nomeAp(ap)}, request immediate landing`,`dirigiamo su ${ap.nome}, chiediamo di atterrare subito`],
+      fumo:[`diverting to ${nomeAp(ap)}, request immediate landing`,`dirigiamo su ${ap.nome}, chiediamo di atterrare subito`],
+      irregolare:[`diverting to ${nomeAp(ap)}`,`dirigiamo su ${ap.nome}`],
+      carburante:[`request priority landing at ${nomeAp(ap)}`,`chiediamo la precedenza per atterrare a ${ap.nome}`],
+      malore:[`request priority landing at ${nomeAp(ap)} and medical assistance`,`chiediamo la precedenza per atterrare a ${ap.nome} e assistenza medica`],
+      perso:['request position and heading to the nearest airport','chiediamo posizione e prua per l\'aeroporto più vicino'],
+    }[chiave];
     const sq7=xp.codice==='7700'&&xp.modo!=='STBY';
-    const f=frase('Mayday, Mayday, Mayday, ',CS,', engine failure, ',q,', ',pos.f,', attempting forced landing',sq7?', squawking 7700':'');
-    const it=`Mayday, Mayday, Mayday, ${REG}, piantata motore, ${Math.round(st.pos.y*FT/100)*100} piedi, ${pos.it}, tentiamo un atterraggio di emergenza.`;
+    // chi è perso non sa dire dove si trova
+    const dove=chiave==='perso'?frase(''):frase(', ',pos.f), doveIt=chiave==='perso'?'':`, ${pos.it}`;
+    const due=chiave==='malore';   // con un passeggero a bordo si è in due
+    const f=frase(ripeti3,s2.parla,', ',CS,', ',TIPO,', ',c.f,', ',intenz[0],dove,', ',q,', heading ',{d:trk,s:cifre(trk)},due?', two persons on board':', one person on board',sq7?', squawking 7700':'');
+    const it=`${ripeti3}${s2.nome}, ${REG}, ${TIPO.d}, ${c.it}, ${intenz[1]}${doveIt}, ${Math.round(st.pos.y*FT/100)*100} piedi, prua ${trk}, ${due?'due persone':'una persona'} a bordo${sq7?', transponder 7700':''}.`;
     return {f,it,fai:()=>{
-      maydayFatto=true;avvisa('');pilotaDice(f,it);attendi(1300);
-      const s2=stazioni.get(v.ap),b=tre(Math.atan2(v.ap.x-st.pos.x,-(v.ap.z-st.pos.z))*R2D),nm=Math.max(1,Math.round(v.d/NM));
+      dich={causa:chiave,liv:c.liv,ap};emergenza=false;maydayFatto=true;
+      if(traffico&&traffico.emergenza)traffico.emergenza(ap);
+      if(api.alEmergenza)api.alEmergenza(c.liv);
+      avvisa('');pilotaDice(f,it);attendi(1300);
+      const b=tre(Math.atan2(ap.x-st.pos.x,-(ap.z-st.pos.z))*R2D),nm=Math.max(1,Math.round(v.d/NM));
       staz=s2;if(auto)sintonizza(s2);
-      if(!sq7)assegna('7700');
-      atcDice(frase(CSB,', ',s2.parla,', roger Mayday',sq7?'':', squawk 7700',', nearest airport ',v.ap.nome.replace(/-/g,' '),', heading ',{d:b,s:cifre(b)},', ',{d:nm+' miles',s:cifre(nm)+' miles'},', ',ventoF(),', ',qnhF(),', you are cleared to land any runway'),
-        `${CSB.d}, ${s2.nome}, ricevuto Mayday${sq7?'':', transponder 7700'}, aeroporto più vicino ${v.ap.nome}, prua ${b}, ${nm} miglia, ${ventoIt()}, QNH ${QNH}, autorizzati ad atterrare su qualsiasi pista.`,
-        readback(frase(sq7?'':'Squawk 7700, ','Heading ',{d:b,s:cifre(b)},', ',qnhF(),', ',CSB),`${sq7?'':'Transponder 7700, '}Prua ${b}, QNH ${QNH}, ${CSB.d}.`,null,null,null,null,()=>{fase='finale';}),true);
+      // codice: 7700 col Mayday, uno nuovo col Pan-pan (per riconoscere l'aereo sul radar)
+      const sq=may?'7700':nuovoCodice(),giaSq=may&&sq7;
+      if(!giaSq)assegna(sq);
+      const vai=frase(', nearest airport ',nomeAp(ap),', heading ',{d:b,s:cifre(b)},', ',{d:nm+(nm===1?' mile':' miles'),s:cifre(nm)+(nm===1?' mile':' miles')});
+      const vaiIt=`, aeroporto più vicino ${ap.nome}, prua ${b}, ${nm} ${nm===1?'miglio':'miglia'}`;
+      const fuori=chiave==='motore'&&!arriva;
+      const f2=frase(CSB,', ',s2.parla,', roger ',parola,giaSq?'':frase(', ',squawkF(sq)),
+        chiave==='perso'?frase(', identified, ',posizioneDa(ap,nomeAp(ap)).f):'',vai,
+        fuori?', if unable, land at your discretion':'',', ',ventoF(),', ',qnhF(),
+        // solo una torre autorizza; un servizio Information/Radio lascia decidere al pilota
+        may?(s2.torre?', cleared to land any runway':', landing at your discretion')+', emergency services alerted'
+          :', you have priority'+(s2.torre?', cleared to land any runway':', landing at your discretion'),
+        chiave==='malore'?', ambulance will be waiting':'');
+      const it2=`${CSB.d}, ${s2.nome}, ricevuto ${parola}${giaSq?'':', transponder '+sq}`+
+        (chiave==='perso'?`, identificati, ${posizioneDa(ap,nomeAp(ap)).it}`:'')+vaiIt+
+        (fuori?', se non ci arrivate atterrate dove ritenete opportuno':'')+`, ${ventoIt()}, QNH ${QNH}`+
+        (may?'':', avete la precedenza')+(s2.torre?', autorizzati ad atterrare su qualsiasi pista':', atterraggio a vostra discrezione')+(may?', soccorsi allertati':'')+
+        (chiave==='malore'?', un\'ambulanza vi aspetterà':'')+'.';
+      const sbagliataB=tre(+b+(Math.random()<0.5?-40:40));
+      // (pezzi separati: frase() annidata toglie lo spazio finale)
+      const sqRb=giaSq?['Heading ']:['Squawk ',cod(sq),', heading '];
+      atcDice(f2,it2,readback(
+        frase(...sqRb,{d:b,s:cifre(b)},', ',qnhF(),s2.torre?', cleared to land any runway, ':', ',CSB),
+        `${giaSq?'Prua':'Transponder '+sq+', prua'} ${b}, QNH ${QNH}${s2.torre?', autorizzati su qualsiasi pista':''}, ${CSB.d}.`,
+        frase(...sqRb,{d:sbagliataB,s:cifre(sbagliataB)},', ',qnhF(),', ',CSB),
+        `${giaSq?'Prua':'Transponder '+sq+', prua'} ${sbagliataB}, QNH ${QNH}, ${CSB.d}.`,
+        frase(CSB,', negative, heading ',{d:b,s:cifre(b)}),`${CSB.d}, negativo, prua ${b}.`,
+        ()=>{fase='finale';avvisa(fuori?L(`Troppo lontano da ${ap.nome}: scegli un campo libero e atterra controvento`,`Too far from ${ap.nome}: pick a clear field and land into the wind`)
+          :L(`Emergenza: vai a ${ap.nome}, prua ${b}, ${nm} NM · qualsiasi pista`,`Emergency: go to ${ap.nome}, heading ${b}, ${nm} NM · any runway`));}),true);
     }};
   }
+  // annullare l'emergenza (problema risolto)
+  function annulla(){
+    const parola=dich.liv==='mayday'?'Mayday':'Pan-pan',s2=stazioni.get(dich.ap);
+    const f=frase(s2.parla,', ',CSB,', cancel ',parola,', problem solved');
+    const it=`${s2.nome}, ${CSB.d}, annulliamo il ${parola}, problema risolto.`;
+    return {f,it,fai:()=>{
+      pilotaDice(f,it);attendi(1000);dich=null;
+      if(traffico&&traffico.emergenza)traffico.emergenza(null);
+      const sq=nuovoCodice();
+      atcDice(frase(CSB,', roger, ',parola,' cancelled, ',squawkF(sq),', report your intentions'),`${CSB.d}, ricevuto, ${parola} annullato, transponder ${sq}, riportate le vostre intenzioni.`,
+        readback(frase(squawkF(sq),', wilco, ',CSB),`Transponder ${sq}, eseguiremo, ${CSB.d}.`,null,null,null,null,()=>{assegna(sq);fase='rotta';}),true);
+    }};
+  }
+  // voce del menu che apre l'elenco dei motivi
+  function voceEmergenza(){
+    return {f:{d:'EMERGENCY: Mayday / Pan-pan…',s:''},it:'Emergenza: scegli il motivo…',
+      sotto:()=>Object.keys(CAUSE).map(k=>{const o=dichiara(k);
+        o.etichetta=(CAUSE[k].liv==='mayday'?'MAYDAY · ':'PAN-PAN · ')+L(CAUSE[k].it,CAUSE[k].f);return o;})};
+  }
+  const mayday=()=>dichiara('motore');   // motore spento senza carburante
   function provaRadio(){
     const c=com,f=frase(c.parla,', ',CSB,', radio check');
     const it=`${c.nome}, ${CSB.d}, prova radio.`;
@@ -489,10 +576,13 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
       if(el){el.hidden=false;el.innerHTML=`<li class="vuoto">${L('Trasmissione in corso: aspetta e poi premi di nuovo T.','Transmission in progress: wait, then press T again.')}</li>`;}
       setTimeout(chiudiMenu,1800);return;
     }
-    menu=opzioni();
+    mostraMenu(opzioni());
+  }
+  function mostraMenu(lista){
+    menu=lista;
     const el=$('radioMenu');if(!el) return;
     if(!menu.length){menu=null;el.hidden=false;el.innerHTML=`<li class="vuoto">${L('Niente da dire adesso.','Nothing to say right now.')}</li>`;setTimeout(chiudiMenu,1800);return;}
-    el.innerHTML=menu.map((o,i)=>`<li><button type="button" data-i="${i}"><kbd>${i+1}</kbd> <span>${esc(o.f.d)}`+
+    el.innerHTML=menu.map((o,i)=>`<li><button type="button" data-i="${i}"><kbd>${i+1}</kbd> <span>`+(o.etichetta?`<b>${esc(o.etichetta)}</b><br>`:'')+`${esc(o.f.d)}`+
       (SIM.lingua!=='en'&&o.it?`<i>${esc(o.it)}</i>`:'')+(o.etichettaIt?`<i>${esc(o.etichettaIt)}</i>`:'')+`</span></button></li>`).join('')+
       `<li class="nota">${L('1…'+menu.length+' per scegliere · T o Esc per chiudere','1…'+menu.length+' to choose · T or Esc to close')}</li>`;
     el.hidden=false;
@@ -501,7 +591,9 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
   function chiudiMenu(){menu=null;const el=$('radioMenu');if(el){el.hidden=true;el.innerHTML='';}}
   function scegli(i){
     if(!menu||!menu[i]) return;
-    const o=menu[i];chiudiMenu();
+    const o=menu[i];
+    if(o.sotto){mostraMenu(o.sotto());return;}   // apre un elenco (motivi dell'emergenza)
+    chiudiMenu();
     if(parlando&&coda.length>2) return;
     if(o.verso&&!sulCanale(o.verso)){pilotaDice(o.f,o.it);nessunaRisposta(o.verso);return;}
     o.fai();
@@ -523,7 +615,8 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
   const ca=$('comAuto');
   if(ca){ca.checked=auto;ca.addEventListener('change',()=>{auto=ca.checked;try{localStorage.setItem('volo-com-auto',auto?'1':'0');}catch(e){}ca.blur();});}
 
-  return {
+  const api={
+    alEmergenza:null,   // (livello) => … chiamata quando il pilota dichiara un'emergenza (js/main.js: libretto)
     reset,
     stazioneDi:ap=>stazioni.get(ap)||null,
     terraDi:ap=>terra.get(ap)||null,
@@ -640,7 +733,7 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
     evento(e,s,c){
       st=s;ctx=c;
       if(e.tipo==='incidente'){zitto();chiudiMenu();avvisa('');return;}
-      if(e.tipo==='senzaCarburante'){emergenza=true;avvisa(L('Motore spento: dichiara emergenza (T)','Engine out: declare an emergency (T)'));return;}
+      if(e.tipo==='senzaCarburante'){emergenza=true;if(!dich||dich.liv!=='mayday')maydayFatto=false;avvisa(L('Motore spento: dichiara emergenza (T)','Engine out: declare an emergency (T)'));return;}
       if(e.tipo==='decollo'){
         if(staz&&staz.torre&&(fase==='pronto'||fase==='parcheggio'||fase==='rullaggio')){
           atcDice(frase(CSB,', ',nomeStaz(),', you are airborne without take-off clearance, report leaving the control zone'),
@@ -652,6 +745,18 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
       }
       if(e.tipo==='atterraggio'){
         const v=aeroportoVicino();
+        if(dich){   // atterrati in emergenza: arrivano i soccorsi (sul posto, se fuori campo)
+          const s2=stazioni.get(dich.ap),fuori=v.d>2500,mal=dich.causa==='malore';
+          staz=s2;benvenuto=true;fase='atterrato';avvisa('');
+          if(traffico&&traffico.emergenza)traffico.emergenza(null);
+          if(fuori)atcDice(frase(CSB,', ',s2.parla,', roger, landed, rescue services are on their way to your position'),
+            `${CSB.d}, ${s2.nome}, ricevuto, atterrati: i soccorsi stanno arrivando sul posto.`,
+            readback(frase('Roger, we are fine, ',CSB),`Ricevuto, stiamo bene, ${CSB.d}.`,null,null,null,null,()=>{}),true);
+          else atcDice(frase(CSB,', stop on the runway, ',mal?'the ambulance is':'emergency vehicles are',' coming to you'),
+            `${CSB.d}, fermatevi sulla pista, ${mal?'l\'ambulanza sta':'i mezzi di soccorso stanno'} arrivando.`,
+            readback(frase('Stopping on the runway, ',CSB),`Ci fermiamo sulla pista, ${CSB.d}.`,null,null,null,null,()=>{}),true);
+          return;
+        }
         if(staz&&v.ap===staz.ap&&staz.torre&&fase!=='finale'){
           atcDice(frase(CSB,', ',nomeStaz(),', you landed without clearance, contact the tower after parking'),
             `${CSB.d}, ${staz.nome}, siete atterrati senza autorizzazione, contattate la torre dopo il parcheggio.`,
@@ -663,5 +768,6 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
       }
     },
   };
+  return api;
 };
 })();
