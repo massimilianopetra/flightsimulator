@@ -1,4 +1,15 @@
-/* Aeroporti in 3D (sagome vere degli edifici e attrezzature), generati da strumenti/genera-aeroporti.js.
+/* Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   I dati contenuti restano sotto la licenza della loro fonte (vedi sotto).
+   ---------------------------------------------------------------------
+   Aeroporti in 3D (sagome vere degli edifici e attrezzature), generati da strumenti/genera-aeroporti.js.
    Dati © OpenStreetMap contributors (ODbL). Non modificare a mano: le correzioni vanno nello script (PERSONALIZZA).
    Coordinate in decimetri dal centro dell'aeroporto (x verso est, y verso nord); liste piatte [x0, y0, x1, y1, …].
      perimetro: anelli del sedime        edifici: {t tipo, h altezza m, m base m, p contorno, b buchi, r tetto, n nome, c colore}

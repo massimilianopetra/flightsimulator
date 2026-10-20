@@ -1,3 +1,4 @@
+<!-- Volo — simulatore di volo nel browser. Autore: Massimiliano Petra <massimiliano.petra@gmail.com>. Copyright (C) 2026 Massimiliano Petra. Licenza GPL-3.0-or-later (file LICENSE). -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
     <linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1">

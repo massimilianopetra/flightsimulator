@@ -1,4 +1,15 @@
-/* Quote del terreno (metri) generate da strumenti/genera-piemonte.js.
+/* Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   I dati contenuti restano sotto la licenza della loro fonte (vedi sotto).
+   ---------------------------------------------------------------------
+   Quote del terreno (metri) generate da strumenti/genera-piemonte.js.
    Fonte: Mapzen Terrain Tiles su AWS (SRTM, GMTED, ETOPO1 e altri). Non modificare a mano. */
 window.RILIEVO={xMin:-109500,yNord:143500,passo:250,larghezza:877,altezza:1149,
   lat0:45.25,lon0:7.949999999999999,
