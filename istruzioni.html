@@ -654,12 +654,20 @@ footer{margin-top:60px;color:var(--dim);font-size:14px}
 <div class="nota"><b>Codici speciali</b>, da conoscere a memoria:
   <ul>
     <li><b>7000</b>: volo a vista (VFR) senza un codice assegnato, in Italia e in quasi tutta Europa (negli Stati Uniti è 1200).</li>
-    <li><b>7700</b>: emergenza. Sul radar di tutti i controllori l'aereo diventa subito evidenziato. Nel gioco si usa con il MAYDAY.</li>
+    <li><b>7700</b>: emergenza. Sul radar di tutti i controllori l'aereo diventa subito evidenziato. Nel gioco si usa con il MAYDAY (vedi <a href="#emergenze-radio">Emergenze alla radio</a>).</li>
     <li><b>7600</b>: guasto alla radio (non si riesce più a parlare con la torre).</li>
     <li><b>7500</b>: interferenza illecita (dirottamento). Non si usa mai per gioco: nella realtà fa scattare l'allarme.</li>
   </ul>
   Quando cambi codice, fai attenzione a non passare per sbaglio da questi numeri mentre digiti. Nel gioco esistono solo 7000, i codici assegnati dalle torri e 7700.</div>
-<p>Se decolli o atterri senza autorizzazione, la torre se ne accorge e te lo dice. Se ti si spegne il motore puoi dichiarare emergenza con il <b>MAYDAY</b>: la torre ti indica l'aeroporto più vicino, la prua e la distanza.</p>
+<p>Se decolli o atterri senza autorizzazione, la torre se ne accorge e te lo dice.</p>
+<h3 id="emergenze-radio">Emergenze alla radio</h3>
+<p>In volo, l'ultima voce del menu radio (<kbd>T</kbd>) è sempre <b>EMERGENCY</b>: apre l'elenco dei motivi. Nella realtà ci sono due livelli:</p>
+<ul>
+  <li><b>MAYDAY</b> (detto tre volte): pericolo grave e immediato. Nel gioco: <i>piantata motore</i>, <i>incendio al motore</i>, <i>fumo in cabina</i>.</li>
+  <li><b>PAN-PAN</b> (detto tre volte): urgenza, l'aereo vola ancora ma serve aiuto. Nel gioco: <i>motore che funziona male</i>, <i>poco carburante</i>, <i>passeggero che sta male</i>, <i>incerti sulla posizione</i>.</li>
+</ul>
+<p>La chiamata segue lo schema vero: a chi parli, nominativo, tipo di aereo, che cosa succede, che cosa vuoi fare, dove sei, quota, prua, persone a bordo. Risponde sempre la stazione dell'aeroporto più vicino (anche se COM1 è su un'altra frequenza): ti dà la prua e la distanza, il QNH e il vento, la precedenza (gli altri aerei del circuito si tengono lontani dalla pista) e allerta i soccorsi. Col MAYDAY ti chiede il transponder <b>7700</b>, col PAN-PAN un codice nuovo. Se a motore spento il campo è troppo lontano per arrivarci in planata, ti dice di atterrare dove puoi: scegli un prato lungo e libero e atterra controvento.</p>
+<p>Dopo l'atterraggio arrivano i mezzi di soccorso (o l'ambulanza); se sei atterrato fuori campo, vengono a prenderti dove sei. Se il problema si risolve, nel menu trovi <b>cancel</b> per annullare l'emergenza. Nel libretto il volo resta segnato con MAYDAY o PAN-PAN. Se il motore si ferma perché è finito il carburante, il MAYDAY compare da solo in cima al menu. L'aereo non ha guasti veri: l'emergenza la scegli tu, per esercitarti.</p>
 <p>Nel mondo Piemonte stazioni e frequenze sono quelle <b>vere</b> (da OurAirports): per esempio Torino Ground 121.705 e Torino Tower 118.500 a Caselle, Malpensa Tower 119.000, Cuneo Information 119.550, Bresso Radio 122.005. Le <b>torri</b> (“Tower”) danno le autorizzazioni; i servizi <b>Information</b> (AFIS) e <b>Radio</b> danno solo informazioni (pista in uso, vento, traffico) e lasciano a te la decisione. Dove c'è la frequenza di <b>terra</b> (“Ground”), partendo dal parcheggio il rullaggio si chiede a Terra, che al punto attesa ti passa alla torre. La frequenza sintonizzata è scritta in alto nella scheda RADIO (COM1).</p>
 <div class="attenzione">Per gli aeroporti senza dati (alcuni campi piccoli, e tutti quelli della Valle Azzurra) la stazione è <b>simulata</b> e nel menu COM1 è indicata come tale. Anche le procedure sono semplificate: assomigliano a quelle vere ma non sono quelle pubblicate per ogni aeroporto. La voce dipende dal browser e dal sistema: su Windows ci sono già voci inglesi; se non ne trovi, le trasmissioni restano comunque scritte. Con il pulsante AUDIO spento la radio non parla.</div>
 
