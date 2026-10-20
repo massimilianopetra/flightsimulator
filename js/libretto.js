@@ -41,6 +41,11 @@ SIM.creaLibretto=function(){
     aperto.ultimo={fpm:Math.round(a.fpm),giudizio:a.giudizio,ap:a.ap||''};
     if(a.suPista&&(aperto.migliore==null||a.fpm<aperto.migliore))aperto.migliore=Math.round(a.fpm);
   }
+  // emergenza dichiarata alla radio (js/atc.js): 'mayday' o 'pan' (resta la più grave)
+  function emergenza(liv){
+    if(!aperto) return;
+    if(aperto.emergenza!=='mayday')aperto.emergenza=liv;
+  }
   // chiude il volo: 'ok' (fermi dopo l'atterraggio), 'incidente', 'interrotto' (ricomincia o briefing in volo)
   function chiudi(esito){
     if(!aperto) return null;
@@ -98,11 +103,12 @@ SIM.creaLibretto=function(){
       let nota=v===aperto?L('in volo','airborne'):v.esito==='incidente'?L('incidente','crash'):v.esito==='interrotto'?L('interrotto','interrupted'):'';
       if(v.ultimo&&v.esito!=='incidente')nota=(nota?nota+' · ':'')+`${v.ultimo.fpm} ft/min`;
       if(v.ora&&v.ora!=='giorno')nota+=(nota?' · ':'')+(v.ora==='notte'?L('notte','night'):L('tramonto','sunset'));
+      if(v.emergenza)nota+=(nota?' · ':'')+(v.emergenza==='mayday'?'MAYDAY':'PAN-PAN');
       if(m)nota+=(nota?' · ':'')+`${esc(NOMI[m.tipo]||m.nome)} `+(m.riuscita?`<span class="stella">${stelle(m.stelle)}</span>`:L('fallita','failed'));
       h+=`<tr class="${v.esito==='incidente'?'male':''}"><td>${data(v.data)}</td><td>${(v.aereo||'c172').toUpperCase()}</td><td>${esc(v.da)||'—'}</td><td>${esc(v.a)||'—'}</td><td>${hhmm(v.durata)}</td><td>${(v.dist/NM).toFixed(1)}</td><td>${v.atterraggi}</td><td>${nota}</td></tr>`;
     }
     return h+`</tbody></table></div>`;
   }
-  return {decollo,aggiorna,atterraggio,chiudi,missione,svuota,html,get aperto(){return aperto;},get voli(){return voli;}};
+  return {decollo,aggiorna,atterraggio,emergenza,chiudi,missione,svuota,html,get aperto(){return aperto;},get voli(){return voli;}};
 };
 })();

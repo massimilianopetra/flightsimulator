@@ -183,7 +183,7 @@ SIM.creaTraffico=function({T,scene,met,atc}){
         // base solo se la pista e la finale sono libere (giocatore e altri aerei); altrimenti si allunga il sottovento
         if(r.u<a.fineSott+R*0.9){
           const altro=aerei.find(b=>b!==a&&(b.fase==='base'||(b.fase==='finale'&&c.loc(b.x,b.z).u<-900)));
-          const occupato=altro||inFinale(c,st)||(sullaPista(c,st)&&st.gs>0.5)||(ctxSt&&ctxSt.allineato);
+          const occupato=altro||inFinale(c,st)||(sullaPista(c,st)&&st.gs>0.5)||(ctxSt&&ctxSt.allineato)||apEmergenza===c.ap;
           if(occupato&&a.fineSott>-5000){a.fineSott-=150;
             if(!a.detto.allunga&&(inFinale(c,st)||sullaPista(c,st))){a.detto.allunga=true;const s=staz();
               if(s&&s.torre)parla(a,frase(a.csb,', extending downwind'),`${a.csb.d}, allunghiamo il sottovento.`,null,null);}}
@@ -197,7 +197,8 @@ SIM.creaTraffico=function({T,scene,met,atc}){
         // riattaccata: pista occupata dal giocatore o da un altro aereo, oppure il giocatore è in finale davanti
         const davantiGioc=inFinale(c,st)&&c.loc(st.pos.x,st.pos.z).u>r.u&&c.loc(st.pos.x,st.pos.z).u-r.u<2500;
         const altroInPista=aerei.some(b=>b!==a&&b.fase==='corsa');
-        if(r.u>-1300&&(sullaPista(c,st)||davantiGioc||altroInPista)&&a.y-c.q>15){
+        // con un'emergenza del giocatore su questo campo si lascia libera la pista
+        if(r.u>-1300&&(sullaPista(c,st)||davantiGioc||altroInPista||apEmergenza===c.ap)&&a.y-c.q>15){
           a.fase='salita';a.detto={};parla(a,frase(a.csb,', going around'),`${a.csb.d}, riattacchiamo.`,null,null);break;}
         if(a.y<=T.meshH(a.x,a.z)+0.2&&r.u>c.tocca-300){a.fase='corsa';a.y=T.meshH(a.x,a.z);a.v=Math.min(a.v,56/KT);a.fineSott=-1800;return;}
         break;}
@@ -228,7 +229,9 @@ SIM.creaTraffico=function({T,scene,met,atc}){
   }
 
   let tLuci=0,ultimoSt=null;
+  let apEmergenza=null;   // aeroporto verso cui va il giocatore in emergenza (js/atc.js): lì gli altri non atterrano
   return {
+    emergenza(ap){apEmergenza=ap||null;},
     get aerei(){return aerei;},
     // da chiamare a ogni fotogramma in volo; ctxSt = {allineato: il giocatore è autorizzato e in pista}
     aggiorna(dt,st,ctx){

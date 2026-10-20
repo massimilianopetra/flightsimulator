@@ -147,6 +147,7 @@ if(traffico){atc.usaTraffico(traffico);traffico.ora(notte.ora);}
 // missioni (js/missioni.js) e libretto di volo (js/libretto.js)
 const missioni=SIM.creaMissioni(T);
 const libretto=SIM.creaLibretto();
+atc.alEmergenza=liv=>libretto.emergenza(liv);   // MAYDAY / PAN-PAN dichiarati alla radio: nota nel libretto
 let daPiano=null;   // giro a tappe dopo un tocca e riparti: il piano parte dalla pista appena toccata
 const ctxATC=()=>({parcheggio:!!partenza.parcheggio&&modalita!=='finale',attesa:partenza.attesa||null,vie:partenza.vie||[],backtrack:partenza.backtrack!==false,part:partenza.ap?{ap:partenza.ap,te:partenza.te}:null,arr:piano.piano?{ap:piano.piano.arr,te:piano.piano.te}:null,finale:modalita==='finale',fin:modalita==='finale'?pistaFinale():null,arrivo:arrivo?{ref:arrivo.ref,vie:arrivo.vie}:null});
 let faseMostrata=-1;
