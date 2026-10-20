@@ -249,7 +249,7 @@ const api={
 /* ---------- colori del terreno per fasce di quota ----------
    terreno.colori nella mappa: { prato, bosco, roccia, neve } in metri */
 const QC=Object.assign({prato:320,bosco:700,roccia:1000,neve:1150},TR.colori||{});
-let C=null; const tc={r:0,g:0,b:0};
+let C=null; const tc={r:0,g:0,b:0,k:0};   // k = quanto il punto è "campagna coltivata" (0..1)
 function colore(h,slope,x,z,dettaglio){
   if(!C){C={sand:new THREE.Color(0xd8c690),grass:new THREE.Color(0x5b8a3e),mown:new THREE.Color(0x6a9a48),
     forest:new THREE.Color(0x3d6b35),rock:new THREE.Color(0x857a66),snow:new THREE.Color(0xf2f5f8),c:new THREE.Color()};}
@@ -263,6 +263,77 @@ function colore(h,slope,x,z,dettaglio){
   else c.copy(C.rock).lerp(C.snow,clamp((h-QC.roccia)/(QC.neve-QC.roccia),0,1));
   if(slope>.55&&!acquaVicina)c.lerp(C.rock,clamp((slope-.55)*2.5,0,.85));
   tc.r=c.r;tc.g=c.g;tc.b=c.b;
+  // campi: in basso e in piano, non sull'acqua né negli aeroporti
+  tc.k=acquaVicina||(dettaglio&&api.inAeroporto(x,z,-60))?0:
+    (1-smooth(QC.prato*0.75,QC.prato*1.05,h))*(1-smooth(0.05,0.13,slope));
+}
+
+/* ---------- campi coltivati ----------
+   Nessun dato: un mosaico inventato nello shader, in coordinate del mondo (uguale a ogni
+   visita). Il mondo è diviso in "poderi" (celle di Voronoi di ~900 m), ognuno con il suo
+   orientamento e la sua misura dei campi; i campi sono file di rettangoli di lunghezza
+   varia, con colture diverse, solchi e capezzagne. Da lontano (campi di pochi pixel)
+   sfumano nel colore medio per non sfarfallare. Peso per vertice: attributo aCampi (tc.k). */
+const GLSL_CAMPI=`
+float campiH(vec2 c){return fract(sin(dot(c,vec2(127.1,311.7)))*43758.5453);}
+vec3 campi(vec2 p,vec3 base,float k){
+  vec2 g=floor(p/900.0),cid=g,cen=g*900.0;float best=1e12;
+  for(int j=-1;j<=1;j++)for(int i=-1;i<=1;i++){
+    vec2 c=g+vec2(float(i),float(j));
+    vec2 o=(c+vec2(campiH(c),campiH(c+19.7)))*900.0;
+    vec2 d=p-o;float dd=dot(d,d);
+    if(dd<best){best=dd;cid=c;cen=o;}
+  }
+  float a=campiH(cid+3.1)*3.1416,ca=cos(a),sa=sin(a);
+  vec2 q=vec2(ca*(p.x-cen.x)+sa*(p.y-cen.y),-sa*(p.x-cen.x)+ca*(p.y-cen.y));
+  float H=40.0+campiH(cid+7.3)*80.0;                       // larghezza delle file di campi
+  float j=floor(q.y/H);
+  float Lr=H*(1.2+campiH(vec2(j,cid.x+cid.y*7.0))*2.8);   // lunghezza dei campi della fila
+  float off=campiH(vec2(j*1.7,cid.y-cid.x))*Lr;
+  float i=floor((q.x+off)/Lr);
+  vec2 f=vec2((q.x+off)-i*Lr,q.y-j*H);                     // metri dentro il campo
+  float h1=campiH(vec2(i+cid.x*31.0,j+cid.y*17.0)),h2=campiH(vec2(i*3.3+cid.y,j*5.1-cid.x));
+  // coltura: il podere ha una tendenza (più prati o più seminativi)
+  float t=fract(h1*0.75+campiH(cid+11.0)*0.5);
+  vec3 col;
+  if(t<0.24)col=vec3(0.36,0.50,0.25);        // prato
+  else if(t<0.38)col=vec3(0.42,0.52,0.28);   // coltura giovane
+  else if(t<0.52)col=vec3(0.28,0.41,0.21);   // mais
+  else if(t<0.62)col=vec3(0.58,0.55,0.36);   // grano maturo
+  else if(t<0.72)col=vec3(0.52,0.50,0.37);   // stoppie
+  else if(t<0.85)col=vec3(0.44,0.38,0.29);   // arato
+  else col=vec3(0.33,0.44,0.34);             // risaia / erba medica
+  col*=0.93+h2*0.14;
+  vec2 px=dFdx(p),py=dFdy(p);
+  float mpp=max(max(length(px),length(py)),0.01);      // metri per pixel (direzione peggiore: per le righe sottili)
+  float mppM=max(sqrt(length(px)*length(py)),0.01);   // media (per i campi interi, guardati di sbieco)
+  // solchi lungo il campo
+  float per=3.0+h2*3.0,sol=0.5+0.5*sin(f.y*6.2832/per);
+  col*=1.0-0.07*sol*(1.0-smoothstep(0.25,0.6,mpp/per));
+  // capezzagne erbose ai bordi; ogni tanto una siepe scura lungo la fila
+  float bordo=min(min(f.x,Lr-f.x),min(f.y,H-f.y));
+  float lb=1.0-smoothstep(1.2,1.2+mpp,bordo);
+  float siepe=step(0.72,campiH(vec2(j+0.5,cid.x*3.0-cid.y)))*(1.0-smoothstep(4.0,4.0+mpp,f.y));
+  float vicino=1.0-smoothstep(1.0,4.0,mpp);
+  col=mix(col,vec3(0.33,0.45,0.21),lb*vicino*0.8);
+  col=mix(col,vec3(0.16,0.27,0.12),siepe*(1.0-smoothstep(2.0,6.0,mpp)));
+  // da lontano: colore medio
+  col=mix(col,vec3(0.41,0.47,0.29),smoothstep(0.25,0.7,mppM/H));
+  return mix(base,col,k*0.85);
+}
+`;
+// aggiunge i campi a un materiale del terreno (dopo le eventuali altre aggiunte allo shader)
+function vesteCampi(mat,chiave){
+  const prima=mat.onBeforeCompile;
+  mat.onBeforeCompile=(sh,r)=>{
+    if(prima)prima.call(mat,sh,r);
+    sh.vertexShader='attribute float aCampi;\nvarying float vCampi;\nvarying vec2 vPCampi;\n'+sh.vertexShader.replace('#include <begin_vertex>',
+      '#include <begin_vertex>\nvCampi=aCampi;\nvPCampi=(modelMatrix*vec4(transformed,1.0)).xz;');
+    sh.fragmentShader='varying float vCampi;\nvarying vec2 vPCampi;\n'+GLSL_CAMPI+sh.fragmentShader.replace('#include <color_fragment>',
+      '#include <color_fragment>\nif(vCampi>0.01)diffuseColor.rgb=campi(vPCampi,diffuseColor.rgb,vCampi);');
+  };
+  // la stessa funzione involucro ha lo stesso testo per i due materiali: chiave diversa, sennò three li confonde
+  mat.customProgramCacheKey=()=>chiave;
 }
 
 /* ---------- terreno lontano (solo mappe reali) ----------
@@ -284,14 +355,14 @@ api.creaLontano=function(scene){
   const P=1000;
   const x0=RL.xMin, z0=-RL.yNord, Wm=(RL.larghezza-1)*RL.passo, Hm=(RL.altezza-1)*RL.passo;
   const NX=Math.floor(Wm/P)+1, NZ=Math.floor(Hm/P)+1;
-  const pos=new Float32Array(NX*NZ*3), col=new Float32Array(NX*NZ*3), Hh=new Float32Array(NX*NZ);
+  const pos=new Float32Array(NX*NZ*3), col=new Float32Array(NX*NZ*3), cam=new Float32Array(NX*NZ), Hh=new Float32Array(NX*NZ);
   for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){const o=j*NX+i;Hh[o]=naturale(x0+i*P,z0+j*P);}
   for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){
     const o=j*NX+i,x=x0+i*P,z=z0+j*P,h=Hh[o];
     const hx=Hh[j*NX+Math.min(i+1,NX-1)]-Hh[j*NX+Math.max(i-1,0)], hz=Hh[Math.min(j+1,NZ-1)*NX+i]-Hh[Math.max(j-1,0)*NX+i];
     pos[o*3]=x;pos[o*3+1]=h-15;pos[o*3+2]=z;
     colore(h,Math.hypot(hx,hz)/(2*P),x,z,false);
-    col[o*3]=tc.r;col[o*3+1]=tc.g;col[o*3+2]=tc.b;
+    col[o*3]=tc.r;col[o*3+1]=tc.g;col[o*3+2]=tc.b;cam[o]=tc.k;
   }
   const idx=new Uint32Array((NX-1)*(NZ-1)*6);let k=0;
   for(let j=0;j<NZ-1;j++)for(let i=0;i<NX-1;i++){
@@ -302,6 +373,7 @@ api.creaLontano=function(scene){
   geo.setIndex(new THREE.BufferAttribute(idx,1));
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
   geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+  geo.setAttribute('aCampi',new THREE.BufferAttribute(cam,1));
   const unif={uCentro:{value:new THREE.Vector2(1e9,1e9)},uMezzo:{value:TS/2-STEP*1.5}};
   const mat=new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:1,metalness:0});
   mat.onBeforeCompile=sh=>{
@@ -311,6 +383,7 @@ api.creaLontano=function(scene){
     sh.fragmentShader='varying vec3 vPosMondo;\nuniform vec2 uCentro;\nuniform float uMezzo;\n'+sh.fragmentShader.replace('void main() {',
       'void main() {\nif(abs(vPosMondo.x-uCentro.x)<uMezzo&&abs(vPosMondo.z-uCentro.y)<uMezzo)discard;');
   };
+  vesteCampi(mat,'terreno-lontano');
   const mesh=new THREE.Mesh(geo,mat);mesh.frustumCulled=false;scene.add(mesh);
   return {mesh,buco(cx,cz){unif.uCentro.value.set(cx,cz);}};
 };
@@ -330,11 +403,13 @@ api.creaMesh=function(scene,renderer){
   // strade, fiumi e paesi disegnati sul terreno + edifici (js/paesaggio.js, solo mappe reali)
   const vie=SIM.creaPaesaggio?SIM.creaPaesaggio(scene,renderer,TS):null;
   if(vie)vie.veste(mat);
+  vesteCampi(mat,'terreno-vicino');
   function buffer(){
     const geo=new THREE.BufferGeometry();
     geo.setIndex(idx);
     geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(N*N*3),3));
     geo.setAttribute('color',new THREE.BufferAttribute(new Float32Array(N*N*3),3));
+    geo.setAttribute('aCampi',new THREE.BufferAttribute(new Float32Array(N*N),1));
     const mesh=new THREE.Mesh(geo,mat);
     mesh.frustumCulled=false;mesh.visible=false;scene.add(mesh);
     return {geo,mesh,H:new Float32Array(N*N),cx:NaN,cz:NaN};
@@ -346,7 +421,7 @@ api.creaMesh=function(scene,renderer){
 
   function* costruisci(b,cx,cz){
     b.cx=cx;b.cz=cz;
-    const pos=b.geo.attributes.position.array,col=b.geo.attributes.color.array,H=b.H;
+    const pos=b.geo.attributes.position.array,col=b.geo.attributes.color.array,cam=b.geo.attributes.aCampi.array,H=b.H;
     const x0=cx-TS/2,z0=cz-TS/2;
     for(let j=0;j<N;j++){
       for(let i=0;i<N;i++){
@@ -362,12 +437,12 @@ api.creaMesh=function(scene,renderer){
         const hz=H[Math.min(j+1,SEG)*N+i]-H[Math.max(j-1,0)*N+i];
         const slope=Math.hypot(hx,hz)/(2*STEP);
         colore(h,slope,x,z,true);
-        col[o*3]=tc.r;col[o*3+1]=tc.g;col[o*3+2]=tc.b;
+        col[o*3]=tc.r;col[o*3+1]=tc.g;col[o*3+2]=tc.b;cam[o]=tc.k;
       }
       if(j%48===47) yield;
     }
     if(vie) yield* vie.disegna(cx,cz);
-    b.geo.attributes.position.needsUpdate=true;b.geo.attributes.color.needsUpdate=true;
+    b.geo.attributes.position.needsUpdate=true;b.geo.attributes.color.needsUpdate=true;b.geo.attributes.aCampi.needsUpdate=true;
   }
   return {
     // dove c'è il terreno dettagliato (quadrato di centro cx, cz e mezzo lato "mezzo")
