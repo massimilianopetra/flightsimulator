@@ -249,24 +249,63 @@ const api={
 /* ---------- colori del terreno per fasce di quota ----------
    terreno.colori nella mappa: { prato, bosco, roccia, neve } in metri */
 const QC=Object.assign({prato:320,bosco:700,roccia:1000,neve:1150},TR.colori||{});
-let C=null; const tc={r:0,g:0,b:0,k:0};   // k = quanto il punto è "campagna coltivata" (0..1)
+// k = quanto il punto è "campagna coltivata", w = quanto è bosco (0..1)
+let C=null; const tc={r:0,g:0,b:0,k:0,w:0};
 function colore(h,slope,x,z,dettaglio){
   if(!C){C={sand:new THREE.Color(0xd8c690),grass:new THREE.Color(0x5b8a3e),mown:new THREE.Color(0x6a9a48),
-    forest:new THREE.Color(0x3d6b35),rock:new THREE.Color(0x857a66),snow:new THREE.Color(0xf2f5f8),c:new THREE.Color()};}
+    meadow:new THREE.Color(0x5c7240),rock:new THREE.Color(0x857a66),snow:new THREE.Color(0xf2f5f8),c:new THREE.Color()};}
   const c=C.c, r=hash(x|0,z|0)-.5;
   let acquaVicina=h<4;
   if(!acquaVicina&&laghi.length){const l=inLago(x,z,25);if(l&&h<l.q+2)acquaVicina=true;}
+  // fuori dai boschi: prati, poi pascoli, roccia e neve (i boschi li aggiunge lo shader con tc.w)
   if(acquaVicina)c.copy(C.sand);
   else if(dettaglio&&api.inAeroporto(x,z,-60))c.copy(C.mown);
-  else if(h<QC.prato)c.copy(C.grass).lerp(C.forest,clamp(h/QC.prato+r*.35,0,1));
-  else if(h<QC.bosco)c.copy(C.forest).lerp(C.rock,clamp((h-QC.prato)/(QC.bosco-QC.prato)+r*.2,0,1));
+  else if(h<QC.prato)c.copy(C.grass).lerp(C.meadow,clamp(h/QC.prato*0.6+r*.3,0,1));
+  else if(h<QC.roccia)c.copy(C.meadow).lerp(C.rock,clamp((h-QC.bosco*0.9)/(QC.roccia-QC.bosco*0.9)+r*.2,0,1));
   else c.copy(C.rock).lerp(C.snow,clamp((h-QC.roccia)/(QC.neve-QC.roccia),0,1));
   if(slope>.55&&!acquaVicina)c.lerp(C.rock,clamp((slope-.55)*2.5,0,.85));
   tc.r=c.r;tc.g=c.g;tc.b=c.b;
   // campi: in basso e in piano, non sull'acqua né negli aeroporti
   tc.k=acquaVicina||(dettaglio&&api.inAeroporto(x,z,-60))?0:
     (1-smooth(QC.prato*0.75,QC.prato*1.05,h))*(1-smooth(0.05,0.13,slope));
+  tc.w=acquaVicina?0:bosco(x,z,h,slope,tc.k);
 }
+
+/* ---------- boschi ----------
+   Nessun dato: macchie di rumore, tante sui pendii e in collina, poche in pianura coltivata;
+   limite degli alberi frastagliato attorno a QC.bosco; niente sulle pareti ripide, in paese,
+   negli aeroporti e sotto i sentieri di avvicinamento (alberi alti 20 m in corto finale no).
+   Lo stesso valore, interpolato sui triangoli, serve al colore (shader) e agli alberi 3D (boschi.js). */
+function urbano(x,z){
+  const de=SIM.densitaEdifici&&SIM.densitaEdifici();
+  if(de&&de.DEN){
+    const D=de.DS,i=Math.floor((x-D.x0)/D.passo),j=Math.floor((D.yNord+z)/D.passo);
+    return i>=0&&j>=0&&i<D.larghezza&&j<D.altezza&&de.DEN[j*D.larghezza+i]>2;
+  }
+  for(const c of citta)if(Math.abs(x-c.x)<c.r&&Math.abs(z-c.z)<c.r&&Math.hypot(x-c.x,z-c.z)<c.r*0.9)return true;
+  return false;
+}
+function sentiero(x,z){
+  for(const p of piste){
+    const m=p.L/2+1800;
+    if(Math.abs(x-p.cx)>m||Math.abs(z-p.cz)>m) continue;
+    const {u,v}=locale(p,x,z),fu=Math.abs(u)-p.L/2;
+    if(fu<1800&&Math.abs(v)<p.W/2+140+Math.max(0,fu)*0.12) return true;
+  }
+  return false;
+}
+function bosco(x,z,h,slope,k){
+  const n=vnoise(x/900+31.7,z/900-12.3)*0.6+vnoise(x/230+5.1,z/230+7.7)*0.4;
+  // in pianura coltivata solo boschetti; sui pendii quasi tutto bosco
+  const soglia=0.42+0.3*k-0.16*smooth(0.12,0.45,slope);
+  let w=smooth(soglia-0.05,soglia+0.05,n);
+  if(w<0.01) return 0;
+  w*=1-smooth(-120,60,h-QC.bosco*0.95-(n-0.5)*500);           // limite degli alberi
+  w*=1-smooth(0.85,1.2,slope);                                // pareti di roccia
+  if(w<0.01||urbano(x,z)||api.inAeroporto(x,z,100)||sentiero(x,z)) return 0;
+  return w;
+}
+api.QC=QC;
 
 /* ---------- campi coltivati ----------
    Nessun dato: un mosaico inventato nello shader, in coordinate del mondo (uguale a ogni
@@ -321,16 +360,37 @@ vec3 campi(vec2 p,vec3 base,float k){
   col=mix(col,vec3(0.41,0.47,0.29),smoothstep(0.25,0.7,mppM/H));
   return mix(base,col,k*0.85);
 }
+// rumore a valori ripetuto ogni per celle (coordinate piccole: sin() resta preciso)
+float campiN(vec2 p,float per){
+  vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);
+  float a=campiH(mod(i,per)),b=campiH(mod(i+vec2(1.0,0.0),per)),c=campiH(mod(i+vec2(0.0,1.0),per)),d=campiH(mod(i+vec2(1.0,1.0),per));
+  return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);
+}
+// chiome del bosco viste dall'alto: latifoglie in basso, conifere (più scure, verde-blu) in alto
+vec3 chiome(vec2 p,float y){
+  float mpp=max(length(fwidth(p)),0.01);
+  float n1=campiN(p/7.0,512.0),n2=campiN(p/40.0,64.0),n3=campiN(p/300.0,16.0);
+  float conif=smoothstep(${(QC.prato).toFixed(1)},${((QC.prato+QC.bosco)/2).toFixed(1)},y+(n3-0.5)*400.0);
+  vec3 chioma=mix(vec3(0.23,0.35,0.16),vec3(0.15,0.26,0.16),conif)*(0.85+n2*0.3);
+  vec3 ombra=mix(vec3(0.10,0.17,0.08),vec3(0.07,0.13,0.08),conif);
+  float c=smoothstep(0.3,0.7,n1);
+  c=mix(c,0.62,smoothstep(1.5,5.0,mpp));            // da lontano: tinta media
+  return mix(ombra,chioma,c);
+}
 `;
 // aggiunge i campi a un materiale del terreno (dopo le eventuali altre aggiunte allo shader)
 function vesteCampi(mat,chiave){
   const prima=mat.onBeforeCompile;
   mat.onBeforeCompile=(sh,r)=>{
     if(prima)prima.call(mat,sh,r);
-    sh.vertexShader='attribute float aCampi;\nvarying float vCampi;\nvarying vec2 vPCampi;\n'+sh.vertexShader.replace('#include <begin_vertex>',
-      '#include <begin_vertex>\nvCampi=aCampi;\nvPCampi=(modelMatrix*vec4(transformed,1.0)).xz;');
-    sh.fragmentShader='varying float vCampi;\nvarying vec2 vPCampi;\n'+GLSL_CAMPI+sh.fragmentShader.replace('#include <color_fragment>',
-      '#include <color_fragment>\nif(vCampi>0.01)diffuseColor.rgb=campi(vPCampi,diffuseColor.rgb,vCampi);');
+    const VAR='varying float vCampi,vBosco,vYCampi;\nvarying vec2 vPCampi;\n';
+    sh.vertexShader='attribute float aCampi,aBosco;\n'+VAR+sh.vertexShader.replace('#include <begin_vertex>',
+      '#include <begin_vertex>\nvCampi=aCampi;vBosco=aBosco;\nvec4 pmCampi=modelMatrix*vec4(transformed,1.0);vPCampi=pmCampi.xz;vYCampi=pmCampi.y;');
+    sh.fragmentShader=VAR+GLSL_CAMPI+sh.fragmentShader.replace('#include <color_fragment>',
+      // bordo del bosco frastagliato (rumore di 30-90 m sopra il valore dei vertici, a 62,5 m)
+      '#include <color_fragment>\nfloat fbCampi=vBosco>0.01?smoothstep(0.44,0.56,vBosco+(campiN(vPCampi/30.0,128.0)*0.6+campiN(vPCampi/90.0,32.0)*0.4-0.5)*0.3):0.0;\n'+
+      'if(vCampi>0.01)diffuseColor.rgb=campi(vPCampi,diffuseColor.rgb,vCampi*(1.0-fbCampi));\n'+
+      'if(fbCampi>0.0)diffuseColor.rgb=mix(diffuseColor.rgb,chiome(vPCampi,vYCampi),fbCampi);');
   };
   // la stessa funzione involucro ha lo stesso testo per i due materiali: chiave diversa, sennò three li confonde
   mat.customProgramCacheKey=()=>chiave;
@@ -355,14 +415,14 @@ api.creaLontano=function(scene){
   const P=1000;
   const x0=RL.xMin, z0=-RL.yNord, Wm=(RL.larghezza-1)*RL.passo, Hm=(RL.altezza-1)*RL.passo;
   const NX=Math.floor(Wm/P)+1, NZ=Math.floor(Hm/P)+1;
-  const pos=new Float32Array(NX*NZ*3), col=new Float32Array(NX*NZ*3), cam=new Float32Array(NX*NZ), Hh=new Float32Array(NX*NZ);
+  const pos=new Float32Array(NX*NZ*3), col=new Float32Array(NX*NZ*3), cam=new Float32Array(NX*NZ), bos=new Float32Array(NX*NZ), Hh=new Float32Array(NX*NZ);
   for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){const o=j*NX+i;Hh[o]=naturale(x0+i*P,z0+j*P);}
   for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){
     const o=j*NX+i,x=x0+i*P,z=z0+j*P,h=Hh[o];
     const hx=Hh[j*NX+Math.min(i+1,NX-1)]-Hh[j*NX+Math.max(i-1,0)], hz=Hh[Math.min(j+1,NZ-1)*NX+i]-Hh[Math.max(j-1,0)*NX+i];
     pos[o*3]=x;pos[o*3+1]=h-15;pos[o*3+2]=z;
     colore(h,Math.hypot(hx,hz)/(2*P),x,z,false);
-    col[o*3]=tc.r;col[o*3+1]=tc.g;col[o*3+2]=tc.b;cam[o]=tc.k;
+    col[o*3]=tc.r;col[o*3+1]=tc.g;col[o*3+2]=tc.b;cam[o]=tc.k;bos[o]=tc.w;
   }
   const idx=new Uint32Array((NX-1)*(NZ-1)*6);let k=0;
   for(let j=0;j<NZ-1;j++)for(let i=0;i<NX-1;i++){
@@ -374,6 +434,7 @@ api.creaLontano=function(scene){
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
   geo.setAttribute('color',new THREE.BufferAttribute(col,3));
   geo.setAttribute('aCampi',new THREE.BufferAttribute(cam,1));
+  geo.setAttribute('aBosco',new THREE.BufferAttribute(bos,1));
   const unif={uCentro:{value:new THREE.Vector2(1e9,1e9)},uMezzo:{value:TS/2-STEP*1.5}};
   const mat=new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:1,metalness:0});
   mat.onBeforeCompile=sh=>{
@@ -404,12 +465,14 @@ api.creaMesh=function(scene,renderer){
   const vie=SIM.creaPaesaggio?SIM.creaPaesaggio(scene,renderer,TS):null;
   if(vie)vie.veste(mat);
   vesteCampi(mat,'terreno-vicino');
+  const alberi=SIM.creaBoschi?SIM.creaBoschi(scene,api):null;   // alberi 3D nei boschi (js/boschi.js)
   function buffer(){
     const geo=new THREE.BufferGeometry();
     geo.setIndex(idx);
     geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(N*N*3),3));
     geo.setAttribute('color',new THREE.BufferAttribute(new Float32Array(N*N*3),3));
     geo.setAttribute('aCampi',new THREE.BufferAttribute(new Float32Array(N*N),1));
+    geo.setAttribute('aBosco',new THREE.BufferAttribute(new Float32Array(N*N),1));
     const mesh=new THREE.Mesh(geo,mat);
     mesh.frustumCulled=false;mesh.visible=false;scene.add(mesh);
     return {geo,mesh,H:new Float32Array(N*N),cx:NaN,cz:NaN};
@@ -421,7 +484,7 @@ api.creaMesh=function(scene,renderer){
 
   function* costruisci(b,cx,cz){
     b.cx=cx;b.cz=cz;
-    const pos=b.geo.attributes.position.array,col=b.geo.attributes.color.array,cam=b.geo.attributes.aCampi.array,H=b.H;
+    const pos=b.geo.attributes.position.array,col=b.geo.attributes.color.array,cam=b.geo.attributes.aCampi.array,bos=b.geo.attributes.aBosco.array,H=b.H;
     const x0=cx-TS/2,z0=cz-TS/2;
     for(let j=0;j<N;j++){
       for(let i=0;i<N;i++){
@@ -437,12 +500,13 @@ api.creaMesh=function(scene,renderer){
         const hz=H[Math.min(j+1,SEG)*N+i]-H[Math.max(j-1,0)*N+i];
         const slope=Math.hypot(hx,hz)/(2*STEP);
         colore(h,slope,x,z,true);
-        col[o*3]=tc.r;col[o*3+1]=tc.g;col[o*3+2]=tc.b;cam[o]=tc.k;
+        col[o*3]=tc.r;col[o*3+1]=tc.g;col[o*3+2]=tc.b;cam[o]=tc.k;bos[o]=tc.w;
       }
       if(j%48===47) yield;
     }
     if(vie) yield* vie.disegna(cx,cz);
-    b.geo.attributes.position.needsUpdate=true;b.geo.attributes.color.needsUpdate=true;b.geo.attributes.aCampi.needsUpdate=true;
+    if(alberi) yield* alberi.costruisci({x0,z0,N,STEP,H,W:bos},cx,cz);   // dopo le vie: le evita
+    b.geo.attributes.position.needsUpdate=true;b.geo.attributes.color.needsUpdate=true;b.geo.attributes.aCampi.needsUpdate=true;b.geo.attributes.aBosco.needsUpdate=true;
   }
   return {
     // dove c'è il terreno dettagliato (quadrato di centro cx, cz e mezzo lato "mezzo")
@@ -456,6 +520,7 @@ api.creaMesh=function(scene,renderer){
         for(const _ of costruisci(a,cx,cz));
         a.mesh.visible=true;buf[1-attivo].mesh.visible=false;
         if(vie){vie.applica();vie.dettaglio(px,pz,true);}
+        if(alberi)alberi.applica();
         if(lontano)lontano.buco(a.cx,a.cz);
         return;
       }
@@ -465,6 +530,7 @@ api.creaMesh=function(scene,renderer){
         lavoro=null;attivo=1-attivo;
         buf[attivo].mesh.visible=true;buf[1-attivo].mesh.visible=false;
         if(vie)vie.applica();
+        if(alberi)alberi.applica();
       }else if(vie&&!lavoro)vie.dettaglio(px,pz);   // immagine da vicino: quando la griglia non lavora
       if(lontano)lontano.buco(buf[attivo].cx,buf[attivo].cz);
     },

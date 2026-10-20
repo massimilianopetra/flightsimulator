@@ -226,6 +226,9 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
     }
   }
 
+  // spazio libero (m) dalla via più vicina, per js/boschi.js (vale per la griglia preparata da disegna)
+  SIM.liberoVie=(x,z)=>{interroga(x,z);return qLib;};
+
   /* ---------- edifici generati ----------
      ogni edificio: x, z, larghezza (lungo la strada), profondità, altezza, rotazione, colori */
   // x, z, larghezza, profondità, altezza, rotazione, colore tetto, colore muro, forma del tetto, stile
