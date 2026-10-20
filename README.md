@@ -540,7 +540,7 @@ write to [massimiliano.petra@gmail.com](mailto:massimiliano.petra@gmail.com), or
 
 ## Licence
 
-Copyright © 2026 Massimiliano Petra
+Copyright © 2026 Massimiliano Petra <massimiliano.petra@gmail.com>
 
 This program is free software: you can redistribute it and/or modify it under the terms of the
 **GNU General Public License version 3** as published by the Free Software Foundation, or (at your
@@ -1078,7 +1078,7 @@ scrivi a [massimiliano.petra@gmail.com](mailto:massimiliano.petra@gmail.com), op
 
 ## Licenza
 
-Copyright © 2026 Massimiliano Petra
+Copyright © 2026 Massimiliano Petra <massimiliano.petra@gmail.com>
 
 Questo programma è software libero: puoi ridistribuirlo e/o modificarlo secondo i termini
 della **GNU General Public License versione 3** pubblicata dalla Free Software Foundation,

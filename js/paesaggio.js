@@ -10,6 +10,16 @@
    ai centri delle città grandi, capannoni nelle zone industriali. Sono
    orientati come la strada più vicina e non invadono strade e fiumi.
    Vicino all'aereo sono in 3D; più lontano restano disegnati sull'immagine.
+   ---------------------------------------------------------------------
+   Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
    ===================================================================== */
 (function(){
 'use strict';

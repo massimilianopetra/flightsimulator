@@ -8,6 +8,16 @@
    I coefficienti aerodinamici (CL, CD, Cm, ...) sono quelli usati nei
    libri di meccanica del volo: puoi provare a cambiarli e vedere
    come cambia il comportamento dell'aereo.
+   ---------------------------------------------------------------------
+   Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
    ===================================================================== */
 
 window.AEREO = {

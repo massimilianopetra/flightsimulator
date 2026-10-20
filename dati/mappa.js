@@ -13,6 +13,16 @@
    Dopo ogni modifica salva il file e ricarica la pagina (F5).
    Se la pagina resta vuota, apri la console (F12): di solito manca
    una virgola o una parentesi.
+   ---------------------------------------------------------------------
+   Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
    ===================================================================== */
 
 window.MAPPA = {

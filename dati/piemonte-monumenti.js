@@ -11,6 +11,17 @@
    Questo file si può modificare a mano: per esempio spostare un monumento
    cambiando lat e lon, o toglierlo cancellando la sua riga.
    Dati © OpenStreetMap contributors (ODbL).
+   ---------------------------------------------------------------------
+   Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   I dati contenuti restano sotto la licenza della loro fonte (vedi sopra).
    ===================================================================== */
 window.MONUMENTI = [
   { tipo: "mole",       nome: "Mole Antonelliana",                nomeEn: "Mole Antonelliana",              lat: 45.06899, lon: 7.69319, rotta: 28,  altezza: 167 },

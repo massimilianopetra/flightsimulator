@@ -9,8 +9,30 @@
    Dati © OpenStreetMap contributors (ODbL). L'estratto copre solo l'Italia
    del nord-ovest: gli aeroporti svizzeri e francesi restano senza dati e il
    gioco usa il rullaggio generico.
+   ---------------------------------------------------------------------
+   Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
    ===================================================================== */
 'use strict';
+// intestazione dei file generati: autore, copyright e licenza (i dati restano sotto la licenza della fonte)
+const LICENZA=`   ---------------------------------------------------------------------
+   Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   I dati contenuti restano sotto la licenza della loro fonte (vedi sopra).`;
 const fs=require('fs'), path=require('path');
 const {estraiWay}=require('./leggi-pbf.js');
 
@@ -54,7 +76,8 @@ const testo=`/* Vie di rullaggio e piazzali veri, generati da strumenti/genera-r
    Dati © OpenStreetMap contributors (ODbL). Per ogni aeroporto (sigla ICAO):
      vie: [{ref: nome della via (A, B…), l: larghezza in m (0 = non indicata), p: [x0, y0, x1, y1, …]}]
      piazzali: [[x0, y0, x1, y1, …]]   (contorni chiusi)
-   Coordinate in decimetri dal centro dell'aeroporto (x verso est, y verso nord). Non modificare a mano. */
+   Coordinate in decimetri dal centro dell'aeroporto (x verso est, y verso nord). Non modificare a mano.
+${LICENZA} */
 window.RULLAGGIO=${JSON.stringify(out)};
 `;
 fs.writeFileSync(path.join(RADICE,'dati','piemonte-rullaggio.js'),testo);
