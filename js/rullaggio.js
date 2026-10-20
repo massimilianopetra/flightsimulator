@@ -1,4 +1,14 @@
 /* =====================================================================
+   Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
    VIE DI RULLAGGIO VERE (solo mondo reale, dati da OpenStreetMap in
    dati/piemonte-rullaggio.js; gli aeroporti senza dati usano il piazzale
    generico di js/mondo.js).
@@ -13,16 +23,6 @@
    - cartelli come quelli veri (ICAO): agli incroci quello di posizione (giallo
      su nero, la via in cui si è) con quelli di direzione (nero su giallo, con
      la freccia verso le altre vie); al punto attesa quello rosso con la pista.
-   ---------------------------------------------------------------------
-   Volo — simulatore di volo nel browser
-   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
-   Copyright (C) 2026 Massimiliano Petra
-   Licenza: GNU General Public License versione 3 o successiva
-   (GPL-3.0-or-later). Questo programma è software libero: puoi
-   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
-   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
-   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
-   Testo completo nel file LICENSE.
    ===================================================================== */
 (function(){
 'use strict';

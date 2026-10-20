@@ -1,13 +1,4 @@
 /* =====================================================================
-   ORA DEL VOLO: giorno, tramonto o notte.
-   Cambiano cielo, luce del sole (o della luna), nebbia e nuvole; al tramonto
-   e di notte si accendono le luci: bordi pista bianchi, soglie verdi, luci di
-   avvicinamento sulle piste lunghe (Calvert con lampi in sequenza dove ci
-   sono davvero: Caselle, Malpensa, Linate, Genova, Cuneo), luci delle città (ricavate dalla densità
-   degli edifici veri, js/paesaggio.js), stelle e faro di atterraggio.
-   Le luci sono "punti" della stessa grandezza a qualsiasi distanza, come le
-   luci vere viste di notte; quelle delle città sbiadiscono nella foschia lontana.
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -17,6 +8,15 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   ORA DEL VOLO: giorno, tramonto o notte.
+   Cambiano cielo, luce del sole (o della luna), nebbia e nuvole; al tramonto
+   e di notte si accendono le luci: bordi pista bianchi, soglie verdi, luci di
+   avvicinamento sulle piste lunghe (Calvert con lampi in sequenza dove ci
+   sono davvero: Caselle, Malpensa, Linate, Genova, Cuneo), luci delle città (ricavate dalla densità
+   degli edifici veri, js/paesaggio.js), stelle e faro di atterraggio.
+   Le luci sono "punti" della stessa grandezza a qualsiasi distanza, come le
+   luci vere viste di notte; quelle delle città sbiadiscono nella foschia lontana.
    ===================================================================== */
 (function(){
 'use strict';

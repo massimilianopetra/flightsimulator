@@ -1,14 +1,4 @@
 /* =====================================================================
-   MODELLO ESTERNO E CABINA DELL'IKARUS C42 (usati da creaAereo in js/mondo.js
-   quando l'aereo scelto è il C42, dati/c42.js).
-   Misure vere: apertura 9,45 m, corda 1,32 m (ala rettangolare in tela),
-   lunghezza circa 6,2 m, elica tripala da 1,7 m. La cabina è un "baccello"
-   in composito con grandi vetri; dietro, un tubo di alluminio da 16,5 cm
-   porta la coda. Ala alta controventata da due montanti a V per lato,
-   carrello a balestra e ruotino comandato dai pedali.
-   Assi come nel gioco: x destra, y su, z coda (muso verso -z); origine nel
-   baricentro, ruote a terra a y = -1,15.
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -18,6 +8,16 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   MODELLO ESTERNO E CABINA DELL'IKARUS C42 (usati da creaAereo in js/mondo.js
+   quando l'aereo scelto è il C42, dati/c42.js).
+   Misure vere: apertura 9,45 m, corda 1,32 m (ala rettangolare in tela),
+   lunghezza circa 6,2 m, elica tripala da 1,7 m. La cabina è un "baccello"
+   in composito con grandi vetri; dietro, un tubo di alluminio da 16,5 cm
+   porta la coda. Ala alta controventata da due montanti a V per lato,
+   carrello a balestra e ruotino comandato dai pedali.
+   Assi come nel gioco: x destra, y su, z coda (muso verso -z); origine nel
+   baricentro, ruote a terra a y = -1,15.
    ===================================================================== */
 (function(){
 'use strict';

@@ -1,12 +1,4 @@
 /* =====================================================================
-   LIBRETTO DI VOLO
-   Come quello vero del pilota: ogni volo viene scritto da solo, dal
-   decollo a quando ci si ferma (o all'incidente). Per ogni volo: data,
-   da dove a dove, durata, distanza, quota massima, atterraggi (il più
-   dolce) e l'eventuale missione con le stelle. Tutto resta nel browser
-   (localStorage 'volo-libretto'); si guarda dal briefing, dalla pausa o
-   dal pulsante LIBRETTO.
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -16,6 +8,14 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   LIBRETTO DI VOLO
+   Come quello vero del pilota: ogni volo viene scritto da solo, dal
+   decollo a quando ci si ferma (o all'incidente). Per ogni volo: data,
+   da dove a dove, durata, distanza, quota massima, atterraggi (il più
+   dolce) e l'eventuale missione con le stelle. Tutto resta nel browser
+   (localStorage 'volo-libretto'); si guarda dal briefing, dalla pausa o
+   dal pulsante LIBRETTO.
    ===================================================================== */
 (function(){
 'use strict';

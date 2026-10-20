@@ -1,11 +1,4 @@
 /* =====================================================================
-   LINGUA: italiano (predefinito) o inglese.
-   Si sceglie nel briefing oppure con l'indirizzo: index.html?lang=en
-   La scelta viene ricordata. Nel codice i testi si scrivono così:
-     SIM.L('testo italiano', 'English text')
-   Nella pagina gli elementi hanno la versione inglese negli attributi:
-     data-en (contenuto), data-en-title, data-en-aria (aria-label), data-en-href
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -15,6 +8,13 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   LINGUA: italiano (predefinito) o inglese.
+   Si sceglie nel briefing oppure con l'indirizzo: index.html?lang=en
+   La scelta viene ricordata. Nel codice i testi si scrivono così:
+     SIM.L('testo italiano', 'English text')
+   Nella pagina gli elementi hanno la versione inglese negli attributi:
+     data-en (contenuto), data-en-title, data-en-aria (aria-label), data-en-href
    ===================================================================== */
 (function(){
 'use strict';

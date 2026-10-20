@@ -1,12 +1,4 @@
 /* =====================================================================
-   BOSCHI 3D
-   Alberi veri (InstancedMesh) attorno all'aereo, dove la griglia vicina del
-   terreno ha il peso "bosco" (attributo aBosco, calcolato in js/terreno.js):
-   così gli alberi stanno esattamente dove lo shader disegna le chiome.
-   Nessun dato: posizioni da una griglia di 11 m con spostamenti pseudo-casuali
-   fissi (gli stessi alberi a ogni passaggio). Conifere in alto, latifoglie in basso.
-   Due copie (come la griglia del terreno): una si prepara a pezzi mentre l'altra è visibile.
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -16,6 +8,14 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   BOSCHI 3D
+   Alberi veri (InstancedMesh) attorno all'aereo, dove la griglia vicina del
+   terreno ha il peso "bosco" (attributo aBosco, calcolato in js/terreno.js):
+   così gli alberi stanno esattamente dove lo shader disegna le chiome.
+   Nessun dato: posizioni da una griglia di 11 m con spostamenti pseudo-casuali
+   fissi (gli stessi alberi a ogni passaggio). Conifere in alto, latifoglie in basso.
+   Due copie (come la griglia del terreno): una si prepara a pezzi mentre l'altra è visibile.
    ===================================================================== */
 (function(){
 'use strict';

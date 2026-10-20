@@ -1,7 +1,4 @@
 /* =====================================================================
-   MONDO 3D: cielo, mare, laghi, piste con segnaletica, PAPI, manica a
-   vento, hangar e torre, alberi, paesi, nuvole e il modello dell'aereo.
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -11,6 +8,9 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   MONDO 3D: cielo, mare, laghi, piste con segnaletica, PAPI, manica a
+   vento, hangar e torre, alberi, paesi, nuvole e il modello dell'aereo.
    ===================================================================== */
 (function(){
 'use strict';

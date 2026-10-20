@@ -1,12 +1,4 @@
 /* =====================================================================
-   PIANO DI VOLO
-   Un piano minimo da aeroporto ad aeroporto, come quello di un pilota VFR:
-   decollo, salita, crociera a una quota sicura sopra il rilievo della rotta,
-   inizio della discesa, punto di finale a 5 NM allineato con la pista in uso
-   (quella più controvento) e atterraggio. Durante il volo dice in che fase
-   si è e qual è il prossimo punto: la rotta (rombo magenta, linea sulla
-   mappa) porta prima al punto di finale e poi alla pista.
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -16,6 +8,14 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   PIANO DI VOLO
+   Un piano minimo da aeroporto ad aeroporto, come quello di un pilota VFR:
+   decollo, salita, crociera a una quota sicura sopra il rilievo della rotta,
+   inizio della discesa, punto di finale a 5 NM allineato con la pista in uso
+   (quella più controvento) e atterraggio. Durante il volo dice in che fase
+   si è e qual è il prossimo punto: la rotta (rombo magenta, linea sulla
+   mappa) porta prima al punto di finale e poi alla pista.
    ===================================================================== */
 (function(){
 'use strict';

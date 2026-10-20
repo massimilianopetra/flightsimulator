@@ -1,6 +1,4 @@
 /* =====================================================================
-   STRUMENTI: PFD (Primary Flight Display) e minimappa.
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -10,6 +8,8 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   STRUMENTI: PFD (Primary Flight Display) e minimappa.
    ===================================================================== */
 (function(){
 'use strict';

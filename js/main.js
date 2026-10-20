@@ -1,7 +1,4 @@
 /* =====================================================================
-   PROGRAMMA PRINCIPALE: collega fisica, mondo, strumenti, comandi e
-   telecamere; gestisce briefing, pausa, incidenti e messaggi.
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -11,6 +8,9 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   PROGRAMMA PRINCIPALE: collega fisica, mondo, strumenti, comandi e
+   telecamere; gestisce briefing, pausa, incidenti e messaggi.
    ===================================================================== */
 (function(){
 'use strict';

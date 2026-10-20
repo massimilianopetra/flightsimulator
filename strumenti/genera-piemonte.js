@@ -1,4 +1,14 @@
 /* =====================================================================
+   Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
    GENERATORE DELLA MAPPA REALE DEL PIEMONTE
    Uso (dalla cartella del progetto):   node strumenti/genera-piemonte.js
    Scarica (e tiene in strumenti/cache/):
@@ -12,21 +22,10 @@
      - dati/piemonte-abitati.js   (window.ABITATI: aree urbane e densità degli edifici)
      - dati/piemonte.js           (window.MAPPA: aeroporti, laghi, città, meteo, partenza)
    Non servono librerie esterne: basta Node.js 18 o più recente.
-   ---------------------------------------------------------------------
-   Volo — simulatore di volo nel browser
-   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
-   Copyright (C) 2026 Massimiliano Petra
-   Licenza: GNU General Public License versione 3 o successiva
-   (GPL-3.0-or-later). Questo programma è software libero: puoi
-   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
-   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
-   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
-   Testo completo nel file LICENSE.
    ===================================================================== */
 'use strict';
 // intestazione dei file generati: autore, copyright e licenza (i dati restano sotto la licenza della fonte)
-const LICENZA=`   ---------------------------------------------------------------------
-   Volo — simulatore di volo nel browser
+const LICENZA=`Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
    Licenza: GNU General Public License versione 3 o successiva
@@ -35,7 +34,9 @@ const LICENZA=`   --------------------------------------------------------------
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
-   I dati contenuti restano sotto la licenza della loro fonte (vedi sopra).`;
+   I dati contenuti restano sotto la licenza della loro fonte (vedi sotto).
+   ---------------------------------------------------------------------
+   `;
 const fs=require('fs'), path=require('path'), zlib=require('zlib');
 
 /* ---------- zona e griglia (modificabili) ---------- */
@@ -154,9 +155,8 @@ async function rilievo(){
     }
   }
   const b64=Buffer.from(q.buffer).toString('base64');
-  const testo=`/* Quote del terreno (metri) generate da strumenti/genera-piemonte.js.
-   Fonte: Mapzen Terrain Tiles su AWS (SRTM, GMTED, ETOPO1 e altri). Non modificare a mano.
-${LICENZA} */
+  const testo=`/* ${LICENZA}Quote del terreno (metri) generate da strumenti/genera-piemonte.js.
+   Fonte: Mapzen Terrain Tiles su AWS (SRTM, GMTED, ETOPO1 e altri). Non modificare a mano. */
 window.RILIEVO={xMin:${xMin},yNord:${yMax},passo:${PASSO},larghezza:${W},altezza:${H},
   lat0:${LAT0},lon0:${LON0},
   dati:"${b64}"};
@@ -424,9 +424,9 @@ async function vie(ril){
     const punti=unite.reduce((n,l)=>n+l.p.length,0);
     console.log('  '+nome+': '+linee.length+' tratti -> '+unite.length+' linee, '+punti+' punti');
   }
-  const testo='/* Vie di comunicazione (strade, ferrovie, fiumi) generate da strumenti/genera-piemonte.js.\n'+
+  const testo='/* '+LICENZA+'Vie di comunicazione (strade, ferrovie, fiumi) generate da strumenti/genera-piemonte.js.\n'+
     '   Fonte: © OpenStreetMap contributors (licenza ODbL). Non modificare a mano.\n'+
-    '   Ogni linea: p = [x0, y0, dx1, dy1, ...] in unità di "unita" metri (x est, y nord); r = sigla o nome.\n'+LICENZA+' */\n'+
+    '   Ogni linea: p = [x0, y0, dx1, dy1, ...] in unità di "unita" metri (x est, y nord); r = sigla o nome. */\n'+
     'window.VIE='+JSON.stringify(Object.assign({unita:UNITA_VIE},out))+';\n';
   fs.writeFileSync(path.join(RADICE,'dati','piemonte-vie.js'),testo);
   console.log('Scritto dati/piemonte-vie.js ('+(testo.length/1e6).toFixed(2)+' MB)');
@@ -486,12 +486,12 @@ async function vie(ril){
     aree[nome]=buone.map(an=>an.length===1?codifica(an[0]):an.map(codifica));
     console.log('  '+nome+': '+buone.length+' aree (di cui '+nRel+' multipoligoni), '+buone.reduce((n,an)=>n+an.reduce((m,p)=>m+p.length,0),0)+' punti');
   }
-  const testoA='/* Aree urbanizzate (landuse residenziale/commerciale e industriale) generate da strumenti/genera-piemonte.js.\n'+
+  const testoA='/* '+LICENZA+'Aree urbanizzate (landuse residenziale/commerciale e industriale) generate da strumenti/genera-piemonte.js.\n'+
     '   Fonte: © OpenStreetMap contributors (licenza ODbL). Non modificare a mano.\n'+
     '   Ogni area: [x0, y0, dx1, dy1, ...] in decine di metri (x est, y nord), contorno chiuso;\n'+
     '   oppure un elenco di contorni così (multipoligoni: si riempie con la regola pari/dispari).\n'+
     '   densita: per ogni quadrato di 100 m la frazione coperta da edifici (0-255), righe da nord, compressa:\n'+
-    '   in base64, un byte 0 seguito da n significa n quadrati vuoti, ogni altro byte è un valore.\n'+LICENZA+' */\n'+
+    '   in base64, un byte 0 seguito da n significa n quadrati vuoti, ogni altro byte è un valore. */\n'+
     'window.ABITATI='+JSON.stringify(Object.assign(aree,{densita:densitaEdifici(ril)}))+';\n';
   fs.writeFileSync(path.join(RADICE,'dati','piemonte-abitati.js'),testoA);
   console.log('Scritto dati/piemonte-abitati.js ('+(testoA.length/1e6).toFixed(2)+' MB)');
@@ -515,14 +515,13 @@ async function vie(ril){
   const righeLag=lag.map(l=>`    ${J(l).replace(/"(\w+)":/g,'$1: ')},`).join('\n');
   const dim=Math.max(ril.xMax-ril.xMin,ril.yMax-ril.yMin);
   const testo=`/* =====================================================================
-   MAPPA REALE DEL PIEMONTE (e dintorni)
+   ${LICENZA}MAPPA REALE DEL PIEMONTE (e dintorni)
    Generata da strumenti/genera-piemonte.js: puoi modificarla a mano, ma se
    rilanci il generatore le modifiche vengono sovrascritte.
    Coordinate in metri dal punto (0,0) = lat ${LAT0}, lon ${LON0}; x verso est, y verso nord.
    Fonti: aeroporti e piste da OurAirports (pubblico dominio);
           laghi e città da OpenStreetMap (© OpenStreetMap contributors, licenza ODbL);
           rilievo da Mapzen Terrain Tiles (SRTM e altri), nel file piemonte-rilievo.js.
-${LICENZA}
    ===================================================================== */
 
 window.MAPPA = {

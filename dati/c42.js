@@ -1,13 +1,4 @@
 /* =====================================================================
-   PARAMETRI DELL'AEREO  —  Comco Ikarus C42 (ultraleggero, VDS)
-   ---------------------------------------------------------------------
-   Dati dal manuale di volo del C42 (Owner's Manual, Rotax 912 da 80 CV,
-   peso massimo 450 kg): velocità, flap, carburante, prestazioni.
-   Stesse unità e stessi assi di dati/c172.js (x destra, y su, z coda).
-   Dotazioni come la versione di serie: strumenti analogici, radio COM e
-   transponder; NIENTE autopilota, NIENTE ricevitore VOR/ILS, niente
-   orizzonte artificiale (gli ultraleggeri volano solo a vista e di giorno).
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -17,6 +8,15 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   PARAMETRI DELL'AEREO  —  Comco Ikarus C42 (ultraleggero, VDS)
+   ---------------------------------------------------------------------
+   Dati dal manuale di volo del C42 (Owner's Manual, Rotax 912 da 80 CV,
+   peso massimo 450 kg): velocità, flap, carburante, prestazioni.
+   Stesse unità e stessi assi di dati/c172.js (x destra, y su, z coda).
+   Dotazioni come la versione di serie: strumenti analogici, radio COM e
+   transponder; NIENTE autopilota, NIENTE ricevitore VOR/ILS, niente
+   orizzonte artificiale (gli ultraleggeri volano solo a vista e di giorno).
    ===================================================================== */
 
 window.AEREO = {

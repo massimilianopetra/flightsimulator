@@ -1,7 +1,4 @@
-/* Caratteri B612 e B612 Mono (SIL Open Font License 1.1, vedi font/OFL.txt), serviti dal sito stesso:
-   niente richieste a Google Fonts, quindi l'indirizzo IP di chi gioca non va a terzi.
-   ---------------------------------------------------------------------
-   Volo — simulatore di volo nel browser
+/* Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
    Licenza: GNU General Public License versione 3 o successiva
@@ -9,7 +6,10 @@
    ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
-   Testo completo nel file LICENSE. */
+   Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   Caratteri B612 e B612 Mono (SIL Open Font License 1.1, vedi font/OFL.txt), serviti dal sito stesso:
+   niente richieste a Google Fonts, quindi l'indirizzo IP di chi gioca non va a terzi. */
 @font-face{font-family:"B612";font-style:normal;font-weight:400;font-display:swap;src:url(../font/B612-400.woff2) format("woff2")}
 @font-face{font-family:"B612";font-style:normal;font-weight:700;font-display:swap;src:url(../font/B612-700.woff2) format("woff2")}
 @font-face{font-family:"B612 Mono";font-style:normal;font-weight:400;font-display:swap;src:url(../font/B612Mono-400.woff2) format("woff2")}

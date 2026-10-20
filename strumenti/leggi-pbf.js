@@ -1,11 +1,4 @@
 /* =====================================================================
-   LETTORE MINIMO DEI FILE .osm.pbf DI OPENSTREETMAP (senza librerie esterne)
-   Estrae le "way" che interessano (strade, ferrovie, fiumi...) con le
-   coordinate dei loro nodi, leggendo il file due volte:
-     1) le way che passano il filtro e gli id dei nodi che usano;
-     2) le coordinate solo di quei nodi.
-   Formato: https://wiki.openstreetmap.org/wiki/PBF_Format
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -15,6 +8,13 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   LETTORE MINIMO DEI FILE .osm.pbf DI OPENSTREETMAP (senza librerie esterne)
+   Estrae le "way" che interessano (strade, ferrovie, fiumi...) con le
+   coordinate dei loro nodi, leggendo il file due volte:
+     1) le way che passano il filtro e gli id dei nodi che usano;
+     2) le coordinate solo di quei nodi.
+   Formato: https://wiki.openstreetmap.org/wiki/PBF_Format
    ===================================================================== */
 'use strict';
 const fs=require('fs'), zlib=require('zlib');

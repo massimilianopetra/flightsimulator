@@ -1,14 +1,4 @@
 /* =====================================================================
-   MONUMENTI 3D (solo mondo reale): Mole Antonelliana, Superga, Lingotto,
-   grattacieli di Torino, Venaria, Stupinigi, Sacra di San Michele,
-   Vicoforte, San Gaudenzio, Oropa, campanile e chiesa di San Maurizio Canavese.
-   Ogni monumento è una lista di "pezzi" semplici (blocchi, cilindri,
-   cupole, guglie, tetti) in coordinate locali:
-     x = a destra, y = in su, z = indietro (l'asse "rotta" è verso -z),
-     y = 0 è il piede dell'edificio.
-   I pezzi dello stesso materiale vengono fusi in una sola geometria.
-   I dati (posizione e orientamento) sono in dati/piemonte-monumenti.js.
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -18,6 +8,16 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   MONUMENTI 3D (solo mondo reale): Mole Antonelliana, Superga, Lingotto,
+   grattacieli di Torino, Venaria, Stupinigi, Sacra di San Michele,
+   Vicoforte, San Gaudenzio, Oropa, campanile e chiesa di San Maurizio Canavese.
+   Ogni monumento è una lista di "pezzi" semplici (blocchi, cilindri,
+   cupole, guglie, tetti) in coordinate locali:
+     x = a destra, y = in su, z = indietro (l'asse "rotta" è verso -z),
+     y = 0 è il piede dell'edificio.
+   I pezzi dello stesso materiale vengono fusi in una sola geometria.
+   I dati (posizione e orientamento) sono in dati/piemonte-monumenti.js.
    ===================================================================== */
 (function(){
 'use strict';

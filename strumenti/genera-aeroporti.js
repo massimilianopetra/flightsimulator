@@ -1,4 +1,14 @@
 /* =====================================================================
+   Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
    GENERATORE DEGLI AEROPORTI IN 3D (mondo "Piemonte")
    ---------------------------------------------------------------------
    Uso (dalla cartella del progetto):  node strumenti/genera-aeroporti.js
@@ -16,21 +26,10 @@
    Dati © OpenStreetMap contributors (ODbL).
    Le correzioni fatte a mano (stili delle facciate, altezze che mancano,
    forma delle torri) stanno qui sotto in PERSONALIZZA.
-   ---------------------------------------------------------------------
-   Volo — simulatore di volo nel browser
-   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
-   Copyright (C) 2026 Massimiliano Petra
-   Licenza: GNU General Public License versione 3 o successiva
-   (GPL-3.0-or-later). Questo programma è software libero: puoi
-   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
-   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
-   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
-   Testo completo nel file LICENSE.
    ===================================================================== */
 'use strict';
 // intestazione dei file generati: autore, copyright e licenza (i dati restano sotto la licenza della fonte)
-const LICENZA=`   ---------------------------------------------------------------------
-   Volo — simulatore di volo nel browser
+const LICENZA=`Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
    Licenza: GNU General Public License versione 3 o successiva
@@ -39,7 +38,9 @@ const LICENZA=`   --------------------------------------------------------------
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
-   I dati contenuti restano sotto la licenza della loro fonte (vedi sopra).`;
+   I dati contenuti restano sotto la licenza della loro fonte (vedi sotto).
+   ---------------------------------------------------------------------
+   `;
 const fs=require('fs'), path=require('path');
 const {estraiZone}=require('./leggi-pbf.js');
 
@@ -356,14 +357,13 @@ for(const [cod,opz] of Object.entries(PERSONALIZZA)){
     `${fari.length/2} torri faro, ${serbatoi.length} serbatoi, ${pontili.length} pontili, ${piazzole.length} piazzole, ${parcheggi.length} parcheggi, ${strade.length} strade`);
 }
 
-const testo=`/* Aeroporti in 3D (sagome vere degli edifici e attrezzature), generati da strumenti/genera-aeroporti.js.
+const testo=`/* ${LICENZA}Aeroporti in 3D (sagome vere degli edifici e attrezzature), generati da strumenti/genera-aeroporti.js.
    Dati © OpenStreetMap contributors (ODbL). Non modificare a mano: le correzioni vanno nello script (PERSONALIZZA).
    Coordinate in decimetri dal centro dell'aeroporto (x verso est, y verso nord); liste piatte [x0, y0, x1, y1, …].
      perimetro: anelli del sedime        edifici: {t tipo, h altezza m, m base m, p contorno, b buchi, r tetto, n nome, c colore}
      torre: {x, y, h, forma}             radar: {x, y, f forma, h}       fari: torri faro [x, y, …]
      serbatoi: {x, y, r, h}              pontili: linee terminal → aereo  piazzole: {r numero, l linea | a area, x, y muso, d rotta, s grandezza m}
-     parcheggi: contorni                 strade: {w larghezza m, p linea}
-${LICENZA} */
+     parcheggi: contorni                 strade: {w larghezza m, p linea} */
 window.AEROPORTI3D=${JSON.stringify(OUT)};
 `;
 fs.writeFileSync(path.join(RADICE,'dati','piemonte-aeroporti.js'),testo);

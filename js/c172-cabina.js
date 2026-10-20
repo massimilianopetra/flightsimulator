@@ -1,10 +1,4 @@
 /* =====================================================================
-   CABINA 3D in stile Cessna 172 con avionica Garmin G1000:
-   pannello con due schermi (PFD e MFD) disegnati in tempo reale,
-   strumenti di riserva, cloche che si muovono, manetta, miscela,
-   palpebra, bussola, montanti e pannelli laterali.
-   Coordinate corpo dell'aereo: x = destra, y = su, z = coda (muso a z negativo).
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -14,6 +8,12 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   CABINA 3D in stile Cessna 172 con avionica Garmin G1000:
+   pannello con due schermi (PFD e MFD) disegnati in tempo reale,
+   strumenti di riserva, cloche che si muovono, manetta, miscela,
+   palpebra, bussola, montanti e pannelli laterali.
+   Coordinate corpo dell'aereo: x = destra, y = su, z = coda (muso a z negativo).
    ===================================================================== */
 (function(){
 'use strict';

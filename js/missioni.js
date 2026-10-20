@@ -1,4 +1,14 @@
 /* =====================================================================
+   Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
    MISSIONI
    Si scelgono nel briefing e danno uno scopo al volo:
    - A TEMPO: dalla partenza alla destinazione entro un tempo limite
@@ -10,16 +20,6 @@
      a 100 punti (velocità verticale, punto di mira, asse pista, velocità).
    Ogni missione vale da 0 a 3 stelle. js/main.js chiama avvia, aggiorna,
    atterraggio e incidente; il risultato finisce nel libretto di volo.
-   ---------------------------------------------------------------------
-   Volo — simulatore di volo nel browser
-   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
-   Copyright (C) 2026 Massimiliano Petra
-   Licenza: GNU General Public License versione 3 o successiva
-   (GPL-3.0-or-later). Questo programma è software libero: puoi
-   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
-   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
-   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
-   Testo completo nel file LICENSE.
    ===================================================================== */
 (function(){
 'use strict';

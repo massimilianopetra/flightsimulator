@@ -1,14 +1,4 @@
 /* =====================================================================
-   PARAMETRI DELL'AEREO  —  ispirati a un Cessna 172 Skyhawk
-   ---------------------------------------------------------------------
-   Unità SI: metri, chilogrammi, secondi, Newton. Angoli in gradi.
-   Coordinate "corpo" dell'aereo, con origine nel baricentro:
-     x = verso l'ala destra, y = verso l'alto, z = verso la CODA
-     (quindi il muso è a z negativo).
-   I coefficienti aerodinamici (CL, CD, Cm, ...) sono quelli usati nei
-   libri di meccanica del volo: puoi provare a cambiarli e vedere
-   come cambia il comportamento dell'aereo.
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -18,6 +8,16 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   PARAMETRI DELL'AEREO  —  ispirati a un Cessna 172 Skyhawk
+   ---------------------------------------------------------------------
+   Unità SI: metri, chilogrammi, secondi, Newton. Angoli in gradi.
+   Coordinate "corpo" dell'aereo, con origine nel baricentro:
+     x = verso l'ala destra, y = verso l'alto, z = verso la CODA
+     (quindi il muso è a z negativo).
+   I coefficienti aerodinamici (CL, CD, Cm, ...) sono quelli usati nei
+   libri di meccanica del volo: puoi provare a cambiarli e vedere
+   come cambia il comportamento dell'aereo.
    ===================================================================== */
 
 window.AEREO = {

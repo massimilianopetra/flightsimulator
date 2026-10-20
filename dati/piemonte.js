@@ -1,12 +1,4 @@
 /* =====================================================================
-   MAPPA REALE DEL PIEMONTE (e dintorni)
-   Generata da strumenti/genera-piemonte.js: puoi modificarla a mano, ma se
-   rilanci il generatore le modifiche vengono sovrascritte.
-   Coordinate in metri dal punto (0,0) = lat 45.25, lon 7.949999999999999; x verso est, y verso nord.
-   Fonti: aeroporti e piste da OurAirports (pubblico dominio);
-          laghi e città da OpenStreetMap (© OpenStreetMap contributors, licenza ODbL);
-          rilievo da Mapzen Terrain Tiles (SRTM e altri), nel file piemonte-rilievo.js.
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -16,7 +8,15 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
-   I dati contenuti restano sotto la licenza della loro fonte (vedi sopra).
+   I dati contenuti restano sotto la licenza della loro fonte (vedi sotto).
+   ---------------------------------------------------------------------
+   MAPPA REALE DEL PIEMONTE (e dintorni)
+   Generata da strumenti/genera-piemonte.js: puoi modificarla a mano, ma se
+   rilanci il generatore le modifiche vengono sovrascritte.
+   Coordinate in metri dal punto (0,0) = lat 45.25, lon 7.949999999999999; x verso est, y verso nord.
+   Fonti: aeroporti e piste da OurAirports (pubblico dominio);
+          laghi e città da OpenStreetMap (© OpenStreetMap contributors, licenza ODbL);
+          rilievo da Mapzen Terrain Tiles (SRTM e altri), nel file piemonte-rilievo.js.
    ===================================================================== */
 
 window.MAPPA = {

@@ -1,10 +1,4 @@
 /* =====================================================================
-   FISICA DEL VOLO — corpo rigido a 6 gradi di libertà
-   Forze: portanza, resistenza, forza laterale, spinta dell'elica, peso,
-   carrello (molla + smorzatore + attrito, freni, ruotino sterzante).
-   Momenti: coefficienti aerodinamici di stabilità e di comando.
-   Assi corpo (three.js): x = destra, y = su, z = coda.
-   ---------------------------------------------------------------------
    Volo — simulatore di volo nel browser
    Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
    Copyright (C) 2026 Massimiliano Petra
@@ -14,6 +8,12 @@
    pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   FISICA DEL VOLO — corpo rigido a 6 gradi di libertà
+   Forze: portanza, resistenza, forza laterale, spinta dell'elica, peso,
+   carrello (molla + smorzatore + attrito, freni, ruotino sterzante).
+   Momenti: coefficienti aerodinamici di stabilità e di comando.
+   Assi corpo (three.js): x = destra, y = su, z = coda.
    ===================================================================== */
 (function(){
 'use strict';

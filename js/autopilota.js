@@ -1,4 +1,14 @@
 /* =====================================================================
+   Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
    AUTOPILOTA, ispirato al Garmin GFC 700 del Cessna 172 con G1000
    Modi laterali (dove va):
    - ROL  ali livellate
@@ -15,16 +25,6 @@
    Come sul 172 vero non tocca la manetta (protezione di velocità col muso),
    muove anche il trim e non atterra da solo: ai minimi (200 ft) avvisa.
    Convenzioni: elev positivo = cabra, ail positivo = rollio a destra.
-   ---------------------------------------------------------------------
-   Volo — simulatore di volo nel browser
-   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
-   Copyright (C) 2026 Massimiliano Petra
-   Licenza: GNU General Public License versione 3 o successiva
-   (GPL-3.0-or-later). Questo programma è software libero: puoi
-   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
-   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
-   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
-   Testo completo nel file LICENSE.
    ===================================================================== */
 (function(){
 'use strict';
