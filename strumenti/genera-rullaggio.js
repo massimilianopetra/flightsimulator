@@ -1,4 +1,14 @@
 /* =====================================================================
+   Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
    GENERATORE DELLE VIE DI RULLAGGIO VERE (mondo "Piemonte")
    ---------------------------------------------------------------------
    Uso (dalla cartella del progetto):  node strumenti/genera-rullaggio.js
@@ -11,6 +21,19 @@
    gioco usa il rullaggio generico.
    ===================================================================== */
 'use strict';
+// intestazione dei file generati: autore, copyright e licenza (i dati restano sotto la licenza della fonte)
+const LICENZA=`Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   I dati contenuti restano sotto la licenza della loro fonte (vedi sotto).
+   ---------------------------------------------------------------------
+   `;
 const fs=require('fs'), path=require('path');
 const {estraiWay}=require('./leggi-pbf.js');
 
@@ -50,7 +73,7 @@ for(const ap of aeroporti){
   }
   if(vie.length)out[ap.codice]={vie,piazzali};
 }
-const testo=`/* Vie di rullaggio e piazzali veri, generati da strumenti/genera-rullaggio.js.
+const testo=`/* ${LICENZA}Vie di rullaggio e piazzali veri, generati da strumenti/genera-rullaggio.js.
    Dati © OpenStreetMap contributors (ODbL). Per ogni aeroporto (sigla ICAO):
      vie: [{ref: nome della via (A, B…), l: larghezza in m (0 = non indicata), p: [x0, y0, x1, y1, …]}]
      piazzali: [[x0, y0, x1, y1, …]]   (contorni chiusi)

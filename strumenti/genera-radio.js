@@ -1,4 +1,14 @@
 /* =====================================================================
+   Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
    GENERATORE DEI RADIOAIUTI (VOR) per il mondo "Piemonte"
    ---------------------------------------------------------------------
    Uso (dalla cartella del progetto):  node strumenti/genera-radio.js
@@ -9,6 +19,19 @@
    (vedi js/radio.js), con frequenze simulate.
    ===================================================================== */
 'use strict';
+// intestazione dei file generati: autore, copyright e licenza (i dati restano sotto la licenza della fonte)
+const LICENZA=`Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   I dati contenuti restano sotto la licenza della loro fonte (vedi sotto).
+   ---------------------------------------------------------------------
+   `;
 const fs=require('fs'), path=require('path');
 
 // stessa zona e stessa proiezione di genera-piemonte.js
@@ -95,7 +118,7 @@ const bello=s=>s.toLowerCase().replace(/(^|[\s\-'/(])(\p{L})/gu,(m,a,b)=>a+b.toU
   }
   for(const c of com)delete c.ctaf;
   com.sort((a,b)=>a.ap.localeCompare(b.ap)||a.tipo.localeCompare(b.tipo));
-  const testo=`/* Radioaiuti (VOR) generati da strumenti/genera-radio.js.
+  const testo=`/* ${LICENZA}Radioaiuti (VOR) generati da strumenti/genera-radio.js.
    Fonte: OurAirports, navaids.csv (pubblico dominio). Frequenze in MHz, posizioni in metri
    (x verso est, y verso nord) dal punto lat ${LAT0}, lon ${LON0}.
    Frequenze degli aeroporti da airport-frequencies.csv (pubblico dominio). Non modificare a mano. */

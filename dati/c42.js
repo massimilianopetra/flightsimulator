@@ -1,4 +1,14 @@
 /* =====================================================================
+   Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
    PARAMETRI DELL'AEREO  —  Comco Ikarus C42 (ultraleggero, VDS)
    ---------------------------------------------------------------------
    Dati dal manuale di volo del C42 (Owner's Manual, Rotax 912 da 80 CV,

@@ -1,4 +1,15 @@
-/* Aree urbanizzate (landuse residenziale/commerciale e industriale) generate da strumenti/genera-piemonte.js.
+/* Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   I dati contenuti restano sotto la licenza della loro fonte (vedi sotto).
+   ---------------------------------------------------------------------
+   Aree urbanizzate (landuse residenziale/commerciale e industriale) generate da strumenti/genera-piemonte.js.
    Fonte: © OpenStreetMap contributors (licenza ODbL). Non modificare a mano.
    Ogni area: [x0, y0, dx1, dy1, ...] in decine di metri (x est, y nord), contorno chiuso;
    oppure un elenco di contorni così (multipoligoni: si riempie con la regola pari/dispari).
