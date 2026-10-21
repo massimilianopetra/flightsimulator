@@ -10,7 +10,8 @@
    Testo completo nel file LICENSE.
    ---------------------------------------------------------------------
    MONDO 3D: cielo, mare, laghi, piste con segnaletica, PAPI, manica a
-   vento, hangar e torre, alberi, paesi, nuvole e il modello dell'aereo.
+   vento, hangar e torre, alberi, paesi e il modello dell'aereo (le nuvole
+   sono in js/meteo.js).
    ===================================================================== */
 (function(){
 'use strict';
@@ -272,20 +273,7 @@ SIM.creaMondo=function(scene,renderer){
     scene.add(im);
   }
 
-  /* ---------- nuvole ---------- */
-  const geoNuvola=new THREE.IcosahedronGeometry(1,1);
-  const matNuvola=new THREE.MeshStandardMaterial({color:0xffffff,flatShading:true,roughness:1,emissive:0x404850});
-  const nuvole=[];
-  const nNuvole=Math.round(clamp(met.nuvole,0,100)*1.4);
-  for(let i=0;i<nNuvole;i++){
-    const g=new THREE.Group(),parti=4+(rnd()*4|0);
-    for(let j=0;j<parti;j++){
-      const m=new THREE.Mesh(geoNuvola,matNuvola),s=40+rnd()*50;
-      m.scale.set(s*1.5,s*.5,s);m.position.set((j-parti/2)*s*1.1,rnd()*20,(rnd()-.5)*s*1.2);g.add(m);
-    }
-    g.position.set((rnd()-.5)*12000,met.baseNuvole+rnd()*250,(rnd()-.5)*12000);
-    scene.add(g);nuvole.push(g);
-  }
+  /* le nuvole sono in js/meteo.js */
 
   /* ---------- aereo ---------- */
   const aereo=creaAereo();
@@ -295,16 +283,11 @@ SIM.creaMondo=function(scene,renderer){
   return {
     meteo:met, torri, aereo,
     // per js/notte.js: cielo, luci e materiali che cambiano con l'ora del giorno
-    luci:{cielo,emi,sole,matNuvola,matVetro,ORIZZ,ZENIT},
+    luci:{cielo,emi,sole,matVetro,ORIZZ,ZENIT},
     // aggiorna le parti animate. s = stato fisica, cam = posizione camera, vento = vettore
     aggiorna(s,cam,vento,dt,vistaCabina){
       cielo.position.copy(cam);
       mare.position.set(cam.x,0,cam.z);
-      for(const g of nuvole){
-        const dx=g.position.x-cam.x,dz=g.position.z-cam.z;
-        if(dx>6000)g.position.x-=12000;else if(dx<-6000)g.position.x+=12000;
-        if(dz>6000)g.position.z-=12000;else if(dz<-6000)g.position.z+=12000;
-      }
       // PAPI visti dal pilota
       for(const u of papi)for(const l of u){
         const dx=s.pos.x-l.m.position.x,dz=s.pos.z-l.m.position.z,d=Math.hypot(dx,dz);

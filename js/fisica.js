@@ -94,7 +94,9 @@ SIM.creaFisica=function(A,terra){
     air.copy(st.vel).sub(vento);
     vb.copy(air).applyQuaternion(invQ);          // vento relativo in assi corpo
     const V=vb.length();
-    const rho=1.225*Math.pow(Math.max(0.2,1-2.2558e-5*st.pos.y),4.2559);
+    // aria tipo (ISA) corretta con la temperatura del giorno (SIM.atmosfera.dT, js/meteo.js): col caldo è più rada
+    const atm=SIM.atmosfera, tIsa=288.15-0.0065*st.pos.y;
+    const rho=1.225*Math.pow(Math.max(0.2,1-2.2558e-5*st.pos.y),4.2559)*(atm&&atm.dT?tIsa/(tIsa+atm.dT):1);
     const qbar=0.5*rho*V*V;
     const u=-vb.z;
     const alpha=V>0.5?Math.atan2(-vb.y,u):0;
@@ -192,9 +194,10 @@ SIM.creaFisica=function(A,terra){
       fdir.multiplyScalar(1/fl2);
       sdir.set(-fdir.z,0,fdir.x);
       const vf=vp.dot(fdir), vs=vp.dot(sdir);
-      const mu=w.pattino?0.45:(tipo==='erba'?0.06:0.02)+(w.freno?st.freno*0.6:0);
+      const ad=SIM.atmosfera?SIM.atmosfera.aderenza:1;   // pista bagnata o innevata: freni e ruote tengono meno
+      const mu=w.pattino?0.45:(tipo==='erba'?0.06:0.02)+(w.freno?st.freno*0.6*ad:0);
       const Ff=-clamp(vf*15000,-mu*Nf,mu*Nf);
-      const Fs=-clamp(vs*20000,-0.75*Nf,0.75*Nf);
+      const Fs=-clamp(vs*20000,-0.75*ad*Nf,0.75*ad*Nf);
       fc.set(0,Nf,0).addScaledVector(fdir,Ff).addScaledVector(sdir,Fs);
       Fw.add(fc);
       tmp.crossVectors(rw,fc); Tw.add(tmp);

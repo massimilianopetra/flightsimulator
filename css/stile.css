@@ -311,3 +311,4 @@ select:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
 @media (max-width:560px){.privacy{flex-direction:column;align-items:stretch}}
 /* nota di non affiliazione in fondo al briefing */
 .nota-marchi{margin:12px 0 0;font-size:11px;line-height:1.4;color:var(--dim);}
+code.metar{display:block;margin:4px 0;font-family:"B612 Mono",monospace;font-size:11px;color:var(--cyan,#7dd3fc);white-space:normal;word-break:break-word}
