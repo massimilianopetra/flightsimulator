@@ -92,7 +92,8 @@ SIM.creaTraffico=function({T,scene,met,atc}){
     const tt=ap.piste[0].testate;
     return tt.reduce((a,b)=>Math.cos((met.ventoDa-b.hdg)*D2R)>Math.cos((met.ventoDa-a.hdg)*D2R)?b:a);
   }
-  const adatto=ap=>!ESCLUSI.includes(ap.codice)&&ap.piste.length&&ap.piste[0].L>=400;
+  // col brutto tempo (sotto i minimi VFR, js/meteo.js) nessuno vola in circuito
+  const adatto=ap=>!ESCLUSI.includes(ap.codice)&&ap.piste.length&&ap.piste[0].L>=400&&(!SIM.meteo||SIM.meteo.vmc(ap));
 
   /* ---------- un aereo ---------- */
   function nuovo(c,i){

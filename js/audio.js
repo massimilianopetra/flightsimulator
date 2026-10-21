@@ -9,7 +9,7 @@
    qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
    Testo completo nel file LICENSE.
    ---------------------------------------------------------------------
-   AUDIO sintetizzato (Web Audio): motore, vento, rotolamento,
+   AUDIO sintetizzato (Web Audio): motore, vento, pioggia, tuoni, rotolamento,
    avvisatore di stallo e colpo all'atterraggio. Niente file esterni.
    ===================================================================== */
 (function(){
@@ -44,7 +44,10 @@ SIM.creaAudio=function(){
     // avvisatore di stallo
     const corno=osc('square',520),gCorno=gain(0,master);
     const lp3=ctx.createBiquadFilter();lp3.type='lowpass';lp3.frequency.value=1400;corno.connect(lp3);lp3.connect(gCorno);
-    n={master,lp,gMot,o1,o2,gVento,gRuote,gCorno,bp,rum,buf};
+    // pioggia: fruscio acuto sul tettuccio (js/meteo.js)
+    const hp=ctx.createBiquadFilter();hp.type='highpass';hp.frequency.value=2600;
+    const gPioggia=gain(0,master);rum.connect(hp);hp.connect(gPioggia);
+    n={master,lp,gMot,o1,o2,gVento,gRuote,gCorno,bp,rum,buf,gPioggia};
   }
 
   function aggiorna(s,pausa){
@@ -94,8 +97,26 @@ SIM.creaAudio=function(){
     });
   }
 
+  // pioggia: intensità 0…1 (la chiama js/meteo.js a ogni fotogramma)
+  function pioggia(k){
+    if(!ctx||!n) return;
+    n.gPioggia.gain.setTargetAtTime(Math.min(0.25,k*0.22),ctx.currentTime,0.4);
+  }
+  // tuono: forza 0…1 (vicino = schiocco e brontolio forte, lontano = solo un brontolio basso)
+  function tuono(forza){
+    if(!ctx||!n) return;
+    const t=ctx.currentTime,dur=2.5+Math.random()*2;
+    const src=ctx.createBufferSource();src.buffer=n.buf;src.loop=true;
+    const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=90+forza*260;
+    const g=ctx.createGain();g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(0.5*forza,t+0.05+(1-forza)*0.4);
+    for(let k=1;k<6;k++)g.gain.linearRampToValueAtTime(0.5*forza*(0.4+Math.random()*0.6)*(1-k/6),t+dur*k/6);
+    g.gain.linearRampToValueAtTime(0,t+dur);
+    src.connect(f);f.connect(g);g.connect(n.master);src.start(t,Math.random());src.stop(t+dur+0.1);
+  }
+
   return {
-    avvia, aggiorna, colpo, fruscio, apStacco,
+    avvia, aggiorna, colpo, fruscio, apStacco, pioggia, tuono,
     get attivo(){return attivo;},
     alterna(){
       attivo=!attivo;
