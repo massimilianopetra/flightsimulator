@@ -649,6 +649,18 @@ SIM.creaStrumenti=function(A,opz={}){
   let rottaMappa=null;
   // extra (solo con sup, per la mappa grande di mappe.html): centro {x,z} diverso dall'aereo, traccia [{x,z}], senzaAereo
   let extra={};
+  // linea per i punti (pixel) con le virate ad arco (raggi in pixel), raggio ridotto se i tratti sono corti
+  function lineaCurva(pts,raggi){
+    mg.beginPath();mg.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length-1;i++){
+      const [ax,ay]=pts[i-1],[bx,by]=pts[i],[cx,cy]=pts[i+1],l1=Math.hypot(bx-ax,by-ay),l2=Math.hypot(cx-bx,cy-by);
+      const th=l1&&l2?Math.acos(clamp(((bx-ax)*(cx-bx)+(by-ay)*(cy-by))/(l1*l2),-1,1)):0;
+      let r=raggi[i]||0;
+      if(r>0.5&&th>0.02&&th<3.1){r=Math.min(r,0.5*Math.min(l1,l2)/Math.tan(th/2));mg.arcTo(bx,by,cx,cy,r);}
+      else mg.lineTo(bx,by);
+    }
+    const u=pts[pts.length-1];mg.lineTo(u[0],u[1]);
+  }
   function disegnaMappa(s,hdg,dest,sup){
     if(sup){const v=[mg,MW,MH,dpr,MOX,MOY];mg=sup.g;MW=sup.W;MH=sup.H;dpr=sup.dpr||1;MOX=sup.x||0;MOY=sup.y||0;extra=sup;
       try{disegnaMappa(s,hdg,dest);}finally{[mg,MW,MH,dpr,MOX,MOY]=v;extra={};}return;}
@@ -723,11 +735,12 @@ SIM.creaStrumenti=function(A,opz={}){
     if(radioMappa) disegnaRadioMappa(P,k,range);
     if(rottaMappa&&rottaMappa.punti.length){
       // rotta pianificata (sottile), poi dall'aereo al prossimo punto (piena)
-      const pt=rottaMappa.punti.map(p=>P(p.x,p.z)),i0=rottaMappa.prossimo;
+      // le virate si disegnano ad arco col raggio del punto (js/piano.js: virata standard o del circuito)
+      const pt=rottaMappa.punti.map(p=>P(p.x,p.z)),i0=rottaMappa.prossimo,raggi=rottaMappa.punti.map(p=>(p.r||0)*k);
       mg.strokeStyle='rgba(255,90,217,.55)';mg.lineWidth=1.5;mg.setLineDash([4,4]);
-      mg.beginPath();pt.forEach(([x,y],i)=>i?mg.lineTo(x,y):mg.moveTo(x,y));mg.stroke();mg.setLineDash([]);
+      lineaCurva(pt,raggi);mg.stroke();mg.setLineDash([]);
       mg.strokeStyle='#ff5ad9';mg.lineWidth=2.2;
-      mg.beginPath();mg.moveTo(axx,ayy);for(let i=i0;i<pt.length;i++)mg.lineTo(pt[i][0],pt[i][1]);mg.stroke();
+      lineaCurva([[axx,ayy],...pt.slice(i0)],[0,...raggi.slice(i0)]);mg.stroke();
       mg.font=`700 9px ${MONO}`;mg.textAlign='left';mg.textBaseline='middle';
       rottaMappa.punti.forEach((p,i)=>{
         if(!p.nome||i===pt.length-1) return;
