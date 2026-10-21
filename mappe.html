@@ -36,12 +36,16 @@
 <main>
   <section id="vistaGrande" class="vista">
     <canvas id="grande"></canvas>
-    <div id="datiVolo" class="riquadro dati-volo" hidden></div>
+    <div class="colonna-sx">
+      <div id="datiVolo" class="riquadro dati-volo" hidden></div>
+      <div id="pianoMappe" class="riquadro piano-mappe" hidden></div>
+    </div>
     <div class="riquadro comandi">
       <button type="button" id="zoomPiu" title="Più dettaglio (rotella)" data-en-title="More detail (wheel)">+</button>
       <span id="scalaGrande" class="scala"></span>
       <button type="button" id="zoomMeno" title="Più zona (rotella)" data-en-title="Wider area (wheel)">−</button>
       <button type="button" id="orientGrande" title="Nord in alto o prua in alto" data-en-title="North up or heading up"></button>
+      <button type="button" id="mostraPiano" title="Mostra o nasconde il piano di volo" data-en-title="Show or hide the flight plan" data-en="PLAN">PIANO</button>
       <button type="button" id="segui" data-en="FOLLOW AIRCRAFT">SEGUI L'AEREO</button>
       <button type="button" id="cancellaTraccia" data-en="CLEAR TRACK">CANCELLA TRACCIA</button>
     </div>

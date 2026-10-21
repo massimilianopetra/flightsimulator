@@ -58,6 +58,7 @@ function ricevi(d){
   if(primo&&!apScelto&&d.dest)scegliAp(apDi(d.dest),false);
   if(primo&&scheda==='aeroporto')disegnaAeroporto();
   pannelloVolo();
+  pannelloPiano();
   chiediDisegno();
 }
 addEventListener('message',e=>ricevi(e.data));
@@ -138,6 +139,32 @@ $('zoomMeno').addEventListener('click',()=>{strum.zoomMeno();chiediDisegno();});
 $('orientGrande').addEventListener('click',()=>{strum.cambiaOrientamento();chiediDisegno();});
 $('segui').addEventListener('click',()=>{segui=true;centro=null;chiediDisegno();});
 $('cancellaTraccia').addEventListener('click',()=>{traccia.length=0;chiediDisegno();});
+let pianoAperto=true;
+$('mostraPiano').addEventListener('click',()=>{pianoAperto=!pianoAperto;pannelloPiano();$('mostraPiano').blur();});
+
+/* piano di volo: il riquadro PIANO del gioco e, sotto, i punti della rotta con rotta e distanza di ogni tratto */
+let ultimoPiano='';
+function pannelloPiano(){
+  const box=$('pianoMappe');
+  $('mostraPiano').classList.toggle('attivo',pianoAperto);
+  if(!stato||!stato.piano||!pianoAperto){box.hidden=true;ultimoPiano='';return;}
+  let h=stato.piano;
+  const r=stato.rotta;
+  if(r&&r.punti.length>1&&r.punti.some(q=>/^F/.test(q.nome))){   // la rotta del volo (non il percorso di rullaggio)
+    const p=r.punti,rotta=(a,b)=>((Math.atan2(b.x-a.x,-(b.z-a.z))/D2R)+360)%360;
+    let righe='',tot=0;
+    for(let i=1;i<p.length;i++){
+      const a=p[i-1],b=p[i],ora=i===r.prossimo;
+      const d=ora?Math.hypot(b.x-stato.x,b.z-stato.z):Math.hypot(b.x-a.x,b.z-a.z);
+      if(i>=r.prossimo)tot+=d;
+      const da=i===1?(stato.part||'—'):(a.nome||'·');
+      righe+=`<tr class="${ora?'ora':i<r.prossimo?'fatto':''}"><td>${esc(da)} → <b>${esc(b.nome||'·')}</b></td><td>${tre(ora?rotta(stato,b):rotta(a,b))}°</td><td>${(d/NM).toFixed(1)}</td><td>${i>=r.prossimo?(tot/NM).toFixed(1):''}</td></tr>`;
+    }
+    h+=`<div class="punti-titolo">${L('PUNTI DELLA ROTTA','ROUTE POINTS')}</div><table class="punti-rotta"><tr><th>${L('Tratto','Leg')}</th><th>${L('Rotta','Course')}</th><th>NM</th><th>${L('Totale','Total')}</th></tr>${righe}</table>`;
+  }
+  box.hidden=false;
+  if(h!==ultimoPiano){ultimoPiano=h;box.innerHTML=h;}
+}
 
 // riquadro con i dati del volo
 function pannelloVolo(){
