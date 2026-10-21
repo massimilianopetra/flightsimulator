@@ -16,6 +16,13 @@
    (quella più controvento) e atterraggio. Durante il volo dice in che fase
    si è e qual è il prossimo punto: la rotta (rombo magenta, linea sulla
    mappa) porta prima al punto di finale e poi alla pista.
+   Rotta come quella di un pilota (21/10/2026): dopo il decollo si sale dritti
+   fino a 1,5 NM oltre la pista prima di virare (D36); all'arrivo ci si
+   inserisce in finale con 30° al massimo (I36) e, se si arriva dalla parte
+   della pista, con sottovento e base (W36, B36); nei voli locali c'è il
+   circuito vero con la finale corta. Ogni punto ha il raggio di virata
+   (per il disegno ad archi) e si passa al successivo un po' prima, come
+   in una virata anticipata.
    ===================================================================== */
 (function(){
 'use strict';
@@ -46,6 +53,9 @@ const rotta=(ax,az,bx,bz)=>((Math.atan2(bx-ax,-(bz-az))/D2R)+360)%360;
 let V_SALITA=74, RATEO_SALITA=550, V_CROCIERA=100, V_DISCESA=105, RATEO_DISCESA=500, V_FINALE=70;
 const FINALE=5*NM;            // punto di finale a 5 NM dalla soglia
 const PENDENZA=3*D2R;         // sentiero di discesa di 3°
+const FINALE_CIRCUITO=2800;   // nel circuito la finale è corta (1,5 NM)
+const R_VIRATA=900;           // raggio di una virata standard (3°/s) a circa 95 kt
+const R_CIRCUITO=450;         // virate del circuito (25° di inclinazione a 75 kt)
 
 SIM.creaPiano=function(T,A,met,radio){
   const pr=A.prestazioni;
@@ -76,21 +86,69 @@ SIM.creaPiano=function(T,A,met,radio){
     return q;
   }
 
+  // circuito: a sinistra se le colline lo permettono, altrimenti a destra, 0 = impossibile (come in js/traffico.js)
+  function latoCircuito(te){
+    const p=te.pista,q=p.quota,D=1400,lx=te.dir.z,lz=-te.dir.x;
+    for(const s of [1,-1]){
+      let max=-1e9;
+      for(let u=-2400;u<=p.L+1000;u+=200)for(const v of [D*0.5,D,D*1.3]){
+        const x=te.x+te.dir.x*u+lx*v*s,z=te.z+te.dir.z*u+lz*v*s;max=Math.max(max,T.terrainH(x,z));}
+      if(max<q+150) return s;
+    }
+    return 0;
+  }
+  // punto a u metri dalla soglia te nel verso di atterraggio e v metri di lato (s = +1 sinistra, -1 destra)
+  const presso=(te,u,v,s,r,nome)=>({x:te.x+te.dir.x*u+te.dir.z*v*s,z:te.z+te.dir.z*u-te.dir.x*v*s,r,nome:nome||''});
+  const angolo=(a,b)=>Math.abs(((a-b)%360+540)%360-180);
+
   /* calcola il piano. da = {ap, te} (partenza) oppure {x, z, y} (in volo); arr = aeroporto; te = testata in uso */
   function calcola(da,arr,te){
     if(!arr||!te){piano=null;return null;}
     const x0=da.te?da.te.x:da.x,z0=da.te?da.te.z:da.z;
     const quotaDep=da.ap?da.ap.quota*FT:(da.y||0)*FT;
-    const faf={x:te.x-te.dir.x*FINALE,z:te.z-te.dir.z*FINALE};
     const qCampo=arr.quota*FT;
-    const qFaf=Math.round((qCampo+FINALE*Math.tan(PENDENZA)*FT)/100)*100;
-    const rt=rotta(x0,z0,faf.x,faf.z), L=Math.hypot(faf.x-x0,faf.z-z0);
-    const circuito=L<3*NM||da.ap===arr;
+    const fafStd={x:te.x-te.dir.x*FINALE,z:te.z-te.dir.z*FINALE};
+    const circuito=Math.hypot(fafStd.x-x0,fafStd.z-z0)<3*NM||da.ap===arr;
+    // i punti della rotta
+    const punti=[{x:x0,z:z0,r:0,nome:''}];
+    const lato=circuito&&da.te===te?latoCircuito(te):0;
+    const fin=lato?FINALE_CIRCUITO:FINALE;
+    const faf={x:te.x-te.dir.x*fin,z:te.z-te.dir.z*fin};
+    if(lato){   // circuito: salita oltre la pista, traverso, sottovento, base, finale corta
+      const Lp=te.pista.L,D=1400;
+      punti.push(presso(te,Lp+900,0,lato,R_CIRCUITO),presso(te,Lp+900,D,lato,R_CIRCUITO),presso(te,-fin,D,lato,R_CIRCUITO));
+    }else{
+      // partenza: dritti fino a 1,5 NM oltre la fine della pista, se poi si deve virare di più di 30°
+      if(da.te){
+        const dp=da.te.pista.L+1.5*NM,D={x:da.te.x+da.te.dir.x*dp,z:da.te.z+da.te.dir.z*dp,r:R_VIRATA,nome:'D'+da.te.nome};
+        if(angolo(da.te.hdg,rotta(D.x,D.z,faf.x,faf.z))>30)punti.push(D);
+      }
+      // arrivo: in finale con 30° al massimo; arrivando dalla parte della pista, sottovento e base
+      const pr=punti[punti.length-1];
+      if(angolo(rotta(pr.x,pr.z,faf.x,faf.z),te.hdg)>30){
+        const dx=pr.x-faf.x,dz=pr.z-faf.z,u=dx*te.dir.x+dz*te.dir.z,v=dx*te.dir.z-dz*te.dir.x,s=v>=0?1:-1;
+        if(u>-1*NM)punti.push(presso(te,-fin-1.5*NM,2*NM,s,R_VIRATA,'W'+te.nome),presso(te,-fin-1.5*NM,0.9*NM,s,R_VIRATA,'B'+te.nome));
+        else punti.push(presso(te,-fin-3*NM,1.6*NM,s,R_VIRATA,'I'+te.nome));
+      }
+    }
+    punti.push({x:faf.x,z:faf.z,r:lato?R_CIRCUITO:R_VIRATA,nome:'F'+te.nome});
+    const iFaf=punti.length-1;
+    punti.push({x:te.x,z:te.z,r:0,nome:'RW'+te.nome});
+    // lunghezze dei tratti, virata anticipata a ogni punto (r·tan(angolo/2)), tratto più lungo = rotta di crociera
+    const tratto=i=>Math.hypot(punti[i+1].x-punti[i].x,punti[i+1].z-punti[i].z);
+    let L=0,rt=rotta(x0,z0,faf.x,faf.z),lMax=0;
+    for(let i=0;i<iFaf;i++){const l=tratto(i);L+=l;if(l>lMax){lMax=l;rt=rotta(punti[i].x,punti[i].z,punti[i+1].x,punti[i+1].z);}}
+    for(let i=1;i<punti.length-1;i++){
+      const a=punti[i-1],b=punti[i],c=punti[i+1],d=angolo(rotta(a.x,a.z,b.x,b.z),rotta(b.x,b.z,c.x,c.z));
+      b.anticipo=clamp(b.r*Math.tan(Math.min(d,150)*D2R/2),0.25*NM,1.5*NM);
+    }
+    const rtPartenza=punti.length>2?rotta(punti[1].x,punti[1].z,punti[2].x,punti[2].z):rt;
+    const qFaf=Math.round((qCampo+fin*Math.tan(PENDENZA)*FT)/100)*100;
     let crociera,minSicura=0,alta=false;
     if(circuito){
       crociera=Math.ceil((qCampo+1000)/100)*100;
     }else{
-      minSicura=terrenoMax(x0,z0,faf.x,faf.z)*FT+1000;
+      for(let i=0;i<iFaf;i++)minSicura=Math.max(minSicura,terrenoMax(punti[i].x,punti[i].z,punti[i+1].x,punti[i+1].z)*FT+1000);
       crociera=quotaVFR(Math.max(minSicura,quotaDep+1500,qFaf+500),rt);
       if(crociera>12500){crociera=quotaVFR(12000,rt);alta=true;}
     }
@@ -100,10 +158,11 @@ SIM.creaPiano=function(T,A,met,radio){
     const continua=!circuito&&dSalita+dDiscesa>L;
     if(continua){const f=L/(dSalita+dDiscesa);dSalita*=f;dDiscesa*=f;}
     const dCrociera=circuito?0:L-dSalita-dDiscesa;
-    const minuti=circuito?(L+FINALE)/NM/V_FINALE*60+4:
-      (dSalita/NM/V_SALITA+dCrociera/NM/V_CROCIERA+dDiscesa/NM/V_DISCESA+FINALE/NM/V_FINALE)*60;
-    piano={da,arr,te,faf,x0,z0,quotaDep,qCampo,qFaf,crociera,minSicura,alta,rt,L,circuito,continua,
-      dSalita,dDiscesa,dCrociera,minuti,prossimo:0,fase:0,tra:0,nomeFaf:'F'+te.nome};
+    const minuti=circuito?(L+fin)/NM/V_FINALE*60+(lato?0:4):
+      (dSalita/NM/V_SALITA+dCrociera/NM/V_CROCIERA+dDiscesa/NM/V_DISCESA+fin/NM/V_FINALE)*60;
+    piano={da,arr,te,faf,x0,z0,quotaDep,qCampo,qFaf,crociera,minSicura,alta,rt,rtPartenza,L,circuito,continua,
+      dSalita,dDiscesa,dCrociera,minuti,prossimo:0,fase:0,tra:0,nomeFaf:'F'+te.nome,
+      punti,iFaf,idx:1,fin,latoCircuito:lato};
     return piano;
   }
 
@@ -114,21 +173,31 @@ SIM.creaPiano=function(T,A,met,radio){
     const dFaf=Math.hypot(p.faf.x-x,p.faf.z-z);
     // dietro la soglia, lungo il prolungamento della pista: si è in finale
     const ax=x-te.x,az=z-te.z,lungo=-(ax*te.dir.x+az*te.dir.z),lato=Math.abs(-ax*te.dir.z+az*te.dir.x);
-    const inFinale=lungo>-200&&lungo<FINALE*1.15&&lato<Math.max(250,lungo*0.3);
-    if(p.prossimo===0&&(dFaf<0.8*NM||inFinale))p.prossimo=1;
-    else if(p.prossimo===1&&!inFinale&&dFaf>1.5*NM&&lungo>FINALE*1.3)p.prossimo=0;
+    const inFinale=lungo>-200&&lungo<p.fin*1.15&&lato<Math.max(250,lungo*0.3);
+    if(p.prossimo===0){
+      if(p.idx>p.iFaf)p.idx=1;   // si ricomincia
+      // punti prima della finale: si passa al successivo un po' prima (virata anticipata) o quando lo si è superato
+      while(p.idx<p.iFaf){
+        const b=p.punti[p.idx],a=p.punti[p.idx-1],lx=b.x-a.x,lz=b.z-a.z,ll=Math.hypot(lx,lz)||1;
+        if(Math.hypot(b.x-x,b.z-z)<b.anticipo||((x-b.x)*lx+(z-b.z)*lz)/ll>0)p.idx++;else break;
+      }
+    }
+    if(p.prossimo===0&&((p.idx===p.iFaf&&dFaf<Math.min(0.8*NM,p.punti[p.iFaf].anticipo+0.2*NM))||inFinale))p.prossimo=1;
+    else if(p.prossimo===1&&!inFinale&&dFaf>1.5*NM&&lungo>p.fin*1.3){p.prossimo=0;p.idx=p.iFaf;}
+    if(p.prossimo===1)p.idx=p.punti.length-1;
     // fase: 0 a terra, 1 salita, 2 crociera, 3 discesa, 4 finale, 5 atterrato
     const lontano=Math.hypot(x-p.x0,z-p.z0);
     if(s.aTerra&&p.prossimo===1&&Math.hypot(ax,az)<te.pista.L+300){p.fase=5;p.tra=0;}
     else if(s.aTerra&&lontano<3000){p.fase=0;p.tra=0;}
     else if(p.prossimo===1){p.fase=4;p.tra=Math.max(0,lungo);}
     else{
-      // avanzamento lungo la rotta partenza -> punto di finale
-      const ux=(p.faf.x-p.x0)/(p.L||1),uz=(p.faf.z-p.z0)/(p.L||1);
-      const fatto=clamp((x-p.x0)*ux+(z-p.z0)*uz,0,p.L),resta=p.circuito?dFaf:Math.max(dFaf,p.L-fatto);
+      // avanzamento lungo la rotta: quanto manca al punto di finale passando per i punti che restano
+      let resta=Math.hypot(p.punti[p.idx].x-x,p.punti[p.idx].z-z);
+      for(let i=p.idx;i<p.iFaf;i++)resta+=Math.hypot(p.punti[i+1].x-p.punti[i].x,p.punti[i+1].z-p.punti[i].z);
+      const fatto=clamp(p.L-resta,0,p.L);
       const quota=s.pos.y*FT;
-      if(p.circuito){p.fase=2;p.tra=dFaf;}
-      else if(resta<=p.dDiscesa){p.fase=3;p.tra=dFaf;}
+      if(p.circuito){p.fase=2;p.tra=resta;}
+      else if(resta<=p.dDiscesa){p.fase=3;p.tra=resta;}
       else if(quota<p.crociera-200&&fatto<p.dSalita+3*NM){p.fase=1;p.tra=Math.max(0,p.dSalita-fatto);}
       else{p.fase=2;p.tra=Math.max(0,resta-p.dDiscesa);}
     }
@@ -138,7 +207,8 @@ SIM.creaPiano=function(T,A,met,radio){
   // punto verso cui puntare adesso (per la rotta e il rombo magenta)
   function bersaglio(){
     const p=piano;if(!p) return null;
-    return p.prossimo===0?{x:p.faf.x,z:p.faf.z,nome:p.nomeFaf}:{x:p.te.x,z:p.te.z,nome:'RWY '+p.te.nome};
+    const b=p.punti[p.idx];
+    return p.idx===p.punti.length-1?{x:p.te.x,z:p.te.z,nome:'RWY '+p.te.nome}:{x:b.x,z:b.z,nome:b.nome||p.nomeFaf};
   }
 
   /* ---------- testo del riquadro ---------- */
@@ -150,20 +220,21 @@ SIM.creaPiano=function(T,A,met,radio){
     let tappe='';
     tappe+=riga(0,Lg('DEC','DEP'),p.da.te?Lg(`${dep} pista ${p.da.te.nome}, sali a ${V_SALITA} kt`,`${dep} runway ${p.da.te.nome}, climb at ${V_SALITA} kt`):Lg(`in volo da ${Math.round(p.quotaDep)} ft`,`airborne at ${Math.round(p.quotaDep)} ft`));
     if(p.circuito){
-      tappe+=riga(2,Lg('CIR','PAT'),Lg(`circuito a <em>${p.crociera} ft</em>, poi verso ${p.nomeFaf}`,`pattern at <em>${p.crociera} ft</em>, then to ${p.nomeFaf}`));
+      tappe+=riga(2,Lg('CIR','PAT'),p.latoCircuito?Lg(`circuito ${p.latoCircuito>0?'a sinistra':'a destra'} a <em>${p.crociera} ft</em>: traverso, sottovento, base`,`${p.latoCircuito>0?'left':'right'}-hand pattern at <em>${p.crociera} ft</em>: crosswind, downwind, base`):Lg(`a <em>${p.crociera} ft</em>, poi verso ${p.nomeFaf}`,`at <em>${p.crociera} ft</em>, then to ${p.nomeFaf}`));
     }else{
       tappe+=riga(1,Lg('SAL','CLB'),Lg(`fino a <em>${p.crociera} ft</em> (${nm(p.dSalita)} NM)`,`to <em>${p.crociera} ft</em> (${nm(p.dSalita)} NM)`));
-      tappe+=riga(2,Lg('CRO','CRZ'),p.continua?Lg(`rotta ${tre(p.rt)}°, nessun tratto livellato`,`course ${tre(p.rt)}°, no level segment`):Lg(`rotta <em>${tre(p.rt)}°</em>`,`course <em>${tre(p.rt)}°</em>`)+` · ${nm(p.dCrociera)} NM · ${V_CROCIERA} kt`);
+      const via=p.punti.slice(1,p.iFaf).map(q=>q.nome).filter(Boolean);
+      tappe+=riga(2,Lg('CRO','CRZ'),(via.length?`via ${via.join(', ')} · `:'')+(p.continua?Lg(`rotta ${tre(p.rt)}°, nessun tratto livellato`,`course ${tre(p.rt)}°, no level segment`):Lg(`rotta <em>${tre(p.rt)}°</em>`,`course <em>${tre(p.rt)}°</em>`)+` · ${nm(p.dCrociera)} NM · ${V_CROCIERA} kt`));
       tappe+=riga(3,Lg('DIS','DES'),Lg(`a ${nm(p.dDiscesa)} NM da ${p.nomeFaf}, −${RATEO_DISCESA} ft/min`,`${nm(p.dDiscesa)} NM before ${p.nomeFaf}, −${RATEO_DISCESA} ft/min`));
     }
-    tappe+=riga(4,p.nomeFaf,Lg(`finale 5 NM · rotta ${tre(te.hdg)}° · <em>${p.qFaf} ft</em>`,`final 5 NM · course ${tre(te.hdg)}° · <em>${p.qFaf} ft</em>`));
+    tappe+=riga(4,p.nomeFaf,Lg(`finale ${nm(p.fin)} NM · rotta ${tre(te.hdg)}° · <em>${p.qFaf} ft</em>`,`final ${nm(p.fin)} NM · course ${tre(te.hdg)}° · <em>${p.qFaf} ft</em>`));
     tappe+=riga(5,Lg('ATT','LDG'),Lg(`pista ${te.nome} · ${A.velocita.avvicinamento} kt · flap ${A.flap.posizioni[A.flap.posizioni.length-1]}°`,`runway ${te.nome} · ${A.velocita.avvicinamento} kt · flaps ${A.flap.posizioni[A.flap.posizioni.length-1]}°`));
     const lato=v.traverso>0.5?Lg('da destra','from the right'):v.traverso<-0.5?Lg('da sinistra','from the left'):'';
     const vento=(met.ventoNodi||0)<1?Lg('calmo','calm'):
       `${Math.round(Math.abs(v.fronte))} kt ${v.fronte>=0?Lg('frontale','headwind'):Lg('in coda','tailwind')}`+(lato?` · ${Math.round(Math.abs(v.traverso))} kt ${lato}`:'');
     const altre=arr.piste.flatMap(q=>q.testate).filter(t=>t!==te).map(t=>t.nome).join(' ');
     const ore=Math.floor(p.minuti/60),min=Math.round(p.minuti%60);
-    return `<div class="pv-testa"><b>${dep} ▸ ${arr.codice}</b><span>${nm(p.L+FINALE)} NM · ${ore?ore+' h ':''}${min} min</span></div>`+
+    return `<div class="pv-testa"><b>${dep} ▸ ${arr.codice}</b><span>${nm(p.L+p.fin)} NM · ${ore?ore+' h ':''}${min} min</span></div>`+
       `<ol class="pv-tappe">${tappe}</ol>`+
       `<div class="pv-pista"><div><span class="lbl">${Lg('PISTA','RWY')}</span><b>${te.nome}</b> ${pi.L}×${pi.W} m · ${pi.erba?Lg('erba','grass'):Lg('asfalto','asphalt')} · QFU ${tre(te.hdg)}°</div>`+
       `<div><span class="lbl">${Lg('CAMPO','FIELD')}</span>${Math.round(p.qCampo)} ft · ${Lg('circuito','pattern')} ${Math.ceil((p.qCampo+1000)/100)*100} ft${altre?` · ${Lg('altre','others')}: ${altre}`:''}</div>`+
@@ -201,9 +272,9 @@ SIM.creaPiano=function(T,A,met,radio){
   function testoFase(){
     const p=piano;if(!p) return '';
     switch(p.fase){
-      case 0:return Lg(`Pronto al decollo · poi rotta ${tre(rotta(p.x0,p.z0,p.faf.x,p.faf.z))}°`,`Ready for take-off · then course ${tre(rotta(p.x0,p.z0,p.faf.x,p.faf.z))}°`);
+      case 0:return p.latoCircuito?Lg('Pronto al decollo · poi circuito','Ready for take-off · then pattern'):Lg(`Pronto al decollo · poi rotta ${tre(p.rtPartenza)}°`,`Ready for take-off · then course ${tre(p.rtPartenza)}°`);
       case 1:return Lg(`Salita a ${p.crociera} ft · crociera tra ${nm(p.tra)} NM`,`Climb to ${p.crociera} ft · cruise in ${nm(p.tra)} NM`);
-      case 2:return p.circuito?Lg(`Verso ${p.nomeFaf} · ${nm(p.tra)} NM`,`To ${p.nomeFaf} · ${nm(p.tra)} NM`):Lg(`Crociera · inizia la discesa tra ${nm(p.tra)} NM`,`Cruise · start descent in ${nm(p.tra)} NM`);
+      case 2:return p.circuito?Lg(`Circuito · finale tra ${nm(p.tra)} NM`,`Pattern · final in ${nm(p.tra)} NM`):Lg(`Crociera · inizia la discesa tra ${nm(p.tra)} NM`,`Cruise · start descent in ${nm(p.tra)} NM`);
       case 3:return Lg(`Discesa verso ${p.nomeFaf} a ${p.qFaf} ft · ${nm(p.tra)} NM`,`Descend to ${p.nomeFaf} at ${p.qFaf} ft · ${nm(p.tra)} NM`);
       case 4:return Lg(`Finale pista ${p.te.nome} · ${nm(p.tra)} NM · segui il PAPI`,`Final runway ${p.te.nome} · ${nm(p.tra)} NM · follow the PAPI`);
       default:return Lg(`Atterrato a ${p.arr.codice}!`,`Landed at ${p.arr.codice}!`);
