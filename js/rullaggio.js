@@ -38,6 +38,24 @@ SIM.creaReteRullaggio=function(T){
     const conv=a=>{const o=[];for(let i=0;i<a.length;i+=2)o.push({x:ap.x+a[i]/10,z:ap.z-a[i+1]/10});return o;};
     const vie=d.vie.map(v=>({ref:/^[A-Z]{1,2}\d?$/.test(v.ref)?v.ref:'',w:v.l>0?Math.min(40,v.l):largh,pts:conv(v.p)}));
     const piazzali=d.piazzali.map(conv);
+    // in OSM la pista è a volte più lunga della nostra (zone oltre la soglia): le vie che finiscono sull'asse
+    // oltre la testata (per esempio le racchette di inversione a Cuneo) restano staccate e sembrano un punto
+    // interrogativo. Si aggiunge un tratto lungo l'asse dalla fine della pista fino all'estremità più lontana.
+    for(const pi of ap.piste){
+      const lati=[[],[]];
+      for(const v of vie)for(const p of [v.pts[0],v.pts[v.pts.length-1]]){
+        const u=(p.x-pi.cx)*pi.dir.x+(p.z-pi.cz)*pi.dir.z,w=-(p.x-pi.cx)*pi.dir.z+(p.z-pi.cz)*pi.dir.x;
+        if(Math.abs(w)<pi.W/2&&Math.abs(u)>pi.L/2&&Math.abs(u)<pi.L/2+300)lati[u>0?1:0].push({p,u:Math.abs(u),w});
+      }
+      for(let s=0;s<2;s++){
+        const e=lati[s];if(!e.length) continue;
+        e.sort((a,b)=>a.u-b.u);
+        const sg=s?1:-1,u0=pi.L/2-10,w0=e[0].w;
+        const pts=[{x:pi.cx+pi.dir.x*sg*u0-pi.dir.z*w0,z:pi.cz+pi.dir.z*sg*u0+pi.dir.x*w0}];
+        for(const q of e)if(Math.hypot(q.p.x-pts[pts.length-1].x,q.p.z-pts[pts.length-1].z)>0.5)pts.push(q.p);
+        if(pts.length>1)vie.push({ref:'',w:largh,pts});
+      }
+    }
     // grafo: nodi uniti se coincidono (mezzo metro), archi lungo le vie
     const nodi=[],chiave=new Map();
     const nodo=p=>{const k=Math.round(p.x*2)+','+Math.round(p.z*2);let n=chiave.get(k);
