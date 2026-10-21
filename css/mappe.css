@@ -1,0 +1,90 @@
+/* Volo — simulatore di volo nel browser
+   Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+   Copyright (C) 2026 Massimiliano Petra
+   Licenza: GNU General Public License versione 3 o successiva
+   (GPL-3.0-or-later). Questo programma è software libero: puoi
+   ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+   pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+   qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+   Testo completo nel file LICENSE.
+   ---------------------------------------------------------------------
+   Pagina MAPPE (mappe.html): mappa grande e carte degli aeroporti. Tema scuro come il gioco,
+   le carte su fondo chiaro (si stampano bene). */
+:root{
+  --fondo:#0b1322; --panel:rgba(8,16,30,.86); --riga:#22324a; --ink:#e8f1f8; --dim:#8ea6bb;
+  --cyan:#39d7ff; --magenta:#ff5ad9; --amber:#ffb020;
+  --f-ui:"B612",system-ui,sans-serif; --f-num:"B612 Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--fondo);color:var(--ink);font:14px/1.5 var(--f-ui);display:flex;flex-direction:column;overflow:hidden}
+button,select{font:700 11px var(--f-ui);letter-spacing:.06em;color:var(--ink);background:#13213a;border:1px solid var(--riga);border-radius:6px;padding:6px 10px;cursor:pointer}
+button:hover,select:hover{border-color:var(--cyan)}
+button.attiva,button.attivo{background:#0e3b52;border-color:var(--cyan);color:var(--cyan)}
+
+.barra{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid var(--riga);background:#0d182b}
+.marchio{font:700 13px var(--f-num);letter-spacing:.18em;color:var(--cyan)}
+.schede{display:flex;gap:6px}
+.scegli{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
+.scegli select{max-width:20rem;text-transform:none;letter-spacing:0}
+.stato{margin-left:auto;font:700 11px var(--f-num)}
+.stato.si{color:#4ade80}.stato.no{color:var(--amber)}
+
+main{flex:1;position:relative;min-height:0}
+.vista{position:absolute;inset:0}
+#grande{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
+#grande:active{cursor:grabbing}
+.riquadro{position:absolute;background:var(--panel);border:1px solid rgba(57,215,255,.25);border-radius:8px;padding:8px 10px}
+.dati-volo{top:12px;left:12px;font:12px var(--f-num);min-width:13rem}
+.dati-volo .titolo{font:700 12px var(--f-ui);color:var(--cyan);margin-bottom:4px}
+.dati-volo div{display:flex;gap:8px;align-items:baseline}
+.dati-volo .k{color:var(--dim);min-width:3.6em}
+.dati-volo b{color:var(--ink);font-size:15px}
+.dati-volo .u{color:var(--dim);font-size:11px}
+.dati-volo .pausa{color:#111;background:var(--amber);border-radius:4px;padding:0 5px;font-size:10px}
+.comandi{top:12px;right:12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 260px);justify-content:flex-end}
+.comandi #zoomPiu,.comandi #zoomMeno{font-size:16px;padding:2px 10px}
+.scala{font:700 12px var(--f-num);color:var(--ink);min-width:5.5em;text-align:center}
+.aiuto{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);margin:0;font-size:11px;color:var(--dim);background:var(--panel);padding:3px 10px;border-radius:6px;white-space:nowrap}
+
+.aeroporto{display:grid;grid-template-columns:minmax(0,1fr) 27rem}
+#carta{width:100%;height:100%;display:block}
+.dati{overflow:auto;padding:14px 16px 60px;border-left:1px solid var(--riga);background:#0d182b}
+.dati h2{margin:0 0 4px;font-size:18px}
+.dati h2 .cod{font-family:var(--f-num);color:var(--cyan)}
+.dati h3{margin:18px 0 6px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:8px}
+.dati .sotto{margin:0 0 6px;color:var(--dim)}
+.dati .sotto b{color:var(--ink)}
+.dati table{width:100%;border-collapse:collapse;font:12px var(--f-num)}
+.dati th{text-align:left;color:var(--dim);font-weight:400;border-bottom:1px solid var(--riga);padding:3px 4px}
+.dati td{padding:3px 4px;border-bottom:1px solid rgba(34,50,74,.6)}
+.dati tr.scelta td{background:rgba(57,215,255,.08)}
+.dati .sim{color:var(--amber);font-size:10px}
+.dati .note{padding-left:18px;margin:8px 0}
+.dati .note li{margin:3px 0}
+.dati .avviso{font-size:11px;color:var(--amber)}
+.schema{display:block;width:100%;border-radius:6px;margin:8px 0}
+.metar{display:block;margin:6px 0;font:11px var(--f-num);color:var(--cyan);word-break:break-word}
+.papi{display:inline-flex;gap:3px;vertical-align:middle}
+.papi i{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid #333}
+.papi .w{background:#fff}.papi .r{background:#ff2a1a}
+.stampa{position:absolute;left:12px;bottom:12px}
+
+.privacy{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:40;width:min(46rem,calc(100% - 32px));
+  display:flex;gap:14px;align-items:center;background:var(--panel);border:1px solid var(--riga);border-radius:8px;padding:10px 14px;font-size:13px}
+.privacy p{margin:0;flex:1}
+.privacy a{color:var(--cyan)}
+
+@media (max-width:900px){.aeroporto{grid-template-columns:1fr;grid-template-rows:55% 45%}.dati{border-left:0;border-top:1px solid var(--riga)}}
+/* stampa: solo la carta e i dati, su carta bianca */
+@media print{
+  body{background:#fff;color:#000;overflow:visible;display:block}
+  .barra,.stampa,#vistaGrande,.privacy{display:none!important}
+  main,.vista{position:static}
+  .aeroporto{display:block}
+  #carta{height:60vh}
+  .dati{background:#fff;color:#000;border:0;overflow:visible}
+  .dati .sotto,.dati h3,.dati th{color:#333}.dati .sotto b{color:#000}.metar,.dati h2 .cod{color:#0a5c7a}
+}
