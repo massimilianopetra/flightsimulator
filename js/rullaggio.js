@@ -90,19 +90,58 @@ SIM.creaReteRullaggio=function(T){
       if((a.z>z)!==(b.z>z)&&x<(b.x-a.x)*(z-a.z)/(b.z-a.z)+a.x)c=!c;}return c;
   }
   const vicino=(r,p)=>{let best=0,bd=Infinity;r.nodi.forEach((n,i)=>{const d=Math.hypot(n.x-p.x,n.z-p.z);if(d<bd){bd=d;best=i;}});return best;};
-  // percorso più breve da un nodo a un altro: elenco di nodi e nomi delle vie
-  function dijkstra(r,da,a){
+  // percorso più breve: da = nodo o elenco [{n,d}] (si parte da n con d metri già fatti), a = nodo o elenco [{n,d}]
+  // (d = metri che restano dopo n); elenco di nodi e nomi delle vie
+  function dijkstra(r,da,a,vietati){
     const N=r.nodi.length,dist=new Float64Array(N).fill(Infinity),prec=new Int32Array(N).fill(-1),ref=new Array(N),fatto=new Uint8Array(N);
-    dist[da]=0;
+    const fine=new Map();for(const q of (typeof a==='number'?[{n:a,d:0}]:a))fine.set(q.n,Math.min(q.d,fine.has(q.n)?fine.get(q.n):Infinity));
+    for(const q of (typeof da==='number'?[{n:da,d:0}]:da))if(q.d<dist[q.n])dist[q.n]=q.d;
+    let meglio=-1,tot=Infinity;
     for(;;){
       let u=-1,bu=Infinity;for(let i=0;i<N;i++)if(!fatto[i]&&dist[i]<bu){bu=dist[i];u=i;}
-      if(u<0||u===a) break;
+      if(u<0||bu>=tot) break;
       fatto[u]=1;
-      for(const e of r.nodi[u].adj){const nd=dist[u]+e.l;if(nd<dist[e.n]){dist[e.n]=nd;prec[e.n]=u;ref[e.n]=e.ref;}}
+      if(fine.has(u)&&bu+fine.get(u)<tot){tot=bu+fine.get(u);meglio=u;}
+      for(const e of r.nodi[u].adj){if(vietati&&vietati[e.n])continue;const nd=dist[u]+e.l;if(nd<dist[e.n]){dist[e.n]=nd;prec[e.n]=u;ref[e.n]=e.ref;}}
     }
-    if(!isFinite(dist[a])) return null;
-    const lista=[],refs=[];for(let n=a;n>=0;n=prec[n]){lista.unshift(n);if(ref[n])refs.unshift(ref[n]);}
-    return {lista,refs:refs.filter((x,i)=>x!==refs[i-1])};
+    if(meglio<0) return null;
+    const lista=[],refs=[];for(let n=meglio;n>=0;n=prec[n]){lista.unshift(n);if(ref[n])refs.unshift(ref[n]);}
+    return {lista,refs:refs.filter((x,i)=>x!==refs[i-1]),l:tot};
+  }
+  // punto della rete più vicino a p, sul tratto di via (non solo sui nodi): così il percorso non va prima
+  // al nodo più vicino alle spalle per poi tornare indietro. Si tengono i tratti entro 20 m dal più vicino
+  // (vicino agli incroci a V se ne sceglie quello giusto): ends = nodi con i metri da p (fino al tratto e lungo
+  // il tratto), q(n) = punto d'aggancio da cui si arriva al nodo n
+  function aggancio(r,p,soloRaggiungibili){
+    const vis=soloRaggiungibili?raggiungibili(r):null,tratti=[];
+    let bd=Infinity;
+    r.nodi.forEach((a,i)=>{if(vis&&!vis[i])return;for(const e of a.adj){if(e.n<i)continue;const b=r.nodi[e.n];
+      const dx=b.x-a.x,dz=b.z-a.z,l2=dx*dx+dz*dz||1,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.z-a.z)*dz)/l2));
+      const q={x:a.x+t*dx,z:a.z+t*dz},d=Math.hypot(q.x-p.x,q.z-p.z);
+      if(d<bd)bd=d;tratti.push({q,d,i,j:e.n,t,l:e.l});}});
+    const m=new Map(),metti=(n,d,q)=>{const o=m.get(n);if(!o||d<o.d)m.set(n,{n,d,q});};
+    for(const s of tratti)if(s.d<=bd+20){metti(s.i,s.d+s.t*s.l,s.q);metti(s.j,s.d+(1-s.t)*s.l,s.q);}
+    if(!m.size){const n=vicino(r,p);metti(n,0,{x:r.nodi[n].x,z:r.nodi[n].z});}
+    return {ends:[...m.values()],q:n=>m.get(n).q};
+  }
+  // nodi sulle piste dell'aeroporto
+  function suPista(r){
+    if(r.suPista) return r.suPista;
+    const v=new Uint8Array(r.nodi.length);
+    r.nodi.forEach((n,i)=>{for(const p of r.ap.piste){const dx=n.x-p.cx,dz=n.z-p.cz;
+      if(Math.abs(dx*p.dir.x+dz*p.dir.z)<p.L/2+10&&Math.abs(-dx*p.dir.z+dz*p.dir.x)<p.W/2+3)v[i]=1;}});
+    return r.suPista=v;
+  }
+  // percorso morbido: via i punti doppi, poi ogni curva ha un raggio (la mappa la disegna ad arco, js/strumenti.js
+  // lineaCurva, che lo riduce se i tratti sono corti)
+  const RAGGIO=30;
+  function morbido(punti){
+    const o=[];
+    for(const p of punti){const u=o[o.length-1];
+      if(u&&Math.hypot(p.x-u.x,p.z-u.z)<1){if(p.nome&&!u.nome)u.nome=p.nome;continue;}
+      o.push(p);}
+    for(let i=1;i<o.length-1;i++)o[i].r=RAGGIO;
+    return o;
   }
   // nodi raggiungibili dal parcheggio (i dati OSM a volte hanno tratti staccati dal resto)
   function raggiungibili(r){
@@ -126,18 +165,18 @@ SIM.creaReteRullaggio=function(T){
     const best=cand.reduce((a,b)=>b.u<a.u?b:a);
     // si risale la via che esce dalla pista fino alla distanza del punto attesa
     const dist=Math.max(p.W/2+45,65);
-    let cur=best.fuori,prec=best.i,attesa=null,lato=null;
+    let cur=best.fuori,prec=best.i,attesa=null,lato=null,interno=null;
     {const a=r.nodi[best.i],b=r.nodi[best.fuori],vb=Math.abs(loc(b).v);
-     if(vb>=dist){const va=Math.abs(loc(a).v),t=(dist-va)/Math.max(0.01,vb-va);attesa={x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t,dir:Math.atan2(a.x-b.x,a.z-b.z)};lato=best.fuori;}}
+     if(vb>=dist){const va=Math.abs(loc(a).v),t=(dist-va)/Math.max(0.01,vb-va);attesa={x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t,dir:Math.atan2(a.x-b.x,a.z-b.z)};lato=best.fuori;interno=best.i;}}
     for(let k=0;k<30&&!attesa;k++){
       const opz=r.nodi[cur].adj.filter(e=>e.n!==prec).map(e=>({e,v:Math.abs(loc(r.nodi[e.n]).v)})).sort((a,b)=>b.v-a.v);
       if(!opz.length) break;
       const nx=opz[0].e.n,a=r.nodi[cur],b=r.nodi[nx],va=Math.abs(loc(a).v),vb=opz[0].v;
-      if(vb>=dist){const t=(dist-va)/Math.max(0.01,vb-va);attesa={x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t,dir:Math.atan2(a.x-b.x,a.z-b.z)};lato=nx;break;}
+      if(vb>=dist){const t=(dist-va)/Math.max(0.01,vb-va);attesa={x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t,dir:Math.atan2(a.x-b.x,a.z-b.z)};lato=nx;interno=cur;break;}
       prec=cur;cur=nx;
     }
     if(!attesa){const n=r.nodi[cur];attesa={x:n.x,z:n.z,dir:0};lato=cur;}
-    return {nodo:best.i,u:best.u,attesa,lato};
+    return {nodo:best.i,u:best.u,attesa,lato,interno};
   }
 
   // griglia per sapere in fretta se un punto è su una via o un piazzale (case, alberi, attrito, avvisi)
@@ -180,14 +219,26 @@ SIM.creaReteRullaggio=function(T){
     partenza(ap,te,inizio){
       const r=reti.get(ap);if(!r) return null;
       const ing=ingresso(r,te);if(!ing) return null;
-      const p0=inizio||r.parcheggio;
-      const da=vicino(r,p0),cam=dijkstra(r,da,ing.lato);if(!cam) return null;
-      const punti=[{x:p0.x,z:p0.z},...cam.lista.map(i=>({x:r.nodi[i].x,z:r.nodi[i].z}))];
-      punti.push({x:ing.attesa.x,z:ing.attesa.z,nome:'ATT'});
-      const ni=r.nodi[ing.nodo];punti.push({x:ni.x,z:ni.z});
+      const p0=inizio||r.parcheggio,ag=aggancio(r,p0,true);
+      // si arriva al punto attesa dal lato lontano dalla pista oppure (se una via si innesta fra il punto attesa
+      // e la pista) dal lato della pista: in quel caso niente andata e ritorno, il punto attesa è l'innesto
+      const att=ing.attesa,dAtt=n=>Math.hypot(r.nodi[n].x-att.x,r.nodi[n].z-att.z);
+      const arrivi=[{n:ing.lato,d:dAtt(ing.lato)}];if(ing.interno!=null)arrivi.push({n:ing.interno,d:dAtt(ing.interno)});
+      // si rulla sulle vie, non sulle piste (salvo che non ci sia altra strada)
+      const c1=dijkstra(r,ag.ends,arrivi,suPista(r)),c2=dijkstra(r,ag.ends,arrivi);
+      const cam=c1&&(!c2||c1.l<c2.l*1.5+300)?c1:c2;if(!cam) return null;
+      // se il percorso passa comunque dall'ingresso in pista, finisce lì (niente andata e ritorno al punto attesa)
+      const k=cam.lista.indexOf(ing.nodo);if(k>=0)cam.lista.length=k+1;
+      const punti=[{x:p0.x,z:p0.z},{...ag.q(cam.lista[0])},...cam.lista.map(i=>({x:r.nodi[i].x,z:r.nodi[i].z}))];
+      if(k<0){
+        if(cam.lista[cam.lista.length-1]===ing.interno)punti[punti.length-1].nome='ATT';
+        else punti.push({x:att.x,z:att.z,nome:'ATT'});
+        const ni=r.nodi[ing.nodo];punti.push({x:ni.x,z:ni.z});
+      }
       const backtrack=ing.u>150;
       const fine=backtrack?15:Math.max(ing.u,0)+40;   // dove allinearsi sulla pista
       punti.push({x:te.x+te.dir.x*fine,z:te.z+te.dir.z*fine,nome:te.nome});
+      const pm=morbido(punti);punti.length=0;punti.push(...pm);
       const p1=punti[1],hdg=((Math.atan2(p1.x-p0.x,-(p1.z-p0.z))*180/Math.PI)+360)%360;
       return {parcheggio:{x:p0.x,z:p0.z},hdg,punti,attesa:{x:ing.attesa.x,z:ing.attesa.z},refs:cam.refs,backtrack};
     },
@@ -196,18 +247,18 @@ SIM.creaReteRullaggio=function(T){
        Ritorna i punti del percorso; in .vie i nomi delle vie di rullaggio. */
     versoPiazzale(ap,pos,piazzola){
       const r=reti.get(ap);if(!r) return null;
-      const da=vicino(r,pos);
+      const ag=aggancio(r,pos,true),da=ag.ends;
       if(piazzola){
         const a=vicino(r,piazzola.ingresso),n=r.nodi[a];
         const cam=Math.hypot(n.x-piazzola.ingresso.x,n.z-piazzola.ingresso.z)<45?dijkstra(r,da,a):null;
         if(cam){
-          const punti=[{x:pos.x,z:pos.z},...cam.lista.map(i=>({x:r.nodi[i].x,z:r.nodi[i].z})),...piazzola.linea.map(p=>({x:p.x,z:p.z}))];
+          const punti=morbido([{x:pos.x,z:pos.z},{...ag.q(cam.lista[0])},...cam.lista.map(i=>({x:r.nodi[i].x,z:r.nodi[i].z})),...piazzola.linea.map(p=>({x:p.x,z:p.z}))]);
           punti[punti.length-1].nome=piazzola.ref||'P';
           punti.vie=cam.refs;return punti;
         }
       }
-      const cam=dijkstra(r,da,vicino(r,r.parcheggio));if(!cam) return null;
-      const punti=[{x:pos.x,z:pos.z},...cam.lista.map(i=>({x:r.nodi[i].x,z:r.nodi[i].z})),{x:r.parcheggio.x,z:r.parcheggio.z,nome:'P'}];
+      const fine=aggancio(r,r.parcheggio,true),cam=dijkstra(r,da,fine.ends);if(!cam) return null;
+      const punti=morbido([{x:pos.x,z:pos.z},{...ag.q(cam.lista[0])},...cam.lista.map(i=>({x:r.nodi[i].x,z:r.nodi[i].z})),{...fine.q(cam.lista[cam.lista.length-1])},{x:r.parcheggio.x,z:r.parcheggio.z,nome:'P'}]);
       punti.vie=cam.refs;return punti;
     },
     ingresso:(ap,te)=>{const r=reti.get(ap);return r?ingresso(r,te):null;},
