@@ -661,6 +661,17 @@ SIM.creaStrumenti=function(A,opz={}){
     }
     const u=pts[pts.length-1];mg.lineTo(u[0],u[1]);
   }
+  // riquadro [x0,x1,z0,z1] di vie e piazzali di un aeroporto (rifatto se si aggiungono piazzali)
+  function riquadroRete(r){
+    if(r.riquadro&&r.riquadro.n===r.piazzali.length) return r.riquadro;
+    const b=[Infinity,-Infinity,Infinity,-Infinity];
+    const metti=q=>{if(q.x<b[0])b[0]=q.x;if(q.x>b[1])b[1]=q.x;if(q.z<b[2])b[2]=q.z;if(q.z>b[3])b[3]=q.z;};
+    for(const a of r.piazzali)a.forEach(metti);
+    for(const v of r.vie)v.pts.forEach(metti);
+    if(!isFinite(b[0]))b.splice(0,4,r.ap.x,r.ap.x,r.ap.z,r.ap.z);
+    b.n=r.piazzali.length;
+    return r.riquadro=b;
+  }
   function disegnaMappa(s,hdg,dest,sup){
     if(sup){const v=[mg,MW,MH,dpr,MOX,MOY];mg=sup.g;MW=sup.W;MH=sup.H;dpr=sup.dpr||1;MOX=sup.x||0;MOY=sup.y||0;extra=sup;
       try{disegnaMappa(s,hdg,dest);}finally{[mg,MW,MH,dpr,MOX,MOY]=v;extra={};}return;}
@@ -711,8 +722,12 @@ SIM.creaStrumenti=function(A,opz={}){
     // vie di rullaggio e piazzali veri (fino a ~3 NM di scala)
     if(SIM.reteRullaggio&&range<=6000){
       mg.lineCap='round';mg.lineJoin='round';mg.fillStyle=mg.strokeStyle='#8b9097';
+      // si salta un aeroporto solo se il riquadro di tutte le sue vie e piazzali è fuori dalla mappa
+      // (col centro soltanto, a scala grande sparivano le parti di un aeroporto grande col centro lontano)
+      const fuori=(x,z,m)=>{const [px,py]=P(x,z);return px<-m||px>MW+m||py<-m||py>MH+m;};
       for(const r of SIM.reteRullaggio.tutte()){
-        const [ax,ay]=P(r.ap.x,r.ap.z);if(ax<-600||ax>MW+600||ay<-600||ay>MH+600) continue;
+        const b=riquadroRete(r),rag=Math.hypot(b[1]-b[0],b[3]-b[2])/2*k;
+        if(fuori((b[0]+b[1])/2,(b[2]+b[3])/2,rag)) continue;
         for(const a of r.piazzali){mg.beginPath();a.forEach((q,i)=>{const [x,y]=P(q.x,q.z);i?mg.lineTo(x,y):mg.moveTo(x,y);});mg.closePath();mg.fill();}
         for(const v of r.vie){mg.lineWidth=Math.max(1.5,v.w*k);mg.beginPath();v.pts.forEach((q,i)=>{const [x,y]=P(q.x,q.z);i?mg.lineTo(x,y):mg.moveTo(x,y);});mg.stroke();}
       }
