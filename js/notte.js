@@ -251,10 +251,10 @@ SIM.creaNotte=function(scene,mondo,T){
     scene.background.setHex(c.orizz);scene.fog.color.setHex(c.orizz);
     L.emi.color.setHex(c.emiCielo);L.emi.groundColor.setHex(c.emiTerra);L.emi.intensity=c.emi;
     L.sole.color.setHex(c.sole);L.sole.intensity=c.soleI;L.sole.position.set(...c.solePos);
-    L.matNuvola.color.setHex(c.nuvola);L.matNuvola.emissive.setHex(c.nuvolaE);
+    if(SIM.meteo)SIM.meteo.ora(k,c);   // il meteo (js/meteo.js) parte da questi colori e li incupisce sotto le nubi
     L.matVetro.emissive.setHex(c.vetroE);
     if(c.luci&&!cittaFatte)costruisciCitta();
-    luciPiste.visible=c.luci;if(luciLampi)luciLampi.visible=c.luci;if(luciCitta){luciCitta.visible=c.luci;luciCitta.material.opacity=k==='tramonto'?0.4:1;}stelle.visible=c.stelle;
+    luciPiste.visible=c.luci;if(luciLampi)luciLampi.visible=c.luci;if(luciCitta){luciCitta.visible=c.luci;luciCitta.material.opacity=k==='tramonto'?0.4:1;}stelle.visible=c.stelle&&!(SIM.meteo&&SIM.meteo.coperto);
     faro.intensity=window.AEREO&&window.AEREO.id==='c42'?0:c.faro;   // il C42 di serie non ha il faro di atterraggio
     for(const l of mondo.aereo.luciNav)l.scale.setScalar(c.luci?2.2:1);
     if(SIM.aeroporti3D)SIM.aeroporti3D.ora(k);   // vetrate accese e torri faro (js/aeroporti-3d.js)

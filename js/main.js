@@ -39,6 +39,11 @@ addEventListener('resize',ridimensiona);ridimensiona();
 const T=SIM.terreno;
 const terreno=T.creaMesh(scene,renderer);
 const mondo=SIM.creaMondo(scene,renderer);
+// meteo scelto nel briefing (js/meteo.js), ricordato; "no" = il tempo calmo della mappa
+const meteo=SIM.meteo=SIM.creaMeteo({scene,mondo,T,camera});
+let meteoScelto='no';
+try{const m=localStorage.getItem('volo-meteo');if(meteo.TIPI.includes(m))meteoScelto=m;}catch(e){}
+meteo.imposta(meteoScelto);
 const monumenti=SIM.creaMonumenti?SIM.creaMonumenti(scene):null;   // solo mondo reale (js/monumenti.js)
 if(SIM.disegnaRullaggio)SIM.disegnaRullaggio(scene);   // vie di rullaggio vere (js/rullaggio.js)
 // grandi aeroporti con terminal, hangar, torri, pontili e aerei parcheggiati (js/aeroporti-3d.js)
@@ -48,24 +53,17 @@ const notte=SIM.creaNotte(scene,mondo,T);
 let oraVolo='giorno';
 try{const o=localStorage.getItem('volo-ora');if(o==='tramonto'||o==='notte')oraVolo=o;}catch(e){}
 if(oraVolo==='notte'&&!DOT.notte)oraVolo='giorno';   // gli ultraleggeri volano solo di giorno
-notte.imposta(oraVolo);
-camera.far=Math.max(15000,scene.fog.far*1.15);camera.updateProjectionMatrix();
+notte.imposta(oraVolo);   // (la distanza della telecamera la sceglie il meteo, secondo la visibilità)
 const fis=SIM.creaFisica(A,T), st=fis.st;
 const ap=SIM.creaAutopilota(A);   // autopilota (js/autopilota.js)
 const strum=SIM.creaStrumenti(A);
 const audio=SIM.creaAudio();
+SIM.audioMeteo=audio;   // pioggia e tuoni (js/meteo.js)
 
-/* ---------- vento con raffiche ---------- */
+/* ---------- vento con raffiche, turbolenza, termiche (js/meteo.js) ---------- */
 const met=mondo.meteo;
-const vMedio=met.ventoNodi/KT;
-const ventoBase=new THREE.Vector3(-Math.sin(met.ventoDa*D2R),0,Math.cos(met.ventoDa*D2R)).multiplyScalar(vMedio);
 const vento=new THREE.Vector3();
-function aggiornaVento(t){
-  const raff=met.raffiche/KT*(T.vnoise(t*0.25,3.7)*2-1);
-  const quota=clamp(0.55+Math.max(0,st.agl)/600,0.55,1);   // vicino al suolo il vento è più debole
-  vento.copy(ventoBase).multiplyScalar(vMedio>0?Math.max(0,(vMedio+raff)/vMedio)*quota:0);
-  vento.y=met.raffiche/KT*0.3*(T.vnoise(t*0.6,9.1)*2-1)*quota;
-}
+function aggiornaVento(t){meteo.vento(t,st,vento);}
 
 /* ---------- partenza e destinazione ---------- */
 const nomeTestata=n=>String(n).padStart(2,'0');
@@ -117,7 +115,8 @@ function puntoPartenza(){
   if(p.aeroporto&&T.aeroporti.length){
     const ap=T.aeroporti.find(a=>a.codice===p.aeroporto)||T.aeroporti[0];
     let te=null;
-    for(const pi of ap.piste)for(const t of pi.testate)if(t.nome===nomeTestata(p.pista))te=t;
+    // la pista della mappa vale col tempo calmo; col meteo si parte dalla più controvento
+    if(!meteo.attivo)for(const pi of ap.piste)for(const t of pi.testate)if(t.nome===nomeTestata(p.pista))te=t;
     return creaPartenza(ap,te);
   }
   const x=p.x||0,z=-(p.y||0);
@@ -385,6 +384,7 @@ function inizia(m){
   if(avviato) return;
   if(missioni.attiva&&missioni.tipo==='precisione')m='finale';   // la precisione parte in finale
   avviato=true;$('brief').hidden=true;audio.avvia();
+  meteo.inizio(st.pos);   // nessun temporale proprio sopra la partenza
   if(m==='finale'){modalita='finale';ricomincia();return;}
   avviaMissione();
   messaggioPartenza();
@@ -930,6 +930,7 @@ function aggiornaBriefing(){
               `You are at <b>${ap.codice} – ${ap.nome}</b> (elevation ${Math.round(ap.quota*FT)} ft), lined up on runway <b>${te.nome}</b>, ${te.pista.L} m long${te.pista.erba?' (grass)':''}. `);
   else t+=L(`Parti già in volo a ${Math.round(partenza.y*FT)} ft. `,`You start in flight at ${Math.round(partenza.y*FT)} ft. `);
   t+=met.ventoNodi>0?L(`Vento da ${vda}° a ${met.ventoNodi} nodi${met.raffiche?` con raffiche di ${met.raffiche}`:''}. `,`Wind from ${vda}° at ${met.ventoNodi} knots${met.raffiche?` gusting ${met.raffiche} more`:''}. `):L('Vento calmo. ','Calm wind. ');
+  if(meteo.attivo)t+='<br>'+meteo.descrizione(ap)+` <button type="button" id="altroTempo" class="piccolo">${L('Altro tempo','New weather')}</button><br>`;
   if(d&&d!==ap){
     const dist=Math.hypot(d.x-partenza.x,d.z-partenza.z)/1852;
     t+=L(`Destinazione: <b>${d.codice} – ${d.nome}</b>, a ${dist.toFixed(1)} NM (quota ${Math.round(d.quota*FT)} ft). Il rombo magenta sulla bussola e la linea sulla mappa indicano la rotta.`,
@@ -938,6 +939,7 @@ function aggiornaBriefing(){
   if(!DOT.g1000)t+=L(`<br><b>${A.nome}</b>: ultraleggero con strumenti analogici e radio COM. Niente autopilota, niente VOR né ILS: si naviga guardando fuori, con la bussola e la mappa del tablet (a destra). Si vola solo di giorno.`,
     `<br><b>${A.nome}</b>: microlight with analogue instruments and a COM radio. No autopilot, no VOR or ILS: navigate by looking outside, with the compass and the tablet map (on the right). Day flying only.`);
   $('briefTesto').innerHTML=t;
+  {const b=$('altroTempo');if(b)b.addEventListener('click',()=>{cambiaMeteo(meteoScelto);b.blur();});}
   ricalcolaPiano();
   $('briefVr').textContent=A.velocita.vr;$('briefVy').textContent=A.velocita.vy;
   const fp=A.flap.posizioni;
@@ -1139,7 +1141,18 @@ selDa.addEventListener('change',()=>{daParcheggio=selDa.value==='parcheggio';try
 const selOra=$('selOra');
 if(!DOT.notte){const o=selOra.querySelector('option[value="notte"]');o.disabled=true;o.textContent+=L(' (non per gli ultraleggeri)',' (not for microlights)');}
 selOra.value=oraVolo;
-selOra.addEventListener('change',()=>{oraVolo=selOra.value;notte.imposta(oraVolo);try{localStorage.setItem('volo-ora',oraVolo);}catch(e){}selOra.blur();});
+selOra.addEventListener('change',()=>{oraVolo=selOra.value;notte.imposta(oraVolo);try{localStorage.setItem('volo-ora',oraVolo);}catch(e){}aggiornaBriefing();selOra.blur();});
+/* meteo: cambia subito (nuove nuvole, vento, QNH); la pista proposta torna quella più controvento */
+const selMeteo=$('selMeteo');
+selMeteo.value=meteoScelto;
+function cambiaMeteo(v){
+  meteoScelto=v;meteo.imposta(v);notte.imposta(oraVolo);
+  try{localStorage.setItem('volo-meteo',v);}catch(e){}
+  const ap=T.aeroporti[+selAp.value];
+  if(ap&&partenza.te){riempiPiste(ap,testataControvento(ap));scegliPartenza();}else aggiornaBriefing();
+  meteo.inizio(st.pos);
+}
+selMeteo.addEventListener('change',()=>{cambiaMeteo(selMeteo.value);selMeteo.blur();});
 const selCarb=$('selCarb');
 if(A.carburante.scelte)selCarb.innerHTML=A.carburante.scelte.map(([v,it,en])=>`<option value="${v}">${L(it,en)}</option>`).join('');
 if(![...selCarb.options].some(o=>+o.value===carbIniziale))carbIniziale=A.carburante.capacita;
@@ -1210,6 +1223,7 @@ function ciclo(ora){
   if(n%15===0&&scheda==='ap')aggiornaSchedaAP();
   if(n%6===0)aggiornaObiettivo();
   mondo.aggiorna(st,camera.position,vento,attivo?dt:0,vista===1);
+  meteo.aggiorna(st,camera.position,attivo?dt:0,vista===1);
   notte.aggiorna(camera.position);
   if(n%2===0)ultimiStrum=aggiornaStrumenti(dt*2);
   if(n%6===0){aggiornaPiano();aggiornaTesti(ultimiStrum.hdg,ultimiStrum.bug);strum.disegnaMappa(st,ultimiStrum.hdg,dest());}

@@ -253,6 +253,19 @@
             <option value="2" data-en="Almost empty: 2 gal (about 15 minutes)">Quasi vuoto: 2 gal (circa 15 minuti)</option>
           </select>
         </label>
+        <label><span data-en="Weather">Meteo</span>
+          <select id="selMeteo">
+            <option value="no" data-en="None (calm weather)">Nessuno (tempo calmo)</option>
+            <option value="casuale" data-en="Random">A caso</option>
+            <option value="bello" data-en="Fair weather with thermals">Bel tempo con termiche</option>
+            <option value="ventoso" data-en="Strong gusty wind">Vento forte e raffiche</option>
+            <option value="coperto" data-en="Overcast, low cloud">Coperto con nubi basse</option>
+            <option value="pioggia" data-en="Rain">Pioggia</option>
+            <option value="temporali" data-en="Thunderstorms">Temporali</option>
+            <option value="nebbia" data-en="Fog in the plain">Nebbia in pianura</option>
+            <option value="neve" data-en="Snow">Neve</option>
+          </select>
+        </label>
       </div>
       <div id="briefMissione" class="brief-missione" hidden></div>
       <p id="briefTesto"></p>
@@ -356,6 +369,7 @@
 <script src="js/c42-3d.js"></script>
 <script src="js/mondo.js"></script>
 <script src="js/notte.js"></script>
+<script src="js/meteo.js"></script>
 <script src="js/strumenti.js"></script>
 <script src="js/radio.js"></script>
 <script src="js/piano.js"></script>

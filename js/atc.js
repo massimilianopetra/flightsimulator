@@ -80,11 +80,13 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
     const g=vere.find(c=>c.tipo==='GND');
     if(g&&pr&&pr.tipo==='TWR') terra.set(ap,staz0(ap,true,g.nome,g.freq,true,{terra:true}));
   });
-  const QNH=Math.round(met.qnh||1016);
+  const qnh=()=>Math.round(met.qnh||1016);   // il meteo si può cambiare nel briefing: si legge sempre
+  // raffica: si dice solo se supera il vento medio di almeno 10 nodi (come nei METAR)
+  const raf=()=>met.raffiche>=10?met.ventoNodi+met.raffiche:0;
   const ventoF=()=>met.ventoNodi<1?{d:'wind calm',s:'wind calm'}:
-    {d:`wind ${tre(met.ventoDa)} degrees ${met.ventoNodi} knots`,s:`wind ${cifre(tre(met.ventoDa))} degrees ${cifre(met.ventoNodi)} knots`};
-  const ventoIt=()=>met.ventoNodi<1?'vento calmo':`vento da ${tre(met.ventoDa)}° a ${met.ventoNodi} nodi`;
-  const qnhF=(q=QNH)=>({d:'QNH '+q,s:'Q N H '+cifre(q)});
+    {d:`wind ${tre(met.ventoDa)} degrees ${met.ventoNodi} knots`+(raf()?` gusting ${raf()}`:''),s:`wind ${cifre(tre(met.ventoDa))} degrees ${cifre(met.ventoNodi)} knots`+(raf()?` gusting ${cifre(raf())}`:'')};
+  const ventoIt=()=>met.ventoNodi<1?'vento calmo':`vento da ${tre(met.ventoDa)}° a ${met.ventoNodi} nodi`+(raf()?` con raffiche a ${raf()}`:'');
+  const qnhF=(q=qnh())=>({d:'QNH '+q,s:'Q N H '+cifre(q)});
   const pistaF=te=>({d:'runway '+te.nome,s:'runway '+cifre(te.nome)});
   const viaF=v=>v&&v.length?{d:' via '+v.join(', '),s:' via '+v.map(r=>r.split('').map(c=>/\d/.test(c)?NUM[+c]:NATO[c.toUpperCase()]||c).join(' ')).join(', ')}:'';
   const freqF=f=>({d:f,s:cifre(f.replace(/0+$/,'').replace(/\.$/,''))});
@@ -308,6 +310,7 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
       const s2=stazioni.get(ctx.arr.ap),d=Math.hypot(ctx.arr.ap.x-st.pos.x,ctx.arr.ap.z-st.pos.z);
       if(d<30*NM){op.push(Object.assign(chiamataArrivo(false),{verso:s2}));if(s2.torre&&radio.ilsDi(ctx.arr.te))op.push(Object.assign(chiamataArrivo(true),{verso:s2}));}
     }
+    if(com&&SIM.meteo&&SIM.meteo.attivo)op.push(Object.assign(richiestaMeteo(),{verso:com}));   // col meteo attivo (js/meteo.js)
     if(com)op.push(Object.assign(provaRadio(),{verso:com}));
     if(ultimoATC&&staz)op.push(Object.assign(ripeti(),{verso:staz}));
     // in volo, sempre in fondo: dichiarare (o annullare) un'emergenza
@@ -338,15 +341,15 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
         const sq=nuovoCodice(),dopoT=()=>{assegna(sq);dopo();if(avviso)avvisa(avviso.replace(/\.?$/,'')+' · '+testoSquawk(sq));};
         const vie=viaF(ctx.vie),vieIt=ctx.vie&&ctx.vie.length?' via '+ctx.vie.join(', '):'';
         const sbCod=Math.random()<0.4, sqS=codiceSbagliato(sq);   // la risposta sbagliata: pista, QNH o codice
-        atcDice(frase(CSB,', taxi to holding point ',pistaF(te),vie,', ',qnhF(),', ',squawkF(sq),poi),`${CSB.d}, rullate al punto attesa pista ${te.nome}${vieIt}, QNH ${QNH}, transponder ${sq}${poiIt}.`,
-          readback(frase('Taxi to holding point ',pistaF(te),vie,', ',qnhF(),', ',squawkF(sq),poiRb,', ',CSB),`Rulliamo al punto attesa pista ${te.nome}${vieIt}, QNH ${QNH}, transponder ${sq}${poiRbIt}, ${CSB.d}.`,
-            sbCod?frase('Taxi to holding point ',pistaF(te),', ',qnhF(),', ',squawkF(sqS),poiRb,', ',CSB):sbPista?frase('Taxi to holding point ',pistaF(altra),', ',qnhF(),', ',squawkF(sq),poiRb,', ',CSB):frase('Taxi to holding point ',pistaF(te),', ',qnhF(QNH+10),', ',squawkF(sq),poiRb,', ',CSB),
-            sbCod?`Rulliamo al punto attesa pista ${te.nome}, QNH ${QNH}, transponder ${sqS}${poiRbIt}, ${CSB.d}.`:sbPista?`Rulliamo al punto attesa pista ${altra.nome}, QNH ${QNH}, transponder ${sq}${poiRbIt}, ${CSB.d}.`:`Rulliamo al punto attesa pista ${te.nome}, QNH ${QNH+10}, transponder ${sq}${poiRbIt}, ${CSB.d}.`,
-            sbCod?frase(CSB,', negative, ',squawkF(sq)):frase(CSB,', negative, holding point ',pistaF(te),', ',qnhF()),sbCod?`${CSB.d}, negativo, transponder ${sq}.`:`${CSB.d}, negativo, punto attesa pista ${te.nome}, QNH ${QNH}.`,dopoT));
+        atcDice(frase(CSB,', taxi to holding point ',pistaF(te),vie,', ',qnhF(),', ',squawkF(sq),poi),`${CSB.d}, rullate al punto attesa pista ${te.nome}${vieIt}, QNH ${qnh()}, transponder ${sq}${poiIt}.`,
+          readback(frase('Taxi to holding point ',pistaF(te),vie,', ',qnhF(),', ',squawkF(sq),poiRb,', ',CSB),`Rulliamo al punto attesa pista ${te.nome}${vieIt}, QNH ${qnh()}, transponder ${sq}${poiRbIt}, ${CSB.d}.`,
+            sbCod?frase('Taxi to holding point ',pistaF(te),', ',qnhF(),', ',squawkF(sqS),poiRb,', ',CSB):sbPista?frase('Taxi to holding point ',pistaF(altra),', ',qnhF(),', ',squawkF(sq),poiRb,', ',CSB):frase('Taxi to holding point ',pistaF(te),', ',qnhF(qnh()+10),', ',squawkF(sq),poiRb,', ',CSB),
+            sbCod?`Rulliamo al punto attesa pista ${te.nome}, QNH ${qnh()}, transponder ${sqS}${poiRbIt}, ${CSB.d}.`:sbPista?`Rulliamo al punto attesa pista ${altra.nome}, QNH ${qnh()}, transponder ${sq}${poiRbIt}, ${CSB.d}.`:`Rulliamo al punto attesa pista ${te.nome}, QNH ${qnh()+10}, transponder ${sq}${poiRbIt}, ${CSB.d}.`,
+            sbCod?frase(CSB,', negative, ',squawkF(sq)):frase(CSB,', negative, holding point ',pistaF(te),', ',qnhF()),sbCod?`${CSB.d}, negativo, transponder ${sq}.`:`${CSB.d}, negativo, punto attesa pista ${te.nome}, QNH ${qnh()}.`,dopoT));
       }else{
         atcDice(frase(CSB,', ',nomeStaz(),', ',pistaF(te),' in use, ',ventoF(),', ',qnhF(),', no reported traffic'),
-          `${CSB.d}, ${staz.nome}, pista in uso ${te.nome}, ${ventoIt()}, QNH ${QNH}, nessun traffico segnalato.`,
-          readback(frase(pistaF(te),', ',qnhF(),', taxiing to holding point, ',CSB),`Pista ${te.nome}, QNH ${QNH}, rulliamo al punto attesa, ${CSB.d}.`,null,null,null,null,dopo));
+          `${CSB.d}, ${staz.nome}, pista in uso ${te.nome}, ${ventoIt()}, QNH ${qnh()}, nessun traffico segnalato.`,
+          readback(frase(pistaF(te),', ',qnhF(),', taxiing to holding point, ',CSB),`Pista ${te.nome}, QNH ${qnh()}, rulliamo al punto attesa, ${CSB.d}.`,null,null,null,null,dopo));
       }
     }};
   }
@@ -395,17 +398,17 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
       if(staz.torre){
         const sq=nuovoCodice(),sqS=codiceSbagliato(sq);
         atcDice(frase(CSB,', ',pistaF(te),', ',ventoF(),', ',qnhF(),', ',squawkF(sq),', cleared for take-off'),
-          `${CSB.d}, pista ${te.nome}, ${ventoIt()}, QNH ${QNH}, transponder ${sq}, autorizzato al decollo.`,
-          readback(frase(pistaF(te),', cleared for take-off, ',qnhF(),', ',squawkF(sq),', ',CSB),`Pista ${te.nome}, autorizzato al decollo, QNH ${QNH}, transponder ${sq}, ${CSB.d}.`,
+          `${CSB.d}, pista ${te.nome}, ${ventoIt()}, QNH ${qnh()}, transponder ${sq}, autorizzato al decollo.`,
+          readback(frase(pistaF(te),', cleared for take-off, ',qnhF(),', ',squawkF(sq),', ',CSB),`Pista ${te.nome}, autorizzato al decollo, QNH ${qnh()}, transponder ${sq}, ${CSB.d}.`,
             sbPista?frase(pistaF(altra),', cleared for take-off, ',qnhF(),', ',squawkF(sq),', ',CSB):frase(pistaF(te),', cleared for take-off, ',qnhF(),', ',squawkF(sqS),', ',CSB),
-            sbPista?`Pista ${altra.nome}, autorizzato al decollo, QNH ${QNH}, transponder ${sq}, ${CSB.d}.`:`Pista ${te.nome}, autorizzato al decollo, QNH ${QNH}, transponder ${sqS}, ${CSB.d}.`,
+            sbPista?`Pista ${altra.nome}, autorizzato al decollo, QNH ${qnh()}, transponder ${sq}, ${CSB.d}.`:`Pista ${te.nome}, autorizzato al decollo, QNH ${qnh()}, transponder ${sqS}, ${CSB.d}.`,
             frase(CSB,', negative, ',pistaF(te),', ',squawkF(sq),', I say again, ',pistaF(te),', cleared for take-off'),
             `${CSB.d}, negativo, pista ${te.nome}, transponder ${sq}, ripeto, pista ${te.nome}, autorizzato al decollo.`,
             ()=>{fase='autorizzato';assegna(sq);avvisa(L('Prima di partire ','Before take-off ')+testoSquawk(sq)+' · ALT');}));
       }else{
         atcDice(frase(CSB,', ',nomeStaz(),', ',pistaF(te),' in use, ',ventoF(),', ',qnhF(),', no reported traffic, report airborne'),
-          `${CSB.d}, ${staz.nome}, pista in uso ${te.nome}, ${ventoIt()}, QNH ${QNH}, nessun traffico segnalato, riportate in volo.`,
-          readback(frase(pistaF(te),', ',qnhF(),', wilco, ',CSB),`Pista ${te.nome}, QNH ${QNH}, eseguiremo, ${CSB.d}.`,null,null,null,null,()=>{fase='autorizzato';}));
+          `${CSB.d}, ${staz.nome}, pista in uso ${te.nome}, ${ventoIt()}, QNH ${qnh()}, nessun traffico segnalato, riportate in volo.`,
+          readback(frase(pistaF(te),', ',qnhF(),', wilco, ',CSB),`Pista ${te.nome}, QNH ${qnh()}, eseguiremo, ${CSB.d}.`,null,null,null,null,()=>{fase='autorizzato';}));
       }
     }};
   }
@@ -419,28 +422,28 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
       let ist,istIt,rb,rbIt;
       if(!s2.torre){
         ist=frase(pistaF(te),' in use, ',ventoF(),', ',qnhF(),', no reported traffic, report final');
-        istIt=`pista in uso ${te.nome}, ${ventoIt()}, QNH ${QNH}, nessun traffico segnalato, riportate in finale`;
-        rb=frase(pistaF(te),', ',qnhF(),', wilco, ',CSB);rbIt=`Pista ${te.nome}, QNH ${QNH}, eseguiremo, ${CSB.d}.`;
+        istIt=`pista in uso ${te.nome}, ${ventoIt()}, QNH ${qnh()}, nessun traffico segnalato, riportate in finale`;
+        rb=frase(pistaF(te),', ',qnhF(),', wilco, ',CSB);rbIt=`Pista ${te.nome}, QNH ${qnh()}, eseguiremo, ${CSB.d}.`;
       }else if(ils){
         ist=frase('cleared ILS approach ',pistaF(te),', ',qnhF(),', report final');
-        istIt=`autorizzato all'avvicinamento ILS pista ${te.nome}, QNH ${QNH}, riportate in finale`;
-        rb=frase('Cleared ILS approach ',pistaF(te),', ',qnhF(),', wilco, ',CSB);rbIt=`Autorizzato ILS pista ${te.nome}, QNH ${QNH}, eseguiremo, ${CSB.d}.`;
+        istIt=`autorizzato all'avvicinamento ILS pista ${te.nome}, QNH ${qnh()}, riportate in finale`;
+        rb=frase('Cleared ILS approach ',pistaF(te),', ',qnhF(),', wilco, ',CSB);rbIt=`Autorizzato ILS pista ${te.nome}, QNH ${qnh()}, eseguiremo, ${CSB.d}.`;
       }else if(allineato){
         ist=frase('straight-in approach ',pistaF(te),' approved, ',ventoF(),', ',qnhF(),', report final');
-        istIt=`avvicinamento diretto pista ${te.nome} approvato, ${ventoIt()}, QNH ${QNH}, riportate in finale`;
-        rb=frase('Straight-in ',pistaF(te),', ',qnhF(),', wilco, ',CSB);rbIt=`Diretti pista ${te.nome}, QNH ${QNH}, eseguiremo, ${CSB.d}.`;
+        istIt=`avvicinamento diretto pista ${te.nome} approvato, ${ventoIt()}, QNH ${qnh()}, riportate in finale`;
+        rb=frase('Straight-in ',pistaF(te),', ',qnhF(),', wilco, ',CSB);rbIt=`Diretti pista ${te.nome}, QNH ${qnh()}, eseguiremo, ${CSB.d}.`;
       }else{
         ist=frase('join the traffic circuit ',pistaF(te),', ',ventoF(),', ',qnhF(),', report final');
-        istIt=`entrate nel circuito di traffico pista ${te.nome}, ${ventoIt()}, QNH ${QNH}, riportate in finale`;
-        rb=frase('Join circuit ',pistaF(te),', ',qnhF(),', wilco, ',CSB);rbIt=`Entriamo nel circuito pista ${te.nome}, QNH ${QNH}, eseguiremo, ${CSB.d}.`;
+        istIt=`entrate nel circuito di traffico pista ${te.nome}, ${ventoIt()}, QNH ${qnh()}, riportate in finale`;
+        rb=frase('Join circuit ',pistaF(te),', ',qnhF(),', wilco, ',CSB);rbIt=`Entriamo nel circuito pista ${te.nome}, QNH ${qnh()}, eseguiremo, ${CSB.d}.`;
       }
       let sq=null,id=false;
       if(s2.torre){sq=nuovoCodice();id=Math.random()<0.5;
         ist=frase(squawkF(sq),id?' and ident':'',', ',ist);istIt=`transponder ${sq}${id?' e ident':''}, ${istIt}`;
         rb=frase(squawkF(sq),', ',rb);rbIt=`Transponder ${sq}, ${rbIt}`;}
       atcDice(frase(CSB,', ',s2.parla,', ',ist),`${CSB.d}, ${s2.nome}, ${istIt}.`,
-        readback(rb,rbIt,s2.torre?frase(pistaF(te),', ',qnhF(QNH-10),', wilco, ',CSB):null,`Pista ${te.nome}, QNH ${QNH-10}, eseguiremo, ${CSB.d}.`,
-          frase(CSB,', negative, ',qnhF(),', I say again, ',qnhF()),`${CSB.d}, negativo, QNH ${QNH}, ripeto, QNH ${QNH}.`,()=>{fase='arrivo';if(sq){assegna(sq);if(id)xp.identRichiesto=Date.now();}
+        readback(rb,rbIt,s2.torre?frase(pistaF(te),', ',qnhF(qnh()-10),', wilco, ',CSB):null,`Pista ${te.nome}, QNH ${qnh()-10}, eseguiremo, ${CSB.d}.`,
+          frase(CSB,', negative, ',qnhF(),', I say again, ',qnhF()),`${CSB.d}, negativo, QNH ${qnh()}, ripeto, QNH ${qnh()}.`,()=>{fase='arrivo';if(sq){assegna(sq);if(id)xp.identRichiesto=Date.now();}
             avvisa((sq?testoSquawk(sq)+(id?L(' e premi IDENT',' and press IDENT'):'')+' · ':'')+L('quando sei in finale, chiama la torre (T)','when on final, call the tower (T)'));}));
     }};
   }
@@ -529,7 +532,7 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
         chiave==='malore'?', ambulance will be waiting':'');
       const it2=`${CSB.d}, ${s2.nome}, ricevuto ${parola}${giaSq?'':', transponder '+sq}`+
         (chiave==='perso'?`, identificati, ${posizioneDa(ap,nomeAp(ap)).it}`:'')+vaiIt+
-        (fuori?', se non ci arrivate atterrate dove ritenete opportuno':'')+`, ${ventoIt()}, QNH ${QNH}`+
+        (fuori?', se non ci arrivate atterrate dove ritenete opportuno':'')+`, ${ventoIt()}, QNH ${qnh()}`+
         (may?'':', avete la precedenza')+(s2.torre?', autorizzati ad atterrare su qualsiasi pista':', atterraggio a vostra discrezione')+(may?', soccorsi allertati':'')+
         (chiave==='malore'?', un\'ambulanza vi aspetterà':'')+'.';
       const sbagliataB=tre(+b+(Math.random()<0.5?-40:40));
@@ -537,9 +540,9 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
       const sqRb=giaSq?['Heading ']:['Squawk ',cod(sq),', heading '];
       atcDice(f2,it2,readback(
         frase(...sqRb,{d:b,s:cifre(b)},', ',qnhF(),s2.torre?', cleared to land any runway, ':', ',CSB),
-        `${giaSq?'Prua':'Transponder '+sq+', prua'} ${b}, QNH ${QNH}${s2.torre?', autorizzati su qualsiasi pista':''}, ${CSB.d}.`,
+        `${giaSq?'Prua':'Transponder '+sq+', prua'} ${b}, QNH ${qnh()}${s2.torre?', autorizzati su qualsiasi pista':''}, ${CSB.d}.`,
         frase(...sqRb,{d:sbagliataB,s:cifre(sbagliataB)},', ',qnhF(),', ',CSB),
-        `${giaSq?'Prua':'Transponder '+sq+', prua'} ${sbagliataB}, QNH ${QNH}, ${CSB.d}.`,
+        `${giaSq?'Prua':'Transponder '+sq+', prua'} ${sbagliataB}, QNH ${qnh()}, ${CSB.d}.`,
         frase(CSB,', negative, heading ',{d:b,s:cifre(b)}),`${CSB.d}, negativo, prua ${b}.`,
         ()=>{fase='finale';avvisa(fuori?L(`Troppo lontano da ${ap.nome}: scegli un campo libero e atterra controvento`,`Too far from ${ap.nome}: pick a clear field and land into the wind`)
           :L(`Emergenza: vai a ${ap.nome}, prua ${b}, ${nm} NM · qualsiasi pista`,`Emergency: go to ${ap.nome}, heading ${b}, ${nm} NM · any runway`));}),true);
@@ -565,6 +568,14 @@ SIM.creaATC=function({A,T,met,audio,radio,stato}){
         o.etichetta=(CAUSE[k].liv==='mayday'?'MAYDAY · ':'PAN-PAN · ')+L(CAUSE[k].it,CAUSE[k].f);return o;})};
   }
   const mayday=()=>dichiara('motore');   // motore spento senza carburante
+  // richiesta del meteo alla stazione sintonizzata: risponde con il bollettino del suo aeroporto
+  function richiestaMeteo(){
+    const c=com,f=frase(c.parla,', ',CSB,', request weather');
+    const it=`${c.nome}, ${CSB.d}, chiediamo il meteo.`;
+    return {f,it,fai:()=>{pilotaDice(f,it);attendi(1000);
+      const b=SIM.meteo.bollettino(c.ap,cifre);
+      trasmetti('atc',frase(CSB,', ',c.parla,', ',{d:b.d,s:b.s}),`${CSB.d}, ${c.nome}, ${b.it}.`);}};
+  }
   function provaRadio(){
     const c=com,f=frase(c.parla,', ',CSB,', radio check');
     const it=`${c.nome}, ${CSB.d}, prova radio.`;
