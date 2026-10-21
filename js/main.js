@@ -362,6 +362,39 @@ for(const id of FINESTRE)$(id).addEventListener('click',e=>{if(e.target===$(id))
 function alternaAiuto(){if($('aiuto').hidden)apriFinestra('aiuto');else chiudiFinestra('aiuto');}
 $('btnAiuto').addEventListener('click',()=>{alternaAiuto();$('btnAiuto').blur();});
 for(const b of document.querySelectorAll('#btnLibretto,.apriLibretto'))b.addEventListener('click',()=>{apriFinestra('libretto');b.blur();});
+/* ---------- MAPPE in un'altra scheda (mappe.html): mappa grande collegata al volo e carte degli aeroporti ----------
+   il simulatore apre la scheda e le manda i dati del volo 5 volte al secondo con postMessage (funziona anche con
+   doppio clic sul file); la scheda, se il simulatore viene ricaricato, si fa risentire ("ciao") e si ricollega.
+   Online c'è anche BroadcastChannel: così si collega pure una scheda mappe.html aperta a mano. */
+const ascoltaMappe=new Set();
+let canaleMappe=null;try{if(window.BroadcastChannel)canaleMappe=new BroadcastChannel('volo-mappe');}catch(e){}
+function apriMappe(){
+  const ap=dest()||partenza.ap;
+  const w=window.open('mappe.html?mappa='+(window.MONDO_SCELTO||'piemonte')+(ap?'&ap='+ap.codice:''),'voloMappe');
+  if(w){ascoltaMappe.add(w);w.focus();}
+}
+$('btnMappe').addEventListener('click',()=>{apriMappe();$('btnMappe').blur();});
+addEventListener('message',e=>{if(e.data&&e.data.voloMappe==='ciao'&&e.source)ascoltaMappe.add(e.source);});
+if(canaleMappe)canaleMappe.onmessage=e=>{if(e.data&&e.data.voloMappe==='ciao')inviaMappe(true);};
+const avanti=new THREE.Vector3();
+let ultimoMetar=0,metarMappe=null;
+function inviaMappe(subito){
+  if(!ascoltaMappe.size&&!canaleMappe) return;
+  avanti.set(0,0,-1).applyQuaternion(st.q);
+  const now=Date.now();
+  if(now-ultimoMetar>5000||subito){ultimoMetar=now;   // il METAR di ogni aeroporto, ogni 5 s (col meteo attivo)
+    metarMappe=meteo.attivo?Object.fromEntries(T.aeroporti.map(a=>[a.codice,meteo.metar(a)])):null;}
+  const r=strum.rotta;
+  const msg={voloMappe:'stato',mondo:window.MONDO_SCELTO||'piemonte',avviato,pausa:inPausa,crashed:st.crashed,
+    x:st.pos.x,y:st.pos.y,z:st.pos.z,hdg:((Math.atan2(avanti.x,-avanti.z)*R2D)+360)%360,
+    ias:st.ias*KT,alt:st.pos.y*FT,agl:st.agl*FT,vs:st.vel.y*FPM,gs:st.gs*KT,carb:st.carburante,unCarb:A.carburante.unita||'gal',
+    dest:dest()?dest().codice:null,part:partenza.ap?partenza.ap.codice:null,aereo:A.nome,reg:A.registrazione||'',
+    rotta:r?{punti:r.punti.map(p=>({x:p.x,z:p.z,nome:p.nome||''})),prossimo:r.prossimo}:null,
+    traffico:traffico?traffico.lista():[],
+    meteo:{attivo:meteo.attivo,tipo:meteo.tipo,ventoDa:met.ventoDa,ventoNodi:met.ventoNodi,raffiche:met.raffiche,qnh:met.qnh},metar:metarMappe};
+  for(const w of ascoltaMappe){try{if(w.closed){ascoltaMappe.delete(w);continue;}w.postMessage(msg,'*');}catch(e){ascoltaMappe.delete(w);}}
+  if(canaleMappe)try{canaleMappe.postMessage(msg);}catch(e){}
+}
 $('librettoSvuota').addEventListener('click',()=>{
   if(!confirm(L('Cancellare tutti i voli del libretto?','Delete every flight in the logbook?')))return;
   libretto.svuota();$('librettoCorpo').innerHTML=libretto.html();
@@ -1221,6 +1254,7 @@ function ciclo(ora,sfondo){
     // missione finita: il risultato quando l'aereo è fermo
     if(missioni.daMostrare()&&st.aTerra&&st.gs<1&&!st.crashed)mostraEsito();
   }
+  if(n%12===0)inviaMappe();   // la scheda MAPPE (mappe.html), se aperta
   if(n%15===0)controllaRadio(attivo?0.25:0);
   if(n%15===0)aggiornaRifornimento(attivo?dt*15:0);
   if(n%15===0&&scheda==='ap')aggiornaSchedaAP();
