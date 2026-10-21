@@ -163,7 +163,7 @@ let faseMostrata=-1;
 function ricalcolaPiano(){
   const d=dest(),p=piano.calcola(daPiano||partenza,d,d&&testataControvento(d));
   $('pianoCorpo').innerHTML=piano.html();faseMostrata=-1;
-  strum.impostaRotta(p?{punti:[{x:p.x0,z:p.z0},{x:p.faf.x,z:p.faf.z,nome:p.nomeFaf},{x:p.te.x,z:p.te.z}],prossimo:1}:null);
+  strum.impostaRotta(p?{punti:p.punti,prossimo:p.idx}:null);
   aggiornaPiano();adattaDestra();
 }
 // rullaggio in corso (partenza dal parcheggio, prima del decollo): la mappa mostra il percorso a terra
@@ -176,7 +176,7 @@ function aggiornaPiano(){
   if(p.fase!==faseMostrata){faseMostrata=p.fase;$('pianoCorpo').innerHTML=piano.html();}
   const f=$('pvFase');if(f)scrivi(f,piano.testoFase());
   if(rull)strum.impostaRotta({punti:rull.punti,prossimo:rull.i});
-  else strum.impostaRotta({punti:[{x:p.x0,z:p.z0},{x:p.faf.x,z:p.faf.z,nome:p.nomeFaf},{x:p.te.x,z:p.te.z}],prossimo:p.prossimo+1});
+  else strum.impostaRotta({punti:p.punti,prossimo:p.idx});
 }
 /* la colonna di destra non deve finire sotto il pannello in basso: se serve, la mappa si rimpicciolisce
    e le altre schede (radio, piano, missione) scorrono */
@@ -243,7 +243,7 @@ function ricominciaSubito(){
   $('thr').value=Math.round(st.thr*100);
   rull=partenza.parcheggio&&modalita!=='finale'?{punti:partenza.percorso,i:1}:null;
   arrivo=null;
-  if(piano.piano){piano.piano.prossimo=0;aggiornaPiano();}
+  if(piano.piano){piano.piano.prossimo=0;piano.piano.idx=1;aggiornaPiano();}
   atc.reset(ctxATC());
   atterratoA=null;
   // si parte già in volo (in finale): il volo del libretto comincia subito
@@ -389,7 +389,7 @@ function inviaMappe(subito){
     x:st.pos.x,y:st.pos.y,z:st.pos.z,hdg:((Math.atan2(avanti.x,-avanti.z)*R2D)+360)%360,
     ias:st.ias*KT,alt:st.pos.y*FT,agl:st.agl*FT,vs:st.vel.y*FPM,gs:st.gs*KT,carb:st.carburante,unCarb:A.carburante.unita||'gal',
     dest:dest()?dest().codice:null,part:partenza.ap?partenza.ap.codice:null,aereo:A.nome,reg:A.registrazione||'',
-    rotta:r?{punti:r.punti.map(p=>({x:p.x,z:p.z,nome:p.nome||''})),prossimo:r.prossimo}:null,
+    rotta:r?{punti:r.punti.map(p=>({x:p.x,z:p.z,nome:p.nome||'',r:p.r||0})),prossimo:r.prossimo}:null,
     traffico:traffico?traffico.lista():[],
     meteo:{attivo:meteo.attivo,tipo:meteo.tipo,ventoDa:met.ventoDa,ventoNodi:met.ventoNodi,raffiche:met.raffiche,qnh:met.qnh},metar:metarMappe};
   for(const w of ascoltaMappe){try{if(w.closed){ascoltaMappe.delete(w);continue;}w.postMessage(msg,'*');}catch(e){ascoltaMappe.delete(w);}}
@@ -461,9 +461,8 @@ const nomeCdi=()=>cdi==='GPS'?'GPS':nav.staz?(nav.staz.tipo==='ILS'?'LOC1':'VOR1
 // tratto attivo della rotta magenta (lo stesso della mappa): dal punto lasciato al prossimo
 function trattoGPS(){
   const p=piano.piano;if(!p||rull) return null;
-  const punti=[{x:p.x0,z:p.z0},{x:p.faf.x,z:p.faf.z,nome:p.nomeFaf},{x:p.te.x,z:p.te.z,nome:'RW'+p.te.nome}];
-  const i=Math.min(p.prossimo+1,2);
-  return {a:punti[i-1],b:punti[i],finale:i===2};
+  const punti=p.punti,i=clamp(p.idx,1,punti.length-1);
+  return {a:punti[i-1],b:punti[i],finale:i===punti.length-1};
 }
 /* misura GPS, nello stesso formato del ricevitore NAV1: rotta voluta (DTK), distanza dalla rotta (xtk, m,
    + = rotta a destra) e deviazione con fondo scala 2 NM (1 NM sul tratto finale), come sul G1000 */

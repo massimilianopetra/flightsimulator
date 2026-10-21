@@ -201,7 +201,32 @@ function disegnaAeroporto(){
   schedaDati(ap,te);
 }
 
-/* ---------- la carta: vista dall'alto col nord in alto ---------- */
+/* ---------- la carta: vista dall'alto col nord in alto, ingrandibile ---------- */
+const vista={ap:null,zoom:1,cx:0,cz:0,c0x:0,c0z:0,kFit:1,SX:0,SY:0};
+function zoomCarta(f,mx,my){
+  if(!vista.ap) return;
+  const k=vista.kFit*vista.zoom;
+  if(mx==null){mx=vista.SX;my=vista.SY;}
+  const wx=vista.cx+(mx-vista.SX)/k,wz=vista.cz+(my-vista.SY)/k;   // il punto sotto il mouse resta fermo
+  vista.zoom=clamp(vista.zoom*f,1,60);
+  const k2=vista.kFit*vista.zoom;
+  vista.cx=wx-(mx-vista.SX)/k2;vista.cz=wz-(my-vista.SY)/k2;
+  if(vista.zoom===1){vista.cx=vista.c0x;vista.cz=vista.c0z;}
+  disegnaCarta(vista.ap);
+}
+cc.addEventListener('wheel',e=>{e.preventDefault();const r=cc.getBoundingClientRect();zoomCarta(e.deltaY<0?1.25:0.8,e.clientX-r.left,e.clientY-r.top);},{passive:false});
+let presaC=null;
+cc.addEventListener('pointerdown',e=>{presaC={x:e.clientX,y:e.clientY};cc.setPointerCapture(e.pointerId);});
+cc.addEventListener('pointermove',e=>{
+  if(!presaC||!vista.ap) return;
+  const k=vista.kFit*vista.zoom;vista.cx-=(e.clientX-presaC.x)/k;vista.cz-=(e.clientY-presaC.y)/k;presaC={x:e.clientX,y:e.clientY};
+  disegnaCarta(vista.ap);
+});
+cc.addEventListener('pointerup',()=>{presaC=null;});
+cc.addEventListener('dblclick',()=>{if(vista.ap){vista.zoom=1;vista.cx=vista.c0x;vista.cz=vista.c0z;disegnaCarta(vista.ap);}});
+$('cartaPiu').addEventListener('click',()=>zoomCarta(1.5));
+$('cartaMeno').addEventListener('click',()=>zoomCarta(1/1.5));
+$('cartaTutta').addEventListener('click',()=>{if(vista.ap){vista.zoom=1;vista.cx=vista.c0x;vista.cz=vista.c0z;disegnaCarta(vista.ap);}});
 function disegnaCarta(ap){
   const dp=Math.min(2,window.devicePixelRatio||1),r=cc.getBoundingClientRect(),CW=r.width,CH=r.height;
   if(!CW||!CH) return;
@@ -218,9 +243,12 @@ function disegnaCarta(ap){
   if(!rete){const p=ap.piste[0];for(const u of [-90,90])for(const v of [70,145])allarga(p.cx+p.dir.x*u-p.dir.z*v,p.cz+p.dir.z*u+p.dir.x*v);}
   const marg=120;x0-=marg;x1+=marg;z0-=marg;z1+=marg;
   const TOP=54,BOT=34;
-  const k=Math.min((CW-40)/(x1-x0),(CH-TOP-BOT)/(z1-z0));
-  const ox=CW/2-(x0+x1)/2*k,oz=TOP+(CH-TOP-BOT)/2-(z0+z1)/2*k;
-  const P=(x,z)=>[ox+x*k,oz+z*k];
+  // vista: tutto l'aeroporto, poi si ingrandisce (rotella, pulsanti) e si sposta (trascinando)
+  const kFit=Math.min((CW-40)/(x1-x0),(CH-TOP-BOT)/(z1-z0));
+  if(vista.ap!==ap)Object.assign(vista,{ap,zoom:1,cx:(x0+x1)/2,cz:(z0+z1)/2,c0x:(x0+x1)/2,c0z:(z0+z1)/2});
+  Object.assign(vista,{kFit,SX:CW/2,SY:TOP+(CH-TOP-BOT)/2});
+  const k=kFit*vista.zoom;
+  const P=(x,z)=>[vista.SX+(x-vista.cx)*k,vista.SY+(z-vista.cz)*k];
   const poli=(pts,chiudi=true)=>{c.beginPath();pts.forEach((q,i)=>{const [x,y]=P(q.x,q.z);i?c.lineTo(x,y):c.moveTo(x,y);});if(chiudi)c.closePath();};
 
   // carta chiara (si stampa bene)
@@ -271,10 +299,18 @@ function disegnaCarta(ap){
       c.fillStyle='#222';c.fillText(e.n,x,y);
     }
   }
-  // piazzole numerate
+  // pontili d'imbarco e linee gialle delle piazzole (si vedono ingrandendo)
+  if(d3&&d3.pontili&&k>0.5){c.strokeStyle='#6b7280';c.lineWidth=Math.max(2,3.5*k);c.lineCap='round';
+    for(const l of d3.pontili){poli(anello(ap,l),false);c.stroke();}c.lineCap='butt';}
+  if(d3&&d3.piazzole&&k>0.6){c.strokeStyle='#d9a600';c.lineWidth=1;
+    for(const p of d3.piazzole)if(p.l){poli(anello(ap,p.l),false);c.stroke();}}
+  // piazzole numerate (più grandi quando si ingrandisce)
   if(d3&&d3.piazzole&&k>0.25){
-    c.font=`700 9px ${MONO}`;c.textAlign='center';c.textBaseline='middle';
-    for(const p of d3.piazzole){const [x,y]=P(ap.x+p.x/10,ap.z-p.y/10);c.fillStyle='#1f5aa6';c.fillText(p.r,x,y);}
+    const fs=k>2?13:k>1?11:9;
+    c.font=`700 ${fs}px ${MONO}`;c.textAlign='center';c.textBaseline='middle';
+    for(const p of d3.piazzole){const [x,y]=P(ap.x+p.x/10,ap.z-p.y/10);
+      if(k>1){const w=c.measureText(p.r).width+6;c.fillStyle='rgba(245,242,234,.85)';c.fillRect(x-w/2,y-fs/2-2,w,fs+4);}
+      c.fillStyle='#1f5aa6';c.fillText(p.r,x,y);}
   }
   // torre
   const tw=d3&&d3.torre?{x:ap.x+d3.torre.x/10,z:ap.z-d3.torre.y/10}:null;
@@ -316,7 +352,7 @@ function disegnaCarta(ap){
   c.fillText(L('Elevazione ','Elevation ')+Math.round(ap.quota*FT)+' ft · '+L('carta simulata, non per la navigazione','simulated chart, not for navigation'),CW-14,20);
   const nx=CW-30,ny=TOP+26;c.fillStyle='#0b1322';c.beginPath();c.moveTo(nx,ny-16);c.lineTo(nx+8,ny+8);c.lineTo(nx,ny+3);c.lineTo(nx-8,ny+8);c.closePath();c.fill();
   c.font=`700 12px ${MONO}`;c.textAlign='center';c.fillText('N',nx,ny+20);
-  let sm=100;for(const v of [100,200,250,500,1000])if(v*k<CW*0.25)sm=v;
+  let sm=10;for(const v of [10,20,50,100,200,250,500,1000])if(v*k<CW*0.25)sm=v;
   const sy=CH-16;c.fillStyle='#0b1322';c.fillRect(20,sy-3,sm*k,6);c.fillStyle='#f5f2ea';c.fillRect(20+sm*k/2,sy-2,sm*k/2-1,4);
   c.font=`400 11px ${UI}`;c.textAlign='left';c.fillStyle='#0b1322';c.fillText(sm+' m',24+sm*k,sy+1);
 }
@@ -345,9 +381,9 @@ function schedaDati(ap,te){
   const lato=latoCircuito(te),q=te.pista.quota,cir=Math.round((q*FT+1000)/100)*100,ils=radio.ilsDi(te);
   h+=`<canvas id="circuito" class="schema"></canvas>`;
   h+=`<ul class="note">`;
-  h+=lato?`<li>${L('Circuito','Circuit')} <b>${lato>0?L('a sinistra','left-hand'):L('a destra','right-hand')}</b> ${L('a','at')} <b>${cir} ft</b> QNH (${L('1000 ft sopra il campo','1000 ft above the field')}), ${L('sottovento a circa 1,4 km dalla pista','downwind about 1.4 km from the runway')}.</li>`
+  h+=lato?`<li>${L('Circuito','Circuit')} <b>${lato>0?L('a sinistra','left-hand'):L('a destra','right-hand')}</b> ${L('a','at')} <b>${cir} ft</b> QNH (${L('1000 ft sopra il campo','1000 ft above the field')}), ${L('sottovento a circa 1,4 km dalla pista, finale corta (1,5 NM)','downwind about 1.4 km from the runway, short final (1.5 NM)')}.</li>`
          :`<li>${L('Rilievi vicini: niente circuito, solo','High ground nearby: no circuit, only a')} <b>${L('avvicinamento diretto','straight-in approach')}</b>.</li>`;
-  h+=`<li>${L('Finale','Final')} ${L('da','from')} <b>5 NM</b> ${L('a','at')} <b>${Math.round((q*FT+50+5*NM*Math.tan(3*D2R)*FT)/10)*10} ft</b>, ${L('discesa di 3° (circa 320 ft per miglio, 500 ft/min a 90 kt)','3° descent (about 320 ft per mile, 500 ft/min at 90 kt)')}.</li>`;
+  h+=`<li>${L('Avvicinamento diretto: finale','Straight-in approach: final')} ${L('da','from')} <b>5 NM</b> ${L('a','at')} <b>${Math.round((q*FT+50+5*NM*Math.tan(3*D2R)*FT)/10)*10} ft</b>, ${L('discesa di 3° (circa 320 ft per miglio, 500 ft/min a 90 kt)','3° descent (about 320 ft per mile, 500 ft/min at 90 kt)')}.</li>`;
   if(!te.pista.erba)h+=`<li>PAPI ${L('a sinistra','on the left')}: <span class="papi"><i class="w"></i><i class="w"></i><i class="r"></i><i class="r"></i></span> ${L('= giusta pendenza','= on slope')}.</li>`;
   h+=ils?`<li>ILS <b>${esc(ils.id)}</b> ${ils.freq.toFixed(2)} MHz, ${L('rotta','course')} <b>${tre(te.hdg)}°</b>, ${L('sentiero','glide slope')} 3°, ${L('minimi','minimums')} <b>${Math.round(q*FT+200)} ft</b> (200 ft ${L('sopra la pista','above the runway')}).</li>`:`<li>${L('Niente ILS su questa pista: avvicinamento a vista.','No ILS on this runway: visual approach.')}</li>`;
   h+=`</ul><canvas id="profilo" class="schema"></canvas><p class="avviso">${L('Procedure simulate dal gioco, non quelle ufficiali.','Procedures simulated by the game, not the official ones.')}</p>`;
@@ -373,7 +409,9 @@ function disegnaCircuito(cv,te,lato){
   else{
     const sx=cx-lato*D*k,top=Y(L0+500),bot=Y(-1000);
     c.strokeStyle='#d0168f';c.lineWidth=2.5;c.beginPath();
-    c.moveTo(cx,Y(L0*0.6));c.lineTo(cx,top);c.lineTo(sx,top);c.lineTo(sx,bot);c.lineTo(cx,bot);c.lineTo(cx,Y(0));c.stroke();
+    // virate del circuito ad arco (raggio di circa 450 m, 25° di inclinazione)
+    const r=Math.max(4,450*k);
+    c.moveTo(cx,Y(L0*0.6));c.arcTo(cx,top,sx,top,r);c.arcTo(sx,top,sx,bot,r);c.arcTo(sx,bot,cx,bot,r);c.arcTo(cx,bot,cx,Y(0),r);c.lineTo(cx,Y(0));c.stroke();
     const freccia=(x,y,a)=>{c.save();c.translate(x,y);c.rotate(a);c.fillStyle='#d0168f';c.beginPath();c.moveTo(0,-7);c.lineTo(5,3);c.lineTo(-5,3);c.closePath();c.fill();c.restore();};
     freccia(cx,(Y(L0*0.6)+top)/2,0);freccia(sx,(top+bot)/2,Math.PI);freccia(cx,(bot+Y(0))/2,0);
     freccia((cx+sx)/2,top,-lato*Math.PI/2);freccia((cx+sx)/2,bot,lato*Math.PI/2);

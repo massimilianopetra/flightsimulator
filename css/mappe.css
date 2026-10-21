@@ -71,6 +71,10 @@ main{flex:1;position:relative;min-height:0}
 .papi i{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid #333}
 .papi .w{background:#fff}.papi .r{background:#ff2a1a}
 .stampa{position:absolute;left:12px;bottom:12px}
+#carta{cursor:grab;touch-action:none}#carta:active{cursor:grabbing}
+.comandi-carta{left:12px;top:52px;display:flex;gap:6px}
+.comandi-carta #cartaPiu,.comandi-carta #cartaMeno{font-size:16px;padding:2px 10px}
+@media print{.comandi-carta{display:none!important}}
 
 .privacy{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:40;width:min(46rem,calc(100% - 32px));
   display:flex;gap:14px;align-items:center;background:var(--panel);border:1px solid var(--riga);border-radius:8px;padding:10px 14px;font-size:13px}
