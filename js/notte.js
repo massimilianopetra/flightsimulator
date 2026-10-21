@@ -31,12 +31,24 @@ function texturaLuce(){
   g.fillStyle=gr;g.fillRect(0,0,64,64);
   return new THREE.CanvasTexture(c);
 }
-function punti(pos,col,dim,tex,nebbia=false){
+/* le luci non prendono il colore della nebbia (all'orizzonte farebbero una striscia), ma si spengono con la
+   visibilità del momento (js/meteo.js): arrivano fino a 1,6 volte la nebbia, dentro le nubi spariscono */
+const VIS={value:new THREE.Vector2(1e9,2e9)};
+function sfumaNebbia(mat,extraV=''){
+  mat.onBeforeCompile=sh=>{
+    sh.uniforms.uVis=VIS;
+    sh.vertexShader='uniform vec2 uVis;varying float vVis;varying float vVicino;\n'+sh.vertexShader.replace('#include <fog_vertex>',
+      '#include <fog_vertex>\nvVis=1.0-smoothstep(uVis.x,uVis.y,-mvPosition.z);\nvVicino=1.0;'+extraV);
+    sh.fragmentShader='varying float vVis;varying float vVicino;\n'+sh.fragmentShader.replace('#include <fog_fragment>','gl_FragColor.rgb*=vVis*vVicino;\n#include <fog_fragment>');
+  };
+}
+function punti(pos,col,dim,tex,nebbia=false,sfuma=true){
   const geo=new THREE.BufferGeometry();
   geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(pos),3));
   geo.setAttribute('color',new THREE.BufferAttribute(new Float32Array(col),3));
   const mat=new THREE.PointsMaterial({size:dim,sizeAttenuation:false,map:tex,vertexColors:true,transparent:true,
     depthWrite:false,blending:THREE.AdditiveBlending,fog:nebbia});
+  if(!nebbia&&sfuma)sfumaNebbia(mat);
   const p=new THREE.Points(geo,mat);p.frustumCulled=false;p.visible=false;
   return p;
 }
@@ -220,10 +232,7 @@ SIM.creaNotte=function(scene,mondo,T){
     // le luci delle città si spengono con la distanza (verso il nero): con la nebbia normale prenderebbero il suo colore e,
     // sommate a migliaia all'orizzonte, farebbero una striscia chiara
     luciCitta=cp.length?punti(cp,cc,2.4,tex,false):null;
-    if(luciCitta)luciCitta.material.onBeforeCompile=sh=>{   // e si spengono del tutto oltre ~28 km
-      sh.vertexShader='varying float vVicino;\n'+sh.vertexShader.replace('#include <fog_vertex>','#include <fog_vertex>\nvVicino=1.0-smoothstep(6000.0,28000.0,-mvPosition.z);');
-      sh.fragmentShader='varying float vVicino;\n'+sh.fragmentShader.replace('#include <fog_fragment>','gl_FragColor.rgb*=vVicino;\n#include <fog_fragment>');
-    };
+    if(luciCitta)sfumaNebbia(luciCitta.material,'\nvVicino=1.0-smoothstep(6000.0,28000.0,-mvPosition.z);');   // e si spengono del tutto oltre ~28 km
     if(luciCitta)scene.add(luciCitta);
   }
 
@@ -236,7 +245,7 @@ SIM.creaNotte=function(scene,mondo,T){
     const k=(0.45+rnd()*0.55)*Math.min(1,Math.max(0,(el-0.1)/0.33));
     sp.push(Math.cos(a)*Math.cos(el)*r,Math.sin(el)*r,Math.sin(a)*Math.cos(el)*r);sc.push(k,k,k*1.05);
   }
-  const stelle=punti(sp,sc,2,tex);stelle.renderOrder=-5;scene.add(stelle);
+  const stelle=punti(sp,sc,2,tex,false,false);stelle.renderOrder=-5;scene.add(stelle);   // seguono la telecamera: niente sfumatura
 
   /* ---- faro di atterraggio (sull'aereo, verso avanti e un po' in basso) ---- */
   const faro=new THREE.SpotLight(0xfff1dc,0,900,0.32,0.55,1);
@@ -264,7 +273,8 @@ SIM.creaNotte=function(scene,mondo,T){
   }
   return {
     imposta, get ora(){return ora;},
-    aggiorna(cam){if(stelle.visible)stelle.position.copy(cam);if(luciLampi&&luciLampi.visible)aggiornaLampi();},
+    aggiorna(cam){
+      const f=scene.fog;if(f)VIS.value.set(f.far*0.6,f.far*1.6);if(stelle.visible)stelle.position.copy(cam);if(luciLampi&&luciLampi.visible)aggiornaLampi();},
   };
 };
 })();

@@ -112,6 +112,7 @@ SIM.creaMondo=function(scene,renderer){
   // segnaletica gialla di rullaggio (sopra piazzale e raccordo)
   const matGiallo=new THREE.MeshStandardMaterial({color:0xf2c200,roughness:.8,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});
   const papi=[], maniche=[];
+  const colPapi=new THREE.Color();
   const torri=[];
 
   // aggiunge una mesh posizionata in coordinate locali della pista (u lungo, v a destra)
@@ -292,7 +293,11 @@ SIM.creaMondo=function(scene,renderer){
       for(const u of papi)for(const l of u){
         const dx=s.pos.x-l.m.position.x,dz=s.pos.z-l.m.position.z,d=Math.hypot(dx,dz);
         const ang=Math.atan2(s.pos.y-l.m.position.y,d)/D2R;
-        l.mat.color.setHex(ang>l.soglia?0xffffff:0xff2a1a);
+        // le luci si vedono un po' più lontano del paesaggio, ma nella nebbia e nelle nubi (js/meteo.js) si spengono
+        const dc=l.m.position.distanceTo(cam),f=scene.fog,vis=f?1-clamp((dc-f.far*0.6)/(f.far*1.0),0,1):1;
+        l.m.visible=vis>0.02;
+        colPapi.setHex(ang>l.soglia?0xffffff:0xff2a1a);
+        l.mat.color.copy(f?f.color:colPapi).lerp(colPapi,vis);
         const k=Math.max(1,Math.hypot(cam.x-l.m.position.x,cam.z-l.m.position.z)/350);
         l.m.scale.set(k,k,k);
       }

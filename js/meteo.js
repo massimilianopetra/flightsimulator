@@ -497,7 +497,8 @@ if(a<0.02)discard;gl_FragColor=vec4(uCol,a);}`,transparent:true,depthWrite:false
       const u=n?uniN:uniP;
       u.uCam.value.copy(cam);u.uT.value=tReale;
       const wx=wv.x,wz=wv.z;
-      if(n){u.uV.value.set(wx*0.8,-1.4,wz*0.8);geoN.setDrawRange(0,Math.round(NP*0.8*pioggiaK));}
+      if(n){u.uV.value.set(wx*0.8,-1.4,wz*0.8);const ln=0.2+0.8*lum(B.nuv);uniN.uCol.value.setRGB(0.95*ln,0.96*ln,ln);   // di notte fiocchi scuri
+        geoN.setDrawRange(0,Math.round(NP*0.8*pioggiaK));}
       else{u.uV.value.set(wx,-9,wz);uniP.uRel.value.set(wx-velCam.x,-9-velCam.y,wz-velCam.z).multiplyScalar(0.045);
         geoP.setDrawRange(0,Math.round(NP*pioggiaK)*2);uniP.uA.value=0.22+0.16*pioggiaK;
         uniP.uCol.value.copy(B.nuv).multiplyScalar(0.8);}
