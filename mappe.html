@@ -1,0 +1,88 @@
+<!doctype html>
+<!--
+  Volo — simulatore di volo nel browser
+  Autore: Massimiliano Petra <massimiliano.petra@gmail.com>
+  Copyright (C) 2026 Massimiliano Petra
+  Licenza: GNU General Public License versione 3 o successiva
+  (GPL-3.0-or-later). Questo programma è software libero: puoi
+  ridistribuirlo e/o modificarlo secondo i termini della GNU GPL
+  pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta)
+  qualunque versione successiva. È distribuito SENZA ALCUNA GARANZIA.
+  Testo completo nel file LICENSE.
+  ---------------------------------------------------------------------
+  Mappe in un'altra scheda: mappa grande collegata al volo e carte degli aeroporti (js/mappe.js).
+-->
+<html lang="it" data-en-title="Maps · Volo">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mappe · Volo</title>
+<link rel="icon" href="icone/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icone/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="stylesheet" href="css/font.css">
+<link rel="stylesheet" href="css/mappe.css">
+</head>
+<body>
+<header class="barra">
+  <span class="marchio">VOLO · <span data-en="MAPS">MAPPE</span></span>
+  <nav class="schede">
+    <button type="button" data-scheda="grande" data-en="LARGE MAP">MAPPA GRANDE</button>
+    <button type="button" data-scheda="aeroporto" data-en="AIRPORT">AEROPORTO</button>
+  </nav>
+  <label class="scegli"><span data-en="Airport">Aeroporto</span> <select id="selAp"></select></label>
+  <span id="stato" class="stato no"></span>
+</header>
+
+<main>
+  <section id="vistaGrande" class="vista">
+    <canvas id="grande"></canvas>
+    <div id="datiVolo" class="riquadro dati-volo" hidden></div>
+    <div class="riquadro comandi">
+      <button type="button" id="zoomPiu" title="Più dettaglio (rotella)" data-en-title="More detail (wheel)">+</button>
+      <span id="scalaGrande" class="scala"></span>
+      <button type="button" id="zoomMeno" title="Più zona (rotella)" data-en-title="Wider area (wheel)">−</button>
+      <button type="button" id="orientGrande" title="Nord in alto o prua in alto" data-en-title="North up or heading up"></button>
+      <button type="button" id="segui" data-en="FOLLOW AIRCRAFT">SEGUI L'AEREO</button>
+      <button type="button" id="cancellaTraccia" data-en="CLEAR TRACK">CANCELLA TRACCIA</button>
+    </div>
+    <p class="aiuto" data-en="Drag to move the map · wheel to zoom · the orange line is the path flown">Trascina per spostare la mappa · rotella per la scala · la linea arancione è la strada percorsa</p>
+  </section>
+
+  <section id="vistaAeroporto" class="vista aeroporto" hidden>
+    <canvas id="carta"></canvas>
+    <aside id="dati" class="dati"></aside>
+    <button type="button" id="stampa" class="stampa" data-en="PRINT">STAMPA</button>
+  </section>
+</main>
+
+<!-- finte superfici per js/strumenti.js (qui si usa solo la sua mappa) -->
+<div hidden><canvas id="pfd"></canvas><canvas id="minimap"></canvas><canvas id="aux"></canvas></div>
+
+<!-- avviso privacy: niente cookie, solo memoria locale tecnica (vedi privacy.html) -->
+<div id="privacy" class="privacy" role="dialog" aria-label="Privacy" hidden>
+  <p data-en="This page uses <b>no cookies</b> and no tracking. It only keeps your settings <b>in your browser</b> (local storage). <a href=&quot;privacy.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;>Privacy notice ↗</a>">Questa pagina <b>non usa cookie</b> né sistemi di tracciamento. Salva solo le tue impostazioni <b>nel tuo browser</b> (memoria locale). <a href="privacy.html" target="_blank" rel="noopener">Informativa privacy ↗</a></p>
+  <button type="button" id="privacyOk" data-en="Got it">Ho capito</button>
+</div>
+
+<!-- three.js r128 (licenza MIT): serve a js/terreno.js per i colori -->
+<script src="lib/three.min.js"></script>
+<script src="js/lingua.js"></script>
+<script src="js/privacy.js"></script>
+<!-- gli stessi dati del simulatore: il mondo si sceglie con ?mappa=piemonte (predefinito) o ?mappa=valle -->
+<script>
+(function(){
+  var MONDI={piemonte:["dati/piemonte-rilievo.js","dati/piemonte-vie.js","dati/piemonte-abitati.js","dati/piemonte.js","dati/piemonte-radio.js","dati/piemonte-rullaggio.js","dati/piemonte-aeroporti.js"], valle:["dati/mappa.js"]};
+  var m=/[?&]mappa=(\w+)/.exec(location.search), scelta=(m&&MONDI[m[1]])?m[1]:"piemonte";
+  window.MONDO_SCELTO=scelta;
+  document.write('<script src="dati/c172.js"><\/script>');
+  MONDI[scelta].forEach(function(f){document.write('<script src="'+f+'"><\/script>');});
+})();
+</script>
+<script src="js/terreno.js"></script>
+<script src="js/rullaggio.js"></script>
+<script src="js/radio.js"></script>
+<script src="js/piano.js"></script>
+<script src="js/strumenti.js"></script>
+<script src="js/mappe.js"></script>
+</body>
+</html>

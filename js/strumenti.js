@@ -19,7 +19,10 @@ const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const MONO='"B612 Mono", ui-monospace, monospace';
 const Lg=(it,en)=>SIM.L?SIM.L(it,en):it;   // lingua (js/lingua.js)
 
-SIM.creaStrumenti=function(A){
+/* opz (facoltativo): {chiaveZoom, chiaveOrient} = dove ricordare scala e orientamento della mappa
+   (la mappa grande di mappe.html ha i suoi, diversi da quelli della minimappa del gioco) */
+SIM.creaStrumenti=function(A,opz={}){
+  const CH_ZOOM=opz.chiaveZoom||'volo-mappa-zoom2',CH_ORIENT=opz.chiaveOrient||'volo-mappa-orient';
   const T=SIM.terreno, M=window.MAPPA||{};
   const pfd=document.getElementById('pfd');
   let g=pfd.getContext('2d');
@@ -594,17 +597,17 @@ SIM.creaStrumenti=function(A){
   const scale=[...SCALE_NM.map(nm=>nm*1852),EST];
   const nomeScala=i=>i<SCALE_NM.length?SCALE_NM[i]+' NM':(T.reale?Lg('Tutta la regione','Whole region'):Lg('Tutta la mappa','Whole map'));
   let zoom=Math.max(0,SCALE_NM.indexOf(10));
-  try{const z=+localStorage.getItem('volo-mappa-zoom2');if(localStorage.getItem('volo-mappa-zoom2')!==null&&z>=0&&z<scale.length)zoom=z;}catch(e){}
+  try{const z=+localStorage.getItem(CH_ZOOM);if(localStorage.getItem(CH_ZOOM)!==null&&z>=0&&z<scale.length)zoom=z;}catch(e){}
   function impostaZoom(z){
     zoom=clamp(z,0,scale.length-1);
-    try{localStorage.setItem('volo-mappa-zoom2',String(zoom));}catch(e){}
+    try{localStorage.setItem(CH_ZOOM,String(zoom));}catch(e){}
     if(ultimaMappa)disegnaMappa(...ultimaMappa);
     if(alCambioZoom)alCambioZoom(zoom);
   }
   let alCambioZoom=null;
   // orientamento: 'nord' (nord in alto) oppure 'prua' (la direzione dell'aereo in alto)
   let orient='nord';
-  try{if(localStorage.getItem('volo-mappa-orient')==='prua')orient='prua';}catch(e){}
+  try{if(localStorage.getItem(CH_ORIENT)==='prua')orient='prua';}catch(e){}
 
   let ultimaMappa=null;
   // radioaiuti sulla mappa: VOR (esagono) e, per la stazione sintonizzata, la rotta CRS o il fascio ILS
@@ -644,9 +647,11 @@ SIM.creaStrumenti=function(A){
   }
   // rotta del piano di volo: {punti:[{x,z,nome}], prossimo} (indice del punto verso cui si va)
   let rottaMappa=null;
+  // extra (solo con sup, per la mappa grande di mappe.html): centro {x,z} diverso dall'aereo, traccia [{x,z}], senzaAereo
+  let extra={};
   function disegnaMappa(s,hdg,dest,sup){
-    if(sup){const v=[mg,MW,MH,dpr,MOX,MOY];mg=sup.g;MW=sup.W;MH=sup.H;dpr=1;MOX=sup.x||0;MOY=sup.y||0;
-      try{disegnaMappa(s,hdg,dest);}finally{[mg,MW,MH,dpr,MOX,MOY]=v;}return;}
+    if(sup){const v=[mg,MW,MH,dpr,MOX,MOY];mg=sup.g;MW=sup.W;MH=sup.H;dpr=sup.dpr||1;MOX=sup.x||0;MOY=sup.y||0;extra=sup;
+      try{disegnaMappa(s,hdg,dest);}finally{[mg,MW,MH,dpr,MOX,MOY]=v;extra={};}return;}
     if(!sup&&mg===mappa.getContext('2d'))ultimaMappa=[s,hdg,dest];
     if(!MW) adatta();
     if(!MW) return;
@@ -655,18 +660,20 @@ SIM.creaStrumenti=function(A){
     const range=scale[zoom], k=MW/range, cx=MW/2, cy=MH/2;
     const rot=orient==='prua'?hdg*D2R:0, c=Math.cos(rot), sn=Math.sin(rot);
     // da coordinate del mondo a pixel della mappa (ruotata di -rot attorno all'aereo)
-    const P=(x,z)=>{const dx=(x-s.pos.x)*k,dz=(z-s.pos.z)*k;return [cx+dx*c+dz*sn,cy-dx*sn+dz*c];};
+    const C0=extra.centro||s.pos;
+    const P=(x,z)=>{const dx=(x-C0.x)*k,dz=(z-C0.z)*k;return [cx+dx*c+dz*sn,cy-dx*sn+dz*c];};
+    const [axx,ayy]=P(s.pos.x,s.pos.z);   // dove sta l'aereo (al centro, salvo che la mappa sia spostata)
     mg.fillStyle='#22405a';mg.fillRect(0,0,MW,MH);
     mg.imageSmoothingEnabled=true;
     mg.save();mg.translate(cx,cy);mg.rotate(-rot);
-    mg.drawImage(sfondo,(-EST/2-s.pos.x)*k,(-EST/2-s.pos.z)*k,EST*k,EST*k);
+    mg.drawImage(sfondo,(-EST/2-C0.x)*k,(-EST/2-C0.z)*k,EST*k,EST*k);
     mg.restore();
     mg.fillStyle=haVie?'rgba(60,60,60,.22)':'rgba(60,60,60,.55)';
     for(const ct of T.citta){const [x,y]=P(ct.x,ct.z);mg.beginPath();mg.arc(x,y,Math.max(2,ct.r*k*0.8),0,Math.PI*2);mg.fill();}
     if(zoom===scale.length-1){ // tutta la regione: vie già disegnate
       if(haVie){mg.save();mg.translate(cx,cy);mg.rotate(-rot);
-        mg.drawImage(sfondoVie,(-EST/2-s.pos.x)*k,(-EST/2-s.pos.z)*k,EST*k,EST*k);mg.restore();}
-    }else disegnaVie(s,range,P);
+        mg.drawImage(sfondoVie,(-EST/2-C0.x)*k,(-EST/2-C0.z)*k,EST*k,EST*k);mg.restore();}
+    }else disegnaVie({pos:C0},range,P);
     if(range>=12000){
       mg.font=`700 9px ${MONO}`;mg.textAlign='center';mg.textBaseline='middle';
       for(const ct of T.citta){
@@ -720,7 +727,7 @@ SIM.creaStrumenti=function(A){
       mg.strokeStyle='rgba(255,90,217,.55)';mg.lineWidth=1.5;mg.setLineDash([4,4]);
       mg.beginPath();pt.forEach(([x,y],i)=>i?mg.lineTo(x,y):mg.moveTo(x,y));mg.stroke();mg.setLineDash([]);
       mg.strokeStyle='#ff5ad9';mg.lineWidth=2.2;
-      mg.beginPath();mg.moveTo(cx,cy);for(let i=i0;i<pt.length;i++)mg.lineTo(pt[i][0],pt[i][1]);mg.stroke();
+      mg.beginPath();mg.moveTo(axx,ayy);for(let i=i0;i<pt.length;i++)mg.lineTo(pt[i][0],pt[i][1]);mg.stroke();
       mg.font=`700 9px ${MONO}`;mg.textAlign='left';mg.textBaseline='middle';
       rottaMappa.punti.forEach((p,i)=>{
         if(!p.nome||i===pt.length-1) return;
@@ -732,7 +739,7 @@ SIM.creaStrumenti=function(A){
     }else if(dest){
       const [dx,dy]=P(dest.x,dest.z);
       mg.strokeStyle='#ff5ad9';mg.lineWidth=2;mg.setLineDash([6,4]);
-      mg.beginPath();mg.moveTo(cx,cy);mg.lineTo(dx,dy);mg.stroke();mg.setLineDash([]);
+      mg.beginPath();mg.moveTo(axx,ayy);mg.lineTo(dx,dy);mg.stroke();mg.setLineDash([]);
     }
     // altri aerei (js/traffico.js): rombo azzurro come il traffico del G1000, quota relativa in centinaia di piedi
     if(SIM.traffico&&range<=40000){
@@ -748,10 +755,17 @@ SIM.creaStrumenti=function(A){
       }
     }
     // aereo: in "prua" punta sempre in alto
-    mg.save();mg.translate(cx,cy);mg.rotate(hdg*D2R-rot);
+    // traccia del volo (mappa grande)
+    if(extra.traccia&&extra.traccia.length>1){
+      mg.strokeStyle='rgba(255,176,32,.85)';mg.lineWidth=2;mg.lineJoin='round';mg.beginPath();
+      extra.traccia.forEach((q,i)=>{const [x,y]=P(q.x,q.z);i?mg.lineTo(x,y):mg.moveTo(x,y);});mg.lineTo(axx,ayy);mg.stroke();
+    }
+    if(!extra.senzaAereo){
+    mg.save();mg.translate(axx,ayy);mg.rotate(hdg*D2R-rot);
     mg.fillStyle='#ffb020';mg.strokeStyle='#000';mg.lineWidth=1.5;
     mg.beginPath();mg.moveTo(0,-9);mg.lineTo(6,7);mg.lineTo(0,4);mg.lineTo(-6,7);mg.closePath();mg.fill();mg.stroke();
     mg.restore();
+    }
     // indicatore del nord: sul bordo, nella direzione del nord
     const rN=Math.min(cx,cy)-12, nx=cx-sn*rN, ny=cy-c*rN;
     mg.fillStyle='rgba(8,14,26,.8)';mg.beginPath();mg.arc(nx,ny,9,0,Math.PI*2);mg.fill();
@@ -873,11 +887,14 @@ SIM.creaStrumenti=function(A){
     onZoom(fn){alCambioZoom=fn;},
     ridisegnaMappa(){if(ultimaMappa)disegnaMappa(...ultimaMappa);},
     impostaRotta(r){rottaMappa=r;},
+    get rotta(){return rottaMappa;},
+    get orientamento(){return orient;},
+    rangeMappa:()=>scale[zoom],
     impostaRadio(r){radioMappa=r;},
     impostaNav(n){navMappa=n;if(ultimaMappa)disegnaMappa(...ultimaMappa);},
     cambiaOrientamento(){
       orient=orient==='nord'?'prua':'nord';
-      try{localStorage.setItem('volo-mappa-orient',orient);}catch(e){}
+      try{localStorage.setItem(CH_ORIENT,orient);}catch(e){}
       if(ultimaMappa)disegnaMappa(...ultimaMappa);
       return orient;
     },

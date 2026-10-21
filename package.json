@@ -7,7 +7,7 @@
   "license": "GPL-3.0-or-later",
   "homepage": "https://massimilianopetra.github.io/flightsimulator/",
   "scripts": {
-    "deploy": "gh-pages -d . -s \"{index.html,istruzioni.html,istruzioni-en.html,privacy.html,font/**,lib/**,istruzioni/**,README.md,manifest.webmanifest,css/**,js/**,dati/**,icone/**}\""
+    "deploy": "gh-pages -d . -s \"{index.html,mappe.html,istruzioni.html,istruzioni-en.html,privacy.html,font/**,lib/**,istruzioni/**,README.md,manifest.webmanifest,css/**,js/**,dati/**,icone/**}\""
   },
   "devDependencies": {
     "gh-pages": "^6.1.1"
