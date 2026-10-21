@@ -391,6 +391,7 @@ function inviaMappe(subito){
     dest:dest()?dest().codice:null,part:partenza.ap?partenza.ap.codice:null,aereo:A.nome,reg:A.registrazione||'',
     rotta:r?{punti:r.punti.map(p=>({x:p.x,z:p.z,nome:p.nome||'',r:p.r||0})),prossimo:r.prossimo}:null,
     traffico:traffico?traffico.lista():[],
+    piano:$('pianoCorpo').innerHTML,   // il riquadro PIANO, uguale a quello del gioco
     meteo:{attivo:meteo.attivo,tipo:meteo.tipo,ventoDa:met.ventoDa,ventoNodi:met.ventoNodi,raffiche:met.raffiche,qnh:met.qnh},metar:metarMappe};
   for(const w of ascoltaMappe){try{if(w.closed){ascoltaMappe.delete(w);continue;}w.postMessage(msg,'*');}catch(e){ascoltaMappe.delete(w);}}
   if(canaleMappe)try{canaleMappe.postMessage(msg);}catch(e){}
@@ -1253,6 +1254,7 @@ function ciclo(ora,sfondo){
     // missione finita: il risultato quando l'aereo è fermo
     if(missioni.daMostrare()&&st.aTerra&&st.gs<1&&!st.crashed)mostraEsito();
   }
+  if(n%6===0)aggiornaPiano();   // fase e prossimo punto della rotta: anche con la pagina nascosta (lo usa l'autopilota in NAV)
   if(n%12===0)inviaMappe();   // la scheda MAPPE (mappe.html), se aperta
   if(n%15===0)controllaRadio(attivo?0.25:0);
   if(n%15===0)aggiornaRifornimento(attivo?dt*15:0);
@@ -1264,7 +1266,7 @@ function ciclo(ora,sfondo){
     meteo.aggiorna(st,camera.position,attivo?dt:0,vista===1);
     notte.aggiorna(camera.position);
     if(n%2===0)ultimiStrum=aggiornaStrumenti(dt*2);
-    if(n%6===0){aggiornaPiano();aggiornaTesti(ultimiStrum.hdg,ultimiStrum.bug);strum.disegnaMappa(st,ultimiStrum.hdg,dest());}
+    if(n%6===0){aggiornaTesti(ultimiStrum.hdg,ultimiStrum.bug);strum.disegnaMappa(st,ultimiStrum.hdg,dest());}
     renderer.render(scene,camera);
   }
   n++;
