@@ -1182,9 +1182,10 @@ SIM.debug={st,fis,terreno,monumenti,aeroporti3D,arrivo:()=>arrivo,scene,atc,rend
 if(/salta/.test(location.hash)) inizia();
 if(/finale/.test(location.hash)) inizia('finale');
 {const mv=/vista=(\d)/.exec(location.hash);if(mv)vista=(+mv[1])%3;}
-let ultimo=performance.now(), n=0, ultimiStrum={hdg:0,bug:0};
-function ciclo(ora){
-  requestAnimationFrame(ciclo);
+let ultimo=performance.now(), ultimoDisegno=ultimo, n=0, ultimiStrum={hdg:0,bug:0};
+// sfondo = true: la pagina non si vede (altra scheda, finestra a icona): il volo va avanti ma non si disegna niente
+function ciclo(ora,sfondo){
+  if(!sfondo){requestAnimationFrame(ciclo);ultimoDisegno=ora;}
   const dt=Math.min(0.1,Math.max(0,(ora-ultimo)/1000));ultimo=ora;
   leggiGamepad(dt);
   comandi(dt);
@@ -1204,9 +1205,11 @@ function ciclo(ora){
   }
   gestisciEventi();
   aggiornaCamera(dt);
+  if(!sfondo){
   terreno.aggiorna(camera.position.x,camera.position.z,false);
   if(monumenti&&n%10===0)monumenti.aggiorna(camera.position,terreno.vicino());
   if(aeroporti3D)aeroporti3D.aggiorna(camera.position,terreno.vicino(),dt);
+  }
   if(attivo&&n%15===0){
     // appena atterrati e rallentati: dove parcheggiare e come arrivarci (prima della radio, così la torre lo dice)
     if(atterratoA&&!arrivo&&st.aTerra&&st.gs<15&&!st.crashed)preparaArrivo(atterratoA);
@@ -1222,15 +1225,29 @@ function ciclo(ora){
   if(n%15===0)aggiornaRifornimento(attivo?dt*15:0);
   if(n%15===0&&scheda==='ap')aggiornaSchedaAP();
   if(n%6===0)aggiornaObiettivo();
-  mondo.aggiorna(st,camera.position,vento,attivo?dt:0,vista===1);
-  meteo.aggiorna(st,camera.position,attivo?dt:0,vista===1);
-  notte.aggiorna(camera.position);
-  if(n%2===0)ultimiStrum=aggiornaStrumenti(dt*2);
-  if(n%6===0){aggiornaPiano();aggiornaTesti(ultimiStrum.hdg,ultimiStrum.bug);strum.disegnaMappa(st,ultimiStrum.hdg,dest());}
   audio.aggiorna(st,!attivo);
-  renderer.render(scene,camera);
+  if(!sfondo){
+    mondo.aggiorna(st,camera.position,vento,attivo?dt:0,vista===1);
+    meteo.aggiorna(st,camera.position,attivo?dt:0,vista===1);
+    notte.aggiorna(camera.position);
+    if(n%2===0)ultimiStrum=aggiornaStrumenti(dt*2);
+    if(n%6===0){aggiornaPiano();aggiornaTesti(ultimiStrum.hdg,ultimiStrum.bug);strum.disegnaMappa(st,ultimiStrum.hdg,dest());}
+    renderer.render(scene,camera);
+  }
   n++;
   if(caricamento&&n>=caricaFino)fineCaricamento();
 }
 requestAnimationFrame(ciclo);
+/* Con la pagina nascosta il browser non chiama più requestAnimationFrame e i timer normali rallentano fino a
+   una volta al minuto: un piccolo Web Worker (creato da un Blob, così funziona anche aprendo il file con
+   doppio clic) batte il tempo 60 volte al secondo e il volo va avanti senza disegnare. Chi vuole fermarlo
+   mette in pausa. Al ritorno riparte il disegno normale. */
+try{
+  const orologio=new Worker(URL.createObjectURL(new Blob(['setInterval(function(){postMessage(0);},16);'],{type:'text/javascript'})));
+  orologio.onmessage=()=>{
+    const t=performance.now();
+    if(!document.hidden&&t-ultimoDisegno<250) return;   // il disegno va: ci pensa requestAnimationFrame
+    for(let k=0;k<30&&t-ultimo>=8;k++)ciclo(Math.min(t,ultimo+100),true);   // recupera a passi di 0,1 s al massimo
+  };
+}catch(e){}
 })();
