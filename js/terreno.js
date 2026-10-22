@@ -276,9 +276,11 @@ function colore(h,slope,x,z,dettaglio){
   if(slope>.55&&!acquaVicina)c.lerp(C.rock,clamp((slope-.55)*2.5,0,.85));
   tc.r=c.r;tc.g=c.g;tc.b=c.b;
   // campi: in basso e in piano, non sull'acqua né negli aeroporti
-  tc.k=acquaVicina||(dettaglio&&api.inAeroporto(x,z,-60))?0:
+  const aero=!acquaVicina&&dettaglio&&api.inAeroporto(x,z,-60);
+  tc.k=acquaVicina||aero?0:
     (1-smooth(QC.prato*0.75,QC.prato*1.05,h))*(1-smooth(0.05,0.13,slope));
   tc.w=acquaVicina?0:bosco(x,z,h,slope,tc.k);
+  if(aero)tc.k=-1;   // valore negativo = erba del sedime (shader erbaAeroporto)
 }
 
 /* ---------- boschi ----------
@@ -388,18 +390,68 @@ vec3 chiome(vec2 p,float y){
   return mix(ombra,chioma,c);
 }
 `;
-// aggiunge i campi a un materiale del terreno (dopo le eventuali altre aggiunte allo shader)
-function vesteCampi(mat,chiave){
+/* ---------- erba degli aeroporti ----------
+   Nessun dato: dentro il sedime (aCampi = −1) chiazze più secche e più verdi, ciuffi da vicino,
+   strisce di taglio parallele alla pista nella fascia di sicurezza (150 m dal bordo), erba
+   consumata lungo i bordi delle piste d'asfalto e bruciata dai getti oltre le testate.
+   Le piste vicine arrivano in uniformi (le 8 più vicine all'aereo, scelte in creaMesh):
+   A = (cx, cz, dir.x, dir.z), B = (L/2, W/2, fhl, fhw); L/2 negativa = pista in erba. */
+const N_PISTE_ERBA=8;
+const GLSL_ERBA=`
+uniform vec4 uPisteA[${N_PISTE_ERBA}],uPisteB[${N_PISTE_ERBA}];
+vec3 erbaAeroporto(vec2 p,vec3 base,float k){
+  vec2 px=dFdx(p),py=dFdy(p);
+  float mpp=max(max(length(px),length(py)),0.01);
+  // pista più vicina che contiene il punto: u lungo la pista, v di traverso (come locale() in JS)
+  float u=0.0,v=1e5,L2=0.0,W2=0.0;
+  for(int i=0;i<${N_PISTE_ERBA};i++){
+    vec4 a=uPisteA[i],b=uPisteB[i];
+    vec2 d=p-a.xy;
+    float uu=dot(d,a.zw),vv=-d.x*a.w+d.y*a.z;
+    if(abs(uu)<b.z+60.0&&abs(vv)<b.w+60.0&&abs(vv)<abs(v)){u=uu;v=vv;L2=b.x;W2=b.y;}
+  }
+  vec3 col=mix(base,vec3(0.36,0.48,0.25),0.55);              // meno acceso del prato tagliato dei vertici
+  // chiazze: rumore di 120 e 25 m, più secche (giallastre) o più verdi
+  float n1=campiN(p/120.0,64.0),n2=campiN(p/25.0,256.0);
+  col=mix(col,vec3(0.53,0.52,0.32),smoothstep(0.45,0.8,n1*0.7+n2*0.3)*0.55);
+  col=mix(col,vec3(0.27,0.42,0.19),(1.0-smoothstep(0.15,0.4,n1))*0.5);
+  // ciuffi da vicino
+  col*=0.95+0.1*campiN(p/2.5,1024.0)*(1.0-smoothstep(0.6,2.0,mpp));
+  if(v<1e4){
+    float av=abs(v)-W2,fascia=1.0-smoothstep(120.0,170.0,av);   // fascia di sicurezza: tagliata spesso
+    // strisce di taglio larghe 9 m (andata e ritorno del trattore), antialias con i metri per pixel;
+    // sulle piste in erba (L/2 negativa) l'erba è più corta: strisce strette e un po' più chiare
+    float erbaCorta=L2<0.0&&av<0.0&&abs(u)<-L2?1.0:0.0,per=mix(18.0,10.0,erbaCorta);
+    col=mix(col,col*vec3(1.06,1.08,1.0),erbaCorta);
+    float tri=abs(fract(v/per)-0.5)*2.0,w=mpp/(per*0.5);
+    float s=smoothstep(0.5-w,0.5+w,tri)*2.0-1.0;
+    col*=1.0+0.055*s*fascia*(1.0-smoothstep(3.0,8.0,mpp));
+    col=mix(col,vec3(0.50,0.52,0.32),(1.0-fascia)*0.2);          // fuori dalla fascia: erba più alta e più secca
+    if(L2>0.0){
+      // bordo consumato (mezzi, getti, luci del bordo) e terra bruciata oltre le testate
+      float bordo=(1.0-smoothstep(1.5,4.5+mpp,av))*step(abs(u),L2);
+      float oltre=abs(u)-L2,getti=step(0.0,oltre)*(1.0-smoothstep(40.0,90.0,oltre))*(1.0-smoothstep(W2*0.6,W2+8.0,abs(v)));
+      col=mix(col,vec3(0.42,0.39,0.27),max(bordo*0.55,getti*0.45*(0.6+0.4*n2)));
+    }
+  }
+  return mix(base,col,k);
+}
+`;
+// aggiunge i campi a un materiale del terreno (dopo le eventuali altre aggiunte allo shader);
+// con unifPiste anche l'erba degli aeroporti (solo il terreno vicino)
+function vesteCampi(mat,chiave,unifPiste){
   const prima=mat.onBeforeCompile;
   mat.onBeforeCompile=(sh,r)=>{
     if(prima)prima.call(mat,sh,r);
+    if(unifPiste)Object.assign(sh.uniforms,unifPiste);
     const VAR='varying float vCampi,vBosco,vYCampi;\nvarying vec2 vPCampi;\n';
     sh.vertexShader='attribute float aCampi,aBosco;\n'+VAR+sh.vertexShader.replace('#include <begin_vertex>',
       '#include <begin_vertex>\nvCampi=aCampi;vBosco=aBosco;\nvec4 pmCampi=modelMatrix*vec4(transformed,1.0);vPCampi=pmCampi.xz;vYCampi=pmCampi.y;');
-    sh.fragmentShader=VAR+GLSL_CAMPI+sh.fragmentShader.replace('#include <color_fragment>',
+    sh.fragmentShader=VAR+GLSL_CAMPI+(unifPiste?GLSL_ERBA:'')+sh.fragmentShader.replace('#include <color_fragment>',
       // bordo del bosco frastagliato (rumore di 30-90 m sopra il valore dei vertici, a 62,5 m)
       '#include <color_fragment>\nfloat fbCampi=vBosco>0.01?smoothstep(0.44,0.56,vBosco+(campiN(vPCampi/30.0,128.0)*0.6+campiN(vPCampi/90.0,32.0)*0.4-0.5)*0.3):0.0;\n'+
       'if(vCampi>0.01)diffuseColor.rgb=campi(vPCampi,diffuseColor.rgb,vCampi*(1.0-fbCampi));\n'+
+      (unifPiste?'if(vCampi<-0.01)diffuseColor.rgb=erbaAeroporto(vPCampi,diffuseColor.rgb,-vCampi);\n':'')+
       'if(fbCampi>0.0)diffuseColor.rgb=mix(diffuseColor.rgb,chiome(vPCampi,vYCampi),fbCampi);');
   };
   // la stessa funzione involucro ha lo stesso testo per i due materiali: chiave diversa, sennò three li confonde
@@ -477,7 +529,21 @@ api.creaMesh=function(scene,renderer){
   // strade, fiumi e paesi disegnati sul terreno + edifici (js/paesaggio.js, solo mappe reali)
   const vie=SIM.creaPaesaggio?SIM.creaPaesaggio(scene,renderer,TS):null;
   if(vie)vie.veste(mat);
-  vesteCampi(mat,'terreno-vicino');
+  // erba degli aeroporti: le piste più vicine all'aereo (scelte di nuovo ogni 2 km)
+  const unifPiste={uPisteA:{value:[]},uPisteB:{value:[]}};
+  for(let i=0;i<N_PISTE_ERBA;i++){unifPiste.uPisteA.value.push(new THREE.Vector4());unifPiste.uPisteB.value.push(new THREE.Vector4(0,0,-1e6,-1e6));}
+  let pisteX=NaN,pisteZ=NaN;
+  function scegliPiste(px,pz){
+    if(Math.abs(px-pisteX)<2000&&Math.abs(pz-pisteZ)<2000) return;
+    pisteX=px;pisteZ=pz;
+    const vic=piste.map(p=>[Math.hypot(p.cx-px,p.cz-pz)-p.raggio,p]).sort((a,b)=>a[0]-b[0]);
+    for(let i=0;i<N_PISTE_ERBA;i++){
+      const p=vic[i]&&vic[i][1];
+      if(p){unifPiste.uPisteA.value[i].set(p.cx,p.cz,p.dir.x,p.dir.z);unifPiste.uPisteB.value[i].set(p.erba?-p.L/2:p.L/2,p.W/2,p.fhl,p.fhw);}
+      else unifPiste.uPisteB.value[i].set(0,0,-1e6,-1e6);
+    }
+  }
+  vesteCampi(mat,'terreno-vicino',unifPiste);
   if(vie&&SIM.acqua)SIM.acqua.veste(mat);   // fiumi e canali dipinti da paesaggio.js (acquaK)
   const alberi=SIM.creaBoschi?SIM.creaBoschi(scene,api):null;   // alberi 3D nei boschi (js/boschi.js)
   function buffer(){
@@ -529,6 +595,7 @@ api.creaMesh=function(scene,renderer){
     aggiorna(px,pz,forza){
       const a=buf[attivo];
       const cx=Math.round(px/STEP)*STEP,cz=Math.round(pz/STEP)*STEP;
+      scegliPiste(px,pz);
       if(forza){
         lavoro=null;
         for(const _ of costruisci(a,cx,cz));

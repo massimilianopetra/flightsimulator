@@ -68,9 +68,8 @@ SIM.creaMondo=function(scene,renderer){
     let ch=512;while(ch<p.L*1.1&&ch<4096)ch*=2;
     const cw=p.W>=30?128:64,cv=document.createElement('canvas');cv.width=cw;cv.height=ch;
     const g=cv.getContext('2d');
-    if(p.erba){ // pista in erba: strisce di taglio e paletti bianchi ai bordi
-      g.fillStyle='#557a38';g.fillRect(0,0,cw,ch);
-      for(let y=0;y<ch;y+=ch/40){g.fillStyle=(y/(ch/40))%2?'rgba(255,255,255,.05)':'rgba(0,0,0,.06)';g.fillRect(0,y,cw,ch/40);}
+    if(p.erba){ // pista in erba: un velo appena più chiaro (le strisce di taglio le fa lo shader del terreno) e paletti bianchi ai bordi
+      g.fillStyle='rgba(150,180,95,.16)';g.fillRect(0,0,cw,ch);
       const sy=ch/p.L;g.fillStyle='#f2f2f2';
       for(let u=0;u<=p.L;u+=60){g.fillRect(1,u*sy,3,Math.max(3,2*sy));g.fillRect(cw-4,u*sy,3,Math.max(3,2*sy));}
       const tex=new THREE.CanvasTexture(cv);tex.anisotropy=maxAniso;
@@ -125,7 +124,8 @@ SIM.creaMondo=function(scene,renderer){
   }
   for(const p of T.piste){
     const {tex,ap}=texturaPista(p);
-    const mat=new THREE.MeshStandardMaterial({map:tex,roughness:.9,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+    const mat=new THREE.MeshStandardMaterial({map:tex,roughness:.9,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,
+      transparent:p.erba,depthWrite:!p.erba});
     suPista(p,new THREE.Mesh(new THREE.PlaneGeometry(p.W,p.L).rotateX(-Math.PI/2),mat),0,0,p.quota+0.06);
     // piazzale, raccordo, hangar e torre sul lato destro della PRIMA pista di ogni aeroporto
     // aeroporti con le vie di rullaggio vere (js/rullaggio.js): torre e hangar accanto al piazzale vero
