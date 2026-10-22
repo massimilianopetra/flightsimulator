@@ -149,6 +149,7 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
       linee.push(v);
     }
   }
+  const ponti=SIM.creaPonti?SIM.creaPonti(scene):null;   // ponti dove le vie incrociano fiumi e canali (js/ponti.js)
   // categoria della via (strade e ferrovie, non fiumi né canali) che passa a meno di r m dal bordo, o null
   // (usata da js/notte.js per le luci di avvicinamento; lenta: solo per pochi punti)
   SIM.viaSu=(x,z,r)=>{
@@ -562,10 +563,24 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
   // immagine grande (tutta la griglia vicina, ~5 m per pixel)
   const STILE_BASE={};
   for(const cat in STILE_VIE3D)STILE_BASE[cat]=STILE_VIE3D[cat].map(([w,c])=>({w,c}));
-  function* disegnaImmagine(x0,z0,X1,Z1){
+  function* disegnaImmagine(x0,z0,X1,Z1,lp){
     g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,PX,PX);
     yield* disegnaFondo(g,x0,z0,X1,Z1,PX/TS);
     yield* disegnaVie(g,x0,z0,X1,Z1,STILE_BASE);
+    acquaSottoPonti(g,lp,x0,z0,X1,Z1,STILE_BASE);
+  }
+  // sotto i ponti (js/ponti.js) si vede l'acqua, non la strada dipinta: si ridipinge il fiume dentro l'ingombro dell'impalcato
+  function acquaSottoPonti(g,lista,x0,z0,X1,Z1,stili){
+    g.setLineDash([]);g.lineCap='round';g.lineJoin='round';
+    for(const p of lista||[]){
+      const m=p.mezza+2,w=p.w/2+3,v=p.fiume;
+      if(p.x+m<x0||p.x-m>X1||p.z+m<z0||p.z-m>Z1) continue;
+      g.save();g.beginPath();
+      for(const [a,b] of [[-m,-w],[m,-w],[m,w],[-m,w]])g.lineTo(p.x+p.ux*a-p.uz*b,p.z+p.uz*a+p.ux*b);
+      g.closePath();g.clip();
+      for(const s of stili[v.cat]){g.strokeStyle=s.c;g.lineWidth=s.w*(v.cat==='fiumi'?v.w:1);g.beginPath();traccia(g,v.xs,v.zs,CURVA[v.cat]||20);g.stroke();}
+      g.restore();
+    }
   }
 
   /* ---------- immagine da vicino ----------
@@ -577,6 +592,7 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
     yield;
     yield* disegnaFondo(gd,x0,z0,X1,Z1,PXD/DET);
     yield* disegnaVie(gd,x0,z0,X1,Z1,STILE_DET);
+    if(ponti)acquaSottoPonti(gd,ponti.elenco(),x0,z0,X1,Z1,STILE_DET);
     detPronto=[x0,z0];
   }
   let detLavoro=null,detPronto=null,detC=null;
@@ -622,9 +638,11 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
       const x0=cx-TS/2,z0=cz-TS/2,X1=x0+TS,Z1=z0+TS;
       pronto=null;
       grigliaVie(x0,z0,X1,Z1);yield;
+      const lp=ponti?yield* ponti.trova(linee,x0,z0,X1,Z1):null;
       yield* generaEdifici(x0,z0,X1,Z1);
-      yield* disegnaImmagine(x0,z0,X1,Z1);
+      yield* disegnaImmagine(x0,z0,X1,Z1,lp);
       yield* costruisci3D(copie[1-visibile],cx,cz);
+      if(ponti)yield* ponti.costruisci(lp);
       pronto=[x0,z0];
     },
     // da chiamare a ogni fotogramma con la posizione dell'aereo (forza: subito, tutto in una volta)
@@ -635,6 +653,7 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
       unif.uVieO.value.set(pronto[0],pronto[1],TS);tex.needsUpdate=true;pronto=null;
       visibile=1-visibile;
       for(let i=0;i<2;i++)for(const im of copie[i].tutte)im.visible=i===visibile;
+      if(ponti)ponti.applica();
     },
   };
 };
