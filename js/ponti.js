@@ -150,6 +150,26 @@ SIM.creaPonti=function(scene,decodifica){
     return lista;
   }
   const wPonte=cat=>W_PONTE[cat]||TIPO[cat].w;
+  // metri della via r che stanno a meno di R dal tracciato X, Z (campioni ogni 5 m, solo vicino al ponte)
+  function lungoIlPonte(r,X,Z,R){
+    let x0=Infinity,x1=-Infinity,z0=Infinity,z1=-Infinity;
+    for(let i=0;i<X.length;i++){x0=Math.min(x0,X[i]);x1=Math.max(x1,X[i]);z0=Math.min(z0,Z[i]);z1=Math.max(z1,Z[i]);}
+    const vicino=(x,z)=>{
+      for(let i=1;i<X.length;i++){
+        const ax=X[i-1],az=Z[i-1],dx=X[i]-ax,dz=Z[i]-az,l2=dx*dx+dz*dz||1,t=clamp(((x-ax)*dx+(z-az)*dz)/l2,0,1);
+        if(Math.hypot(ax+t*dx-x,az+t*dz-z)<R) return true;
+      }
+      return false;
+    };
+    let m=0;
+    for(let i=1;i<r.xs.length;i++){
+      const ax=r.xs[i-1],az=r.zs[i-1],dx=r.xs[i]-ax,dz=r.zs[i]-az;
+      if(Math.max(ax,ax+dx)<x0-R||Math.min(ax,ax+dx)>x1+R||Math.max(az,az+dz)<z0-R||Math.min(az,az+dz)>z1+R) continue;
+      const l=Math.hypot(dx,dz),n=Math.max(1,Math.ceil(l/5));
+      for(let k=0;k<n;k++)if(vicino(ax+dx*(k+0.5)/n,az+dz*(k+0.5)/n))m+=l/n;
+    }
+    return m;
+  }
 
   /* ---------- un ponte: tracciato ricampionato, cosa passa sotto, profilo ---------- */
   function prepara(cat,X,Z,livello,cv){
@@ -172,20 +192,24 @@ SIM.creaPonti=function(scene,decodifica){
         if(seno<0.25||sc<4||sc>L-4) return;
         sotto.add(r);
         const f=r.cat==='fiumi'||r.cat==='canali'?FRANCO[r.cat]:r.cat==='ferrovie'?FRANCO.ferrovie:FRANCO.strada;
-        req.push([sc,f+(livello-1)*6,X[i-1]+t*(X[i]-X[i-1]),Z[i-1]+t*(Z[i]-Z[i-1])]);
+        req.push([sc,f+(livello-1)*6,X[i-1]+t*(X[i]-X[i-1]),Z[i-1]+t*(Z[i]-Z[i-1]),r]);
       });
     }
+    // la via stessa (o l'altra carreggiata) si incrocia col ponte nelle curve, perché linea dipinta e
+    // tracciato del ponte sono semplificati in modo diverso: se una via della stessa categoria corre
+    // lungo il ponte per più di 60 m non passa sotto, è il ponte (sennò si ridipingerebbe sotto il viadotto)
+    for(const r of [...sotto])if(r.cat===cat&&lungoIlPonte(r,X,Z,wPonte(cat)/2+10)>60)sotto.delete(r);
+    for(let k=req.length-1;k>=0;k--)if(!sotto.has(req[k][4]))req.splice(k,1);
     // profilo: dritto fra le estremità + gobba; E = rilevato (rampe) se la gobba non basta per il franco
     const hA=T.meshH(xs[0],zs[0]),hB=T.meshH(xs[N-1],zs[N-1]),retta=sc=>hA+(hB-hA)*sc/L;
     const gobba=req.length?clamp(L*0.035,0.6,4.5):clamp(L*0.02,0.3,1.5);
-    let E=0;
-    for(const [sc,f,x,z] of req)E=Math.max(E,T.meshH(x,z)+f-retta(sc)-gobba*Math.sin(Math.PI*sc/L));
-    E=Math.min(E,(livello>1?14:9));
-    const ys=s.map((sc,i)=>{
-      const y=retta(sc)+E+gobba*Math.sin(Math.PI*sc/L);
-      return Math.max(y,T.meshH(xs[i],zs[i])+0.6*Math.sin(Math.PI*sc/L))+0.15;
-    });
-    return {cat,xs,zs,s,ys,L,E,w:wPonte(cat),sotto:[...sotto],x:xs[N>>1],z:zs[N>>1]};
+    // alzata locale attorno a ogni incrocio: piena per 15 m, poi scende al 5% (nei viadotti lunghi resta una
+    // gobba sopra la via scavalcata); se all'estremità rimane qualcosa, lì si fa la rampa in rilevato (Ea, Eb)
+    const base=sc=>retta(sc)+gobba*Math.sin(Math.PI*sc/L);
+    const alz=req.map(([sc,f,x,z])=>[sc,Math.min(livello>1?14:9,T.meshH(x,z)+f-base(sc))]).filter(a=>a[1]>0);
+    const alzata=sc=>{let m=0;for(const [c,h] of alz)m=Math.max(m,h-0.05*Math.max(0,Math.abs(sc-c)-15));return m;};
+    const ys=s.map((sc,i)=>Math.max(base(sc)+alzata(sc),T.meshH(xs[i],zs[i])+0.6*Math.sin(Math.PI*sc/L))+0.15);
+    return {cat,xs,zs,s,ys,L,Ea:alzata(0),Eb:alzata(L),w:wPonte(cat),sotto:[...sotto],x:xs[N>>1],z:zs[N>>1]};
   }
 
   /* ---------- geometria ---------- */
@@ -238,11 +262,12 @@ SIM.creaPonti=function(scene,decodifica){
       pila(A,x,z,tx[i],tz[i],W*0.7,0.9+(y-yb)*0.025,y,yb,CEM_SCURO);
     }
     // rampe in rilevato prima e dopo i cavalcavia
-    if(p.E>0.4)for(const [i,k] of [[0,-1],[N-1,1]]){
-      const lr=Math.min(170,p.E/0.055),n=Math.max(2,Math.ceil(lr/15));
+    for(const [i,k,E] of [[0,-1,p.Ea],[N-1,1,p.Eb]]){
+      if(E<0.4) continue;
+      const lr=Math.min(170,E/0.055),n=Math.max(2,Math.ceil(lr/15));
       const dx=tx[i]*k,dz=tz[i]*k,lx=-tz[i],lz=tx[i];
       // quote calcolate una volta per sezione (vicino agli aeroporti meshH è lento): asse, piedi delle scarpate
-      const cima=[],piede=[[],[]],fuoriL=jj=>W+p.E*(1-jj/n)*1.5;   // scarpata a 1:1,5
+      const cima=[],piede=[[],[]],fuoriL=jj=>W+E*(1-jj/n)*1.5;   // scarpata a 1:1,5
       for(let jj=0;jj<=n;jj++){
         const d=lr*jj/n,x=p.xs[i]+dx*d,z=p.zs[i]+dz*d;
         cima.push(p.ys[i]+(T.meshH(x,z)-p.ys[i])*jj/n);
