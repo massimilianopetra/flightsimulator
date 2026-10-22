@@ -574,12 +574,13 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
   function sottoPonti(g,lista,x0,z0,X1,Z1,stili){
     for(const p of lista||[]){
       if(p.x+p.L<x0||p.x-p.L>X1||p.z+p.L<z0||p.z-p.L>Z1) continue;
-      const r=Math.max(p.w,STILE_DET[p.cat][0].w)/2+0.5,a=parallela(p.xs,p.zs,r),b=parallela(p.xs,p.zs,-r);
+      const r=Math.max(p.w,STILE_DET[p.cat][0].w)/2+3,a=parallela(p.xs,p.zs,r),b=parallela(p.xs,p.zs,-r);
       g.save();g.beginPath();
       for(let i=0;i<a.xs.length;i++)g.lineTo(a.xs[i],a.zs[i]);
       for(let i=b.xs.length-1;i>=0;i--)g.lineTo(b.xs[i],b.zs[i]);
       g.closePath();g.clip();
-      g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,g.canvas.width,g.canvas.height);g.restore();
+      g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,g.canvas.width,g.canvas.height);
+      g.fillStyle='rgba(38,40,36,0.32)';g.fillRect(0,0,g.canvas.width,g.canvas.height);g.restore();   // ombra dell'impalcato
       g.lineJoin='round';
       for(const cat of Object.keys(stili)){
         const vis=p.sotto.filter(v=>v.cat===cat);
