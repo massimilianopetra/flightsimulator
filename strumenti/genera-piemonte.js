@@ -392,7 +392,8 @@ function categoria(t){
   return null;
 }
 async function vie(ril){
-  const estratte=path.join(CACHE,'vie_estratte_v2.json');
+  // v3: con t = 1 (galleria) o b = livello del ponte (1 se manca layer) per strade e ferrovie
+  const estratte=path.join(CACHE,'vie_estratte_v3.json');
   let way;
   if(fs.existsSync(estratte)) way=JSON.parse(fs.readFileSync(estratte,'utf8'));
   else{
@@ -404,29 +405,85 @@ async function vie(ril){
     }
     const {estraiWay}=require('./leggi-pbf.js');
     const vicino=([la,lo])=>la>=ZONA.sud-0.05&&la<=ZONA.nord+0.05&&lo>=ZONA.ovest-0.05&&lo<=ZONA.est+0.05;
-    way=estraiWay(pbf,categoria).filter(w=>w.punti.some(vicino)).map(w=>({cat:w.cat,
+    way=estraiWay(pbf,categoria).filter(w=>w.punti.some(vicino)).map(w=>Object.assign({cat:w.cat,
       ref:(w.cat==='fiumi'||w.cat==='canali')?(w.tag.name||''):CAT_AREE[w.cat]?'':(w.tag.ref||'').split(';')[0].replace(/\s+/g,''),
-      punti:w.punti.map(([la,lo])=>[Math.round(la*1e5)/1e5,Math.round(lo*1e5)/1e5])}));
+      punti:w.punti.map(([la,lo])=>[Math.round(la*1e5)/1e5,Math.round(lo*1e5)/1e5])},
+      w.tag.tunnel&&w.tag.tunnel!=='no'?{t:1}:
+      w.tag.bridge&&w.tag.bridge!=='no'?{b:Math.max(1,parseInt(w.tag.layer)||1)}:{}));
     fs.writeFileSync(estratte,JSON.stringify(way));
   }
   const dentro=([la,lo])=>la>=ZONA.sud&&la<=ZONA.nord&&lo>=ZONA.ovest&&lo<=ZONA.est;
-  const out={};
+  const out={},ponti={},gallerie={};
+  // codifica compatta: primo punto assoluto, poi differenze, in unità di UNITA_VIE metri
+  const delta=p=>{
+    const v=[];let px=0,py=0;
+    for(const [x,y] of p){const qx=Math.round(x/UNITA_VIE),qy=Math.round(y/UNITA_VIE);if(v.length&&qx===px&&qy===py)continue;v.push(qx-px,qy-py);px=qx;py=qy;}
+    return v;
+  };
+  const lung=p=>{let s=0;for(let i=1;i<p.length;i++)s+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);return s;};
+  // si tengono i ponti che scavalcano qualcosa che è nei dati (strada, ferrovia, fiume, canale) e quelli
+  // lunghi (viadotti sulle valli); i ponticelli sopra i fossi restano strada dipinta
+  const MIN_PONTE=12,PONTE_LUNGO=50;
+  const unitePer={},pontiGrezzi={};
   for(const [nome,c] of Object.entries(CAT_VIE)){
-    const linee=way.filter(w=>w.cat===nome&&w.punti.some(dentro)&&(nome!=='canali'||GRANDI_CANALI.test(w.ref)))
-      .map(w=>({ref:w.ref,p:w.punti.map(([la,lo])=>{const q=proietta(la,lo);return [Math.round(q.x),Math.round(q.y)];})}));
+    const tutte=way.filter(w=>w.cat===nome&&w.punti.some(dentro)&&(nome!=='canali'||GRANDI_CANALI.test(w.ref)))
+      .map(w=>({ref:w.ref,t:w.t,b:w.b,p:w.punti.map(([la,lo])=>{const q=proietta(la,lo);return [Math.round(q.x),Math.round(q.y)];})}));
+    // le gallerie non si dipingono sul terreno (strade e ferrovie: vanno in "gallerie"; fiumi intubati: spariscono)
+    const linee=tutte.filter(l=>!l.t);
     const unite=concatena(linee).map(l=>({ref:l.ref,p:semplifica(l.p,c.tol)})).filter(l=>l.p.length>1);
-    // codifica compatta: primo punto assoluto, poi differenze, in unità di UNITA_VIE metri
-    out[nome]=unite.map(l=>{
-      const v=[];let px=0,py=0;
-      for(const [x,y] of l.p){const qx=Math.round(x/UNITA_VIE),qy=Math.round(y/UNITA_VIE);if(v.length&&qx===px&&qy===py)continue;v.push(qx-px,qy-py);px=qx;py=qy;}
-      return l.ref?{r:l.ref,p:v}:{p:v};
-    });
+    out[nome]=unite.map(l=>l.ref?{r:l.ref,p:delta(l.p)}:{p:delta(l.p)});
+    unitePer[nome]=unite;
     const punti=unite.reduce((n,l)=>n+l.p.length,0);
     console.log('  '+nome+': '+linee.length+' tratti -> '+unite.length+' linee, '+punti+' punti');
+    if(nome==='fiumi'||nome==='canali') continue;
+    // ponti e viadotti (b = livello) e gallerie: tratti uniti, semplificati come le vie
+    const pt=concatena(tutte.filter(l=>l.b).map(l=>({ref:l.ref+'|'+l.b,p:l.p})))
+      .map(l=>({b:+l.ref.split('|').pop(),p:semplifica(l.p,c.tol)})).filter(l=>l.p.length>1&&lung(l.p)>=MIN_PONTE);
+    pontiGrezzi[nome]=pt;
+    const gl=concatena(tutte.filter(l=>l.t).map(l=>({ref:l.ref,p:l.p})))
+      .map(l=>({p:semplifica(l.p,c.tol)})).filter(l=>l.p.length>1);
+    if(gl.length)gallerie[nome]=gl.map(l=>({p:delta(l.p)}));
+    console.log('    ponti (tutti) '+pt.length+' ('+Math.round(pt.reduce((s,l)=>s+lung(l.p),0)/1000)+' km), gallerie '+gl.length+' ('+Math.round(gl.reduce((s,l)=>s+lung(l.p),0)/1000)+' km)');
   }
+  // segmenti di tutte le vie in celle di 200 m, per sapere che cosa scavalca ogni ponte
+  const C=200,celle=new Map(),cella=(i,j)=>i*100003+j;
+  for(const nome in unitePer)for(const l of unitePer[nome])for(let i=1;i<l.p.length;i++){
+    const [ax,ay]=l.p[i-1],[bx,by]=l.p[i];
+    for(let a=Math.floor(Math.min(ax,bx)/C);a<=Math.floor(Math.max(ax,bx)/C);a++)
+      for(let b=Math.floor(Math.min(ay,by)/C);b<=Math.floor(Math.max(ay,by)/C);b++){const k=cella(a,b);let c=celle.get(k);if(!c)celle.set(k,c=[]);c.push(ax,ay,bx,by);}
+  }
+  const scavalca=p=>{
+    const L=lung(p);let s0=0;
+    for(let i=1;i<p.length;i++){
+      const [ax,ay]=p[i-1],[bx,by]=p[i],ex=bx-ax,ey=by-ay,le=Math.hypot(ex,ey)||1;
+      for(let a=Math.floor(Math.min(ax,bx)/C);a<=Math.floor(Math.max(ax,bx)/C);a++)
+        for(let b=Math.floor(Math.min(ay,by)/C);b<=Math.floor(Math.max(ay,by)/C);b++){
+          const c=celle.get(cella(a,b));if(!c) continue;
+          for(let n=0;n<c.length;n+=4){
+            const dx=c[n+2]-c[n],dy=c[n+3]-c[n+1],den=ex*dy-ey*dx;
+            if(Math.abs(den)<0.25*le*(Math.hypot(dx,dy)||1)) continue;   // quasi parallela: è la via stessa
+            const t=((c[n]-ax)*dy-(c[n+1]-ay)*dx)/den,u=((c[n]-ax)*ey-(c[n+1]-ay)*ex)/den;
+            if(t<0||t>1||u<0||u>1) continue;
+            const sc=s0+t*le;if(sc>4&&sc<L-4) return true;
+          }
+        }
+      s0+=le;
+    }
+    return false;
+  };
+  let tenuti=0,tutti=0;
+  for(const nome in pontiGrezzi){
+    const pt=pontiGrezzi[nome].filter(l=>lung(l.p)>=PONTE_LUNGO||scavalca(l.p));
+    tutti+=pontiGrezzi[nome].length;tenuti+=pt.length;
+    if(pt.length)ponti[nome]=pt.map(l=>l.b>1?{l:l.b,p:delta(l.p)}:{p:delta(l.p)});
+  }
+  console.log('  ponti tenuti '+tenuti+' su '+tutti+' (scavalcano una via, un fiume o sono lunghi '+PONTE_LUNGO+' m)');
+  out.ponti=ponti;out.gallerie=gallerie;
   const testo='/* '+LICENZA+'Vie di comunicazione (strade, ferrovie, fiumi) generate da strumenti/genera-piemonte.js.\n'+
     '   Fonte: © OpenStreetMap contributors (licenza ODbL). Non modificare a mano.\n'+
-    '   Ogni linea: p = [x0, y0, dx1, dy1, ...] in unità di "unita" metri (x est, y nord); r = sigla o nome. */\n'+
+    '   Ogni linea: p = [x0, y0, dx1, dy1, ...] in unità di "unita" metri (x est, y nord); r = sigla o nome.\n'+
+    '   Le gallerie non sono nelle linee: stanno in gallerie[categoria]; ponti[categoria] = tratti su ponte\n'+
+    '   (anche dentro le linee), l = livello OSM se più di 1. */\n'+
     'window.VIE='+JSON.stringify(Object.assign({unita:UNITA_VIE},out))+';\n';
   fs.writeFileSync(path.join(RADICE,'dati','piemonte-vie.js'),testo);
   console.log('Scritto dati/piemonte-vie.js ('+(testo.length/1e6).toFixed(2)+' MB)');
