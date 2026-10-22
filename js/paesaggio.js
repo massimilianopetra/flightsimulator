@@ -149,7 +149,7 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
       linee.push(v);
     }
   }
-  const ponti=SIM.creaPonti?SIM.creaPonti(scene):null;   // ponti dove le vie incrociano fiumi e canali (js/ponti.js)
+  const ponti=SIM.creaPonti?SIM.creaPonti(scene,decodifica):null;   // ponti, viadotti, cavalcavia e gallerie (js/ponti.js)
   // categoria della via (strade e ferrovie, non fiumi né canali) che passa a meno di r m dal bordo, o null
   // (usata da js/notte.js per le luci di avvicinamento; lenta: solo per pochi punti)
   SIM.viaSu=(x,z,r)=>{
@@ -567,20 +567,37 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
     g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,PX,PX);
     yield* disegnaFondo(g,x0,z0,X1,Z1,PX/TS);
     yield* disegnaVie(g,x0,z0,X1,Z1,STILE_BASE);
-    acquaSottoPonti(g,lp,x0,z0,X1,Z1,STILE_BASE);
+    sottoPonti(g,lp&&lp.ponti,x0,z0,X1,Z1,STILE_BASE);
   }
-  // sotto i ponti (js/ponti.js) si vede l'acqua, non la strada dipinta: si ridipinge il fiume dentro l'ingombro dell'impalcato
-  function acquaSottoPonti(g,lista,x0,z0,X1,Z1,stili){
-    g.setLineDash([]);g.lineCap='round';g.lineJoin='round';
+  // sotto i ponti (js/ponti.js) non c'è la via dipinta: dentro l'ingombro dell'impalcato si cancella
+  // l'immagine (si vede il terreno) e si ridipinge quello che passa sotto (fiume, strada, ferrovia)
+  function sottoPonti(g,lista,x0,z0,X1,Z1,stili){
     for(const p of lista||[]){
-      const m=p.mezza+2,w=p.w/2+3,v=p.fiume;
-      if(p.x+m<x0||p.x-m>X1||p.z+m<z0||p.z-m>Z1) continue;
+      if(p.x+p.L<x0||p.x-p.L>X1||p.z+p.L<z0||p.z-p.L>Z1) continue;
+      const r=Math.max(p.w,STILE_DET[p.cat][0].w)/2+0.5,a=parallela(p.xs,p.zs,r),b=parallela(p.xs,p.zs,-r);
       g.save();g.beginPath();
-      for(const [a,b] of [[-m,-w],[m,-w],[m,w],[-m,w]])g.lineTo(p.x+p.ux*a-p.uz*b,p.z+p.uz*a+p.ux*b);
+      for(let i=0;i<a.xs.length;i++)g.lineTo(a.xs[i],a.zs[i]);
+      for(let i=b.xs.length-1;i>=0;i--)g.lineTo(b.xs[i],b.zs[i]);
       g.closePath();g.clip();
-      for(const s of stili[v.cat]){g.strokeStyle=s.c;g.lineWidth=s.w*(v.cat==='fiumi'?v.w:1);g.beginPath();traccia(g,v.xs,v.zs,CURVA[v.cat]||20);g.stroke();}
+      g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,g.canvas.width,g.canvas.height);g.restore();
+      g.lineJoin='round';
+      for(const cat of Object.keys(stili)){
+        const vis=p.sotto.filter(v=>v.cat===cat);
+        if(!vis.length) continue;
+        const R=CURVA[cat]||20;
+        for(const s of stili[cat]){
+          g.strokeStyle=s.c;g.setLineDash(s.d||[]);g.lineCap=s.d?'butt':'round';
+          for(const v of vis){
+            g.lineWidth=s.w*(cat==='fiumi'?v.w:1);g.beginPath();
+            if(!s.o)traccia(g,v.xs,v.zs,R);
+            else for(const d of s.o){const l=parallela(v.xs,v.zs,d);traccia(g,l.xs,l.zs,Math.max(2,R-Math.abs(d)));}
+            g.stroke();
+          }
+        }
+      }
       g.restore();
     }
+    g.setLineDash([]);g.lineCap='round';
   }
 
   /* ---------- immagine da vicino ----------
@@ -592,7 +609,7 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
     yield;
     yield* disegnaFondo(gd,x0,z0,X1,Z1,PXD/DET);
     yield* disegnaVie(gd,x0,z0,X1,Z1,STILE_DET);
-    if(ponti)acquaSottoPonti(gd,ponti.elenco(),x0,z0,X1,Z1,STILE_DET);
+    if(ponti)sottoPonti(gd,ponti.elenco(),x0,z0,X1,Z1,STILE_DET);
     detPronto=[x0,z0];
   }
   let detLavoro=null,detPronto=null,detC=null;

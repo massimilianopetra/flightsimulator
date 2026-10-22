@@ -519,13 +519,12 @@ SIM.creaStrumenti=function(A,opz={}){
     superstrade:{col:'#f08a24',w:2.2,max:Infinity,bordo:true},
     autostrade:{col:'#e2382b',w:2.6,max:Infinity,bordo:true},
   };
-  const vie={};
+  const vie={},gallerie={};   // gallerie: tratteggiate, come sulle carte
   let haVie=false;
   const sfondoVie=document.createElement('canvas');
   if(window.VIE){
     const U=window.VIE.unita||10;   // metri per unità nelle coordinate
-    for(const cat of Object.keys(STILE_VIE)){
-      vie[cat]=(window.VIE[cat]||[]).map(l=>{
+    const leggi=(cat,elenco)=>(elenco||[]).map(l=>{
         const n=l.p.length/2,xs=new Float32Array(n),zs=new Float32Array(n);
         let x=0,y=0,x0=Infinity,x1=-Infinity,z0=Infinity,z1=-Infinity;
         for(let i=0;i<n;i++){
@@ -535,6 +534,9 @@ SIM.creaStrumenti=function(A,opz={}){
         const po=cat==='fiumi'&&/^(Fiume )?Po$/.test(l.r||'');
         return {r:l.r||'',xs,zs,box:[x0,x1,z0,z1],w:po?3:STILE_VIE[cat].w};
       });
+    for(const cat of Object.keys(STILE_VIE)){
+      vie[cat]=leggi(cat,window.VIE[cat]);
+      gallerie[cat]=leggi(cat,(window.VIE.gallerie||{})[cat]);
       if(vie[cat].length)haVie=true;
     }
     // versione "di tutta la regione", disegnata una volta sola
@@ -574,6 +576,12 @@ SIM.creaStrumenti=function(A,opz={}){
         mg.strokeStyle=st.col;mg.lineWidth=v.w;mg.stroke();
         if(st.tratteggio){mg.setLineDash([4,4]);mg.strokeStyle='#f2f2f2';mg.lineWidth=v.w*0.55;mg.stroke();mg.setLineDash([]);}
       }
+      mg.setLineDash([3,3]);mg.lineCap='butt';
+      for(const v of gallerie[cat]){
+        if(!visibile(v)) continue;
+        tracciato(v);mg.strokeStyle=st.col;mg.lineWidth=Math.max(1,v.w*0.7);mg.stroke();
+      }
+      mg.setLineDash([]);mg.lineCap='round';
     }
     // sigle delle autostrade su cartello verde, come in Italia
     if(range>=9000){
