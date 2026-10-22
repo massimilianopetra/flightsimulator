@@ -149,7 +149,7 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
       linee.push(v);
     }
   }
-  const ponti=SIM.creaPonti?SIM.creaPonti(scene,decodifica):null;   // ponti, viadotti, cavalcavia e gallerie (js/ponti.js)
+  const ponti=SIM.creaPonti?SIM.creaPonti(scene,decodifica,STILE_DET):null;   // ponti, viadotti, cavalcavia e gallerie (js/ponti.js)
   // categoria della via (strade e ferrovie, non fiumi né canali) che passa a meno di r m dal bordo, o null
   // (usata da js/notte.js per le luci di avvicinamento; lenta: solo per pochi punti)
   SIM.viaSu=(x,z,r)=>{
