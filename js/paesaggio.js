@@ -47,11 +47,14 @@ function larghezzaFiume(nome){
   if(/^(Torrente|Rio|Riale|Torrent|Ruisseau|Fosso|Ri )/.test(nome)) return 10;
   return 18;
 }
+/* l'acqua di fiumi e canali si dipinge col colore chiave di js/acqua.js: lo shader del terreno
+   la riconosce e ci mette onde, riflessi del cielo e del sole (senza js/acqua.js: tinta fissa) */
+const ACQUA=SIM.acqua?SIM.acqua.CHIAVE:'#4c6a70';
 /* per ogni tipo, in ordine di disegno, le passate dal bordo verso il centro:
    [larghezza in m (per i fiumi è un fattore della larghezza del fiume), colore] */
 const STILE_VIE3D={
-  fiumi:[[1.6,'#a39d8f'],[1,'#4c6a70']],                         // greto di ghiaia, acqua
-  canali:[[15,'#7c8668'],[10,'#4f6b6e']],                       // argini erbosi, acqua
+  fiumi:[[1.6,'#a39d8f'],[1,ACQUA]],                            // greto di ghiaia, acqua
+  canali:[[15,'#7c8668'],[10,ACQUA]],                           // argini erbosi, acqua
   urbane:[[5.5,'#5d5b58']],
   comunali:[[6,'#625f5a']],
   provinciali:[[6.5,'#625f5a']],
@@ -64,8 +67,8 @@ const STILE_VIE3D={
    segnaletica e binari. Ogni passata: w larghezza (m; per i fiumi fattore), c colore,
    o spostamenti laterali (linee parallele all'asse), d tratteggio [pieno, vuoto] in m */
 const STILE_DET={
-  fiumi:[{w:1.6,c:'#a39d8f'},{w:1.15,c:'#6f7f72'},{w:1,c:'#4c6a70'},{w:0.6,c:'#46646b'}],   // greto, riva, acqua, centro più profondo
-  canali:[{w:15,c:'#7c8668'},{w:10,c:'#4f6b6e'},{w:7,c:'#4a666a'}],
+  fiumi:[{w:1.6,c:'#a39d8f'},{w:1.15,c:'#6f7f72'},{w:1,c:ACQUA}],                        // greto, riva, acqua
+  canali:[{w:15,c:'#7c8668'},{w:10,c:ACQUA}],
   urbane:[{w:7,c:'#8d8a83'},{w:5.4,c:'#5a5957'}],                                        // marciapiedi, asfalto
   comunali:[{w:6.6,c:'#8a8576'},{w:4.8,c:'#646260'}],                                   // bordo in terra, asfalto
   provinciali:[{w:8,c:'#7d7a70'},{w:6.8,c:'#d4d2ca'},{w:6.3,c:'#58575a'},{w:0.18,c:'#d9d7cf',d:[3,6]}],
@@ -608,6 +611,9 @@ SIM.creaPaesaggio=function(scene,renderer,TS){
           'vec2 duv=(vXZ-uDetO.xy)/uDetO.z; duv.y=1.0-duv.y;\n'+               // da vicino: immagine fine
           'vec4 td=texture2D(uDet,duv);\n'+
           'tv=mix(tv,td,1.0-smoothstep(0.38,0.48,max(abs(duv.x-0.5),abs(duv.y-0.5))));\n'+
+          (SIM.acqua?   // quanta acqua c'è nel pixel (premoltiplicato: già pesata con la trasparenza e i colori vicini)
+            'acquaK=clamp((tv.b-tv.g-0.03)/'+(SIM.acqua.CHIAVE_RGB[2]-SIM.acqua.CHIAVE_RGB[1]-0.03).toFixed(4)+',0.0,1.0);\n'+
+            'tv.rgb+=acquaK*(vec3(0.20,0.29,0.29)-vec3('+SIM.acqua.CHIAVE_RGB.map(v=>v.toFixed(4)).join(',')+'));\n':'')+
           'diffuseColor.rgb=diffuseColor.rgb*(1.0-tv.a)+tv.rgb;');
       };
     },

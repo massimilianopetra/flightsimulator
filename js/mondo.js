@@ -44,7 +44,9 @@ SIM.creaMondo=function(scene,renderer){
   sole.position.set(-0.5,1,0.35);scene.add(sole);
 
   /* ---------- acqua ---------- */
-  const matAcqua=new THREE.MeshStandardMaterial({color:0x2c6a96,roughness:.3,metalness:.1});
+  // onde, riflesso del cielo e del sole: js/acqua.js (i colori del cielo sono gli stessi oggetti del cielo)
+  const matAcqua=SIM.acqua?SIM.acqua.materiale(0x1c4660,'laghi'):new THREE.MeshStandardMaterial({color:0x2c6a96,roughness:.3,metalness:.1});
+  if(SIM.acqua)SIM.acqua.cielo(cielo.material.uniforms.alto.value,cielo.material.uniforms.basso.value);
   const mare=new THREE.Mesh(new THREE.PlaneGeometry(30000,30000).rotateX(-Math.PI/2),matAcqua);
   scene.add(mare);
   for(const l of T.laghi){
@@ -289,6 +291,7 @@ SIM.creaMondo=function(scene,renderer){
     aggiorna(s,cam,vento,dt,vistaCabina){
       cielo.position.copy(cam);
       mare.position.set(cam.x,0,cam.z);
+      if(SIM.acqua)SIM.acqua.aggiorna(dt,met.ventoDa,met.ventoNodi,met.pioggia||0,cam);
       // PAPI visti dal pilota
       for(const u of papi)for(const l of u){
         const dx=s.pos.x-l.m.position.x,dz=s.pos.z-l.m.position.z,d=Math.hypot(dx,dz);
