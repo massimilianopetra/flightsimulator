@@ -433,6 +433,8 @@ api.creaLontano=function(scene){
     pos[o*3]=x;pos[o*3+1]=h-15;pos[o*3+2]=z;
     colore(h,Math.hypot(hx,hz)/(2*P),x,z,false);
     col[o*3]=tc.r;col[o*3+1]=tc.g;col[o*3+2]=tc.b;cam[o]=tc.k;bos[o]=tc.w;
+    // mare oltre il piano d'acqua di mondo.js: piatto appena sotto lo zero, col colore chiave dell'acqua (js/acqua.js)
+    if(h<0&&SIM.acqua){pos[o*3+1]=-1;col.set(SIM.acqua.CHIAVE_RGB,o*3);}
   }
   const idx=new Uint32Array((NX-1)*(NZ-1)*6);let k=0;
   for(let j=0;j<NZ-1;j++)for(let i=0;i<NX-1;i++){
@@ -455,6 +457,7 @@ api.creaLontano=function(scene){
       'void main() {\nif(abs(vPosMondo.x-uCentro.x)<uMezzo&&abs(vPosMondo.z-uCentro.y)<uMezzo)discard;');
   };
   vesteCampi(mat,'terreno-lontano');
+  if(SIM.acqua)SIM.acqua.veste(mat,{daColore:true});
   const mesh=new THREE.Mesh(geo,mat);mesh.frustumCulled=false;scene.add(mesh);
   return {mesh,buco(cx,cz){unif.uCentro.value.set(cx,cz);}};
 };
@@ -475,6 +478,7 @@ api.creaMesh=function(scene,renderer){
   const vie=SIM.creaPaesaggio?SIM.creaPaesaggio(scene,renderer,TS):null;
   if(vie)vie.veste(mat);
   vesteCampi(mat,'terreno-vicino');
+  if(vie&&SIM.acqua)SIM.acqua.veste(mat);   // fiumi e canali dipinti da paesaggio.js (acquaK)
   const alberi=SIM.creaBoschi?SIM.creaBoschi(scene,api):null;   // alberi 3D nei boschi (js/boschi.js)
   function buffer(){
     const geo=new THREE.BufferGeometry();

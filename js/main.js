@@ -1211,7 +1211,7 @@ mostraScheda(scheda);
 ricominciaSubito();
 aggiornaVento(0);
 // scorciatoie per le prove: index.html#salta (salta il briefing), #vista=1 (cabina)
-SIM.debug={st,fis,terreno,monumenti,aeroporti3D,arrivo:()=>arrivo,scene,atc,renderer,camera,missioni,libretto,traffico};  // utile dalla console del browser (F12)
+SIM.debug={st,fis,terreno,mondo,monumenti,aeroporti3D,arrivo:()=>arrivo,scene,atc,renderer,camera,missioni,libretto,traffico};  // utile dalla console del browser (F12)
 if(/salta/.test(location.hash)) inizia();
 if(/finale/.test(location.hash)) inizia('finale');
 {const mv=/vista=(\d)/.exec(location.hash);if(mv)vista=(+mv[1])%3;}
